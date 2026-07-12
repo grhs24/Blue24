@@ -439,11 +439,35 @@
     margin-bottom: 16px;
   }
   .rung-body .note .eyebrow { color: var(--accent); margin-bottom: 3px; }
+  .rung-body .note .note-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+  .rung-body .note .note-head .eyebrow { margin-bottom: 0; }
+  .rung-body .note .del {
+    background: none; border: none; cursor: pointer; color: var(--ink3);
+    font-size: 15px; padding: 2px 6px; border-radius: 6px; line-height: 1;
+  }
+  .rung-body .note .del:hover { color: var(--danger); background: var(--danger-soft); }
   .rung-body .note p:not(.eyebrow) {
     color: var(--ink2);
     font-size: 14px;
     line-height: 1.55;
     white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .rung-body .note p[data-action="edit-note"] {
+    cursor: text;
+    border-radius: 6px;
+    margin: -1px -5px;
+    padding: 1px 5px;
+  }
+  .rung-body .note p[data-action="edit-note"]:hover { background: var(--surface); }
+  textarea.note-edit {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink2);
+    border-radius: 8px;
+    margin: -3px -7px; /* border + padding offsets, so the text doesn't shift when editing starts */
+    padding: 2px 6px;
+    width: calc(100% + 14px);
     overflow-wrap: anywhere;
   }
   .rung-body hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
@@ -653,7 +677,7 @@
     if (document.visibilityState === 'hidden') save();
   });
   window.addEventListener('beforeunload', save);
-  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, addingLadder: false };
+  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
 
   /* ---------- helpers ---------- */
   function uid() {
@@ -802,7 +826,7 @@
             if (!ok) return;
             data = migrate(incoming);
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
             close();
             render();
             toast('Backup restored.');
@@ -846,7 +870,7 @@
             if (!ok) return;
             data = blank();
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
             close();
             render();
             toast('A clean slate.');
@@ -972,7 +996,17 @@
       return h;
     }
 
-    if (step.note) h += '<div class="note"><p class="eyebrow">Note</p><p>' + esc(step.note) + '</p></div>';
+    if (state.editingNoteId === step.id) {
+      h += '<form class="note" data-form="edit-note" data-id="' + step.id + '">' +
+        '<p class="eyebrow">Note</p>' +
+        '<textarea id="en-note" name="note" class="autogrow note-edit" rows="1" data-enter="submit" autocomplete="off" aria-label="Step note">' + esc(step.note || '') + '</textarea>' +
+        '</form>';
+    } else if (step.note) {
+      h += '<div class="note">' +
+        '<div class="note-head"><p class="eyebrow">Note</p>' +
+        '<button class="del" data-action="del-note" data-id="' + step.id + '" aria-label="Remove this note" title="Remove note">&times;</button></div>' +
+        '<p data-action="edit-note" data-id="' + step.id + '" title="Click to edit">' + esc(step.note) + '</p></div>';
+    }
 
     h += '<form class="practice-form" data-form="log" data-id="' + step.id + '">' +
       '<p class="eyebrow">Log a practice</p>' +
@@ -1192,11 +1226,14 @@
         });
       }
     });
-    $all('#rn-name, #rs-title').forEach(function (rn) {
+    var INLINE_EDITORS = { 'rn-name': 1, 'rs-title': 1, 'en-note': 1 };
+    $all('#rn-name, #rs-title, #en-note').forEach(function (rn) {
       rn.addEventListener('blur', function () {
-        /* clicking away commits the rename; skip if Escape already re-rendered */
-        var renaming = rn.id === 'rn-name' ? state.renamingLadder : state.renamingStepId;
-        if (document.contains(rn) && renaming) {
+        /* clicking away commits the edit; skip if Escape already re-rendered */
+        var active = rn.id === 'rn-name' ? state.renamingLadder
+          : rn.id === 'rs-title' ? state.renamingStepId
+          : state.editingNoteId;
+        if (document.contains(rn) && active) {
           if (rn.form.requestSubmit) rn.form.requestSubmit();
           else rn.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
         }
@@ -1205,14 +1242,15 @@
         if (e.key === 'Escape') {
           state.renamingLadder = false;
           state.renamingStepId = null;
+          state.editingNoteId = null;
           render();
         }
       });
     });
-    var first = $('#rs-title') || $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
+    var first = $('#en-note') || $('#rs-title') || $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
     if (first) {
       first.focus();
-      if (first.id === 'rn-name' || first.id === 'rs-title') first.setSelectionRange(first.value.length, first.value.length);
+      if (INLINE_EDITORS[first.id]) first.setSelectionRange(first.value.length, first.value.length);
     }
   }
 
@@ -1250,7 +1288,7 @@
       case 'go-home':
         state.view = 'home'; state.ladderId = null; state.openStepId = null;
         state.editingStepId = null; state.editingLadder = false;
-        state.renamingLadder = false; state.renamingStepId = null;
+        state.renamingLadder = false; state.renamingStepId = null; state.editingNoteId = null;
         render(); break;
 
       case 'open-backup': openBackup(); break;
@@ -1266,13 +1304,13 @@
 
       case 'open-ladder':
         state.view = 'ladder'; state.ladderId = id; state.openStepId = null;
-        state.renamingLadder = false; state.renamingStepId = null;
+        state.renamingLadder = false; state.renamingStepId = null; state.editingNoteId = null;
         window.scrollTo(0, 0);
         render(); break;
 
       case 'toggle-step':
         state.openStepId = state.openStepId === id ? null : id;
-        state.editingStepId = null;
+        state.editingStepId = null; state.editingNoteId = null;
         render(); break;
 
       case 'edit-ladder': state.editingLadder = true; state.renamingLadder = false; render(); break;
@@ -1288,6 +1326,25 @@
         state.renamingStepId = id;
         state.editingStepId = null; /* don't show two editors for the same title */
         render(); break;
+
+      case 'edit-note':
+        if (!ladder) break;
+        state.editingNoteId = id;
+        state.editingStepId = null; state.renamingStepId = null; /* one editor at a time */
+        render(); break;
+
+      case 'del-note': (function () {
+        if (!ladder) return;
+        var st = getStep(ladder, id);
+        if (!st || !st.note) return;
+        confirmModal('Remove this note?', 'The note on “' + st.title + '” will be removed.', 'Remove', true)
+          .then(function (ok) {
+            if (!ok) return;
+            st.note = '';
+            save(); render();
+            toast('Note removed.');
+          });
+      })(); break;
 
       case 'del-ladder':
         if (!ladder) break;
@@ -1331,7 +1388,7 @@
           });
       })(); break;
 
-      case 'edit-step': state.editingStepId = id; state.renamingStepId = null; render(); break;
+      case 'edit-step': state.editingStepId = id; state.renamingStepId = null; state.editingNoteId = null; render(); break;
       case 'cancel-edit-step': state.editingStepId = null; render(); break;
 
       case 'settle': (function () {
@@ -1414,6 +1471,20 @@
         rst.title = rsTitle;
         save();
         toast('Renamed.');
+      }
+      render();
+    }
+
+    if (kind === 'edit-note' && ladder) {
+      var nst = getStep(ladder, form.getAttribute('data-id'));
+      if (!nst) return;
+      var newNote = form.note.value.trim();
+      state.editingNoteId = null;
+      if (newNote !== nst.note) {
+        var noteRemoved = !newNote;
+        nst.note = newNote;
+        save();
+        toast(noteRemoved ? 'Note removed.' : 'Note saved.');
       }
       render();
     }
