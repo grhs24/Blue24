@@ -806,10 +806,15 @@
         '</div>' +
         '<div class="section">' +
           '<p class="eyebrow">Restore</p>' +
-          '<p class="quiet small">Restoring replaces everything currently here with the contents of a backup file.</p>' +
+          '<p class="quiet small">Restoring replaces everything currently here with the contents of a backup.</p>' +
           '<div class="actions" style="justify-content:flex-start">' +
             '<button class="btn" data-x="restore">Restore from file…</button>' +
             '<input type="file" accept=".json,application/json" hidden>' +
+          '</div>' +
+          '<p class="quiet small" style="margin-top:14px">Moving to your phone or another computer? Press <b>Copy</b> above, send the text to yourself—email or a notes app works—then paste it below on the other device.</p>' +
+          '<textarea class="backup paste" aria-label="Pasted backup" placeholder="Paste a backup here."></textarea>' +
+          '<div class="actions" style="justify-content:flex-start">' +
+            '<button class="btn" data-x="restore-paste">Restore what I pasted</button>' +
           '</div>' +
         '</div>' +
         '<div class="section">' +
@@ -829,25 +834,27 @@
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
 
+    function tryRestore(text) {
+      var incoming;
+      try { incoming = JSON.parse(text); } catch (e) { toast('That doesn’t look like a Foothold backup.'); return; }
+      if (!incoming || !Array.isArray(incoming.ladders)) { toast('That doesn’t look like a Foothold backup.'); return; }
+      confirmModal('Restore this backup?', 'Everything currently here will be replaced by the backup (' + incoming.ladders.length + ' ladder' + (incoming.ladders.length === 1 ? '' : 's') + ').', 'Restore', false)
+        .then(function (ok) {
+          if (!ok) return;
+          data = migrate(incoming);
+          save();
+          state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
+          close();
+          render();
+          toast('Backup restored.');
+        });
+    }
+
     fileInput.addEventListener('change', function () {
       var f = fileInput.files[0];
       if (!f) return;
       var reader = new FileReader();
-      reader.onload = function () {
-        var incoming;
-        try { incoming = JSON.parse(reader.result); } catch (e) { toast('That file doesn’t look like a Foothold backup.'); return; }
-        if (!incoming || !Array.isArray(incoming.ladders)) { toast('That file doesn’t look like a Foothold backup.'); return; }
-        confirmModal('Restore this backup?', 'Everything currently here will be replaced by the backup (' + incoming.ladders.length + ' ladder' + (incoming.ladders.length === 1 ? '' : 's') + ').', 'Restore', false)
-          .then(function (ok) {
-            if (!ok) return;
-            data = migrate(incoming);
-            save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
-            close();
-            render();
-            toast('Backup restored.');
-          });
-      };
+      reader.onload = function () { tryRestore(reader.result); };
       reader.readAsText(f);
     });
 
@@ -880,6 +887,7 @@
         }
       }
       if (x === 'restore') fileInput.click();
+      if (x === 'restore-paste') tryRestore($('textarea.paste', overlay).value.trim());
       if (x === 'erase') {
         confirmModal('Erase everything?', 'Every ladder—including anything in Deleted—plus all practice logs will be erased from this device. This can’t be undone.', 'Erase it all', true)
           .then(function (ok) {
