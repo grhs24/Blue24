@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Foothold — a quiet place to build practice ladders and face the hard things one small step at a time.">
+<meta name="description" content="Foothold—a quiet place to build practice ladders and face the hard things one small step at a time.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -563,7 +563,7 @@
 
 <div class="shell">
   <header class="top">
-    <button class="wordmark" data-action="go-home" aria-label="Foothold — home">
+    <button class="wordmark" data-action="go-home" aria-label="Foothold—home">
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
         <rect class="step" x="2"  y="18" width="9" height="4" rx="2"></rect>
         <rect class="step" x="8.5" y="11" width="9" height="4" rx="2" opacity="0.75"></rect>
@@ -579,7 +579,7 @@
   <footer class="colophon">
     Foothold is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
-    Everything you write stays in this browser — nothing is sent anywhere.
+    Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
   </footer>
 </div>
@@ -827,7 +827,7 @@
       }
       if (x === 'restore') fileInput.click();
       if (x === 'erase') {
-        confirmModal('Erase everything?', 'Every ladder — including anything in Deleted — plus all practice logs will be erased from this device. This can’t be undone.', 'Erase it all', true)
+        confirmModal('Erase everything?', 'Every ladder—including anything in Deleted—plus all practice logs will be erased from this device. This can’t be undone.', 'Erase it all', true)
           .then(function (ok) {
             if (!ok) return;
             data = blank();
@@ -852,7 +852,7 @@
 
   function memoryBanner() {
     return memoryOnly
-      ? '<div class="banner">Saving isn’t available in this browser session (private mode or blocked storage). Your work will be lost when you leave — use <b>Backup</b> to keep a copy.</div>'
+      ? '<div class="banner">Saving isn’t available in this browser session (private mode or blocked storage). Your work will be lost when you leave—use <b>Backup</b> to keep a copy.</div>'
       : '';
   }
 
@@ -860,10 +860,10 @@
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
       '<summary>How Foothold works</summary>' +
       '<div class="body"><ol>' +
-        '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you — tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
-        '<li><b>Rate each step 0–100</b> by how hard it feels right now — not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
+        '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
+        '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
-        '<li><b>Practice on purpose.</b> Stay with it, without your usual outs — the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, rate how it felt before, at the peak, and after.</li>' +
+        '<li><b>Practice on purpose.</b> Stay with it, without your usual outs—the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, rate how it felt before, at the peak, and after.</li>' +
         '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
       '</ol></div></details>';
   }
@@ -878,7 +878,7 @@
       h += '<div class="card welcome fade-in">' +
         '<p class="eyebrow">Welcome</p>' +
         '<h1>A quiet place to practice the hard things.</h1>' +
-        '<p class="quiet">Foothold helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time — gently, on repeat — until they lose their grip.</p>' +
+        '<p class="quiet">Foothold helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time—gently, on repeat—until they lose their grip.</p>' +
         '<div class="actions">' +
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +
@@ -895,8 +895,8 @@
       h += '<form class="card fade-in edit-grid" data-form="create-ladder">' +
         '<div><label for="nl-name">What are you working toward?</label>' +
         '<textarea id="nl-name" name="name" class="autogrow" rows="1" data-enter="submit" placeholder="e.g. Driving on the highway again" required autocomplete="off"></textarea></div>' +
-        '<div><label for="nl-why">Why it matters <span class="quieter" style="font-weight:400">(optional — worth writing down)</span></label>' +
-        '<textarea id="nl-why" name="why" class="autogrow" rows="2" placeholder="e.g. I want road trips back in my life" autocomplete="off"></textarea></div>' +
+        '<div><label for="nl-why">Why it matters <span class="quieter" style="font-weight:400">(optional—worth writing down)</span></label>' +
+        '<textarea id="nl-why" name="why" class="autogrow" rows="2" placeholder="e.g. I want road trips back in my life." autocomplete="off"></textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">' +
           '<button class="btn ghost" type="button" data-action="cancel-new-ladder">Cancel</button>' +
           '<button class="btn primary" type="submit">Create ladder</button>' +
@@ -926,7 +926,7 @@
     var beforeAvg = (logs[0].before + logs[1].before) / 2;
     var afterAvg = (logs[0].after + logs[1].after) / 2;
     if (afterAvg <= beforeAvg - 15) {
-      return '<p class="easing">It’s been landing lower than it starts — this one may be easing. Trust your read.</p>';
+      return '<p class="easing">It’s been landing lower than it starts—this one may be easing. Trust your read.</p>';
     }
     return '';
   }
@@ -964,7 +964,7 @@
       '<p class="eyebrow">Log a practice</p>' +
       '<div class="sliders">';
     /* start each slider from this step's own last practice, so the numbers
-       reflect where THIS step currently is — never another step's session */
+       reflect where THIS step currently is—never another step's session */
     var lastLog = step.logs.length ? step.logs[step.logs.length - 1] : null;
     [['before', 'Before'], ['peak', 'At the peak'], ['after', 'After']].forEach(function (pair) {
       var key = pair[0], lab = pair[1];
@@ -977,7 +977,7 @@
     });
     h += '</div>' +
       '<div style="display:flex;gap:10px;align-items:center">' +
-        '<input type="text" name="note" placeholder="A word about how it went (optional)" autocomplete="off" style="flex:1">' +
+        '<input type="text" name="note" placeholder="A word about how it went (optional)." autocomplete="off" style="flex:1">' +
         '<button class="btn primary" type="submit">Save</button>' +
       '</div></form>';
 
@@ -1000,7 +1000,7 @@
     h += '<div class="rung-actions">' +
       (step.settled
         ? '<button class="btn tiny" data-action="unsettle" data-id="' + step.id + '">Reopen this step</button>'
-        : '<button class="btn tiny" data-action="settle" data-id="' + step.id + '">Feels settled — mark it</button>') +
+        : '<button class="btn tiny" data-action="settle" data-id="' + step.id + '">Feels settled—mark it</button>') +
       '<span class="spacer"></span>' +
       '<button class="btn ghost tiny" data-action="edit-step" data-id="' + step.id + '">Edit</button>' +
       '<button class="btn danger tiny" data-action="del-step" data-id="' + step.id + '">Remove</button>' +
@@ -1049,7 +1049,7 @@
 
     if (steps.length === 0) {
       h += '<div class="card" style="text-align:center;padding:34px">' +
-        '<p class="quiet">No steps yet. Add whatever you’re working up to —<br>small and specific beats big and vague.</p></div>';
+        '<p class="quiet">No steps yet. Add whatever you’re working up to—<br>small and specific beats big and vague.</p></div>';
     } else {
       h += '<div class="rungs">';
       steps.forEach(function (step) {
@@ -1083,7 +1083,7 @@
     h += '<form class="card add-step" data-form="add-step">' +
       '<p class="eyebrow">Add a step</p>' +
       '<div class="row2">' +
-        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="Anything you’d like to practice — a task, situation, or moment" required autocomplete="off" aria-label="Step description"></textarea>' +
+        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="Anything you’d like to practice—a task, situation, or moment." required autocomplete="off" aria-label="Step description"></textarea>' +
         '<button class="btn primary" type="submit">Add</button>' +
       '</div>' +
       '<div class="slider-line">' +
@@ -1210,7 +1210,7 @@
     }
     return {
       id: uid(),
-      name: 'Example — speaking up more',
+      name: 'Example—speaking up more',
       why: 'I want my ideas to get a fair hearing.',
       createdAt: new Date(now).toISOString(),
       steps: [
@@ -1247,7 +1247,7 @@
       case 'example':
         data.ladders.push(exampleLadder());
         save(); render();
-        toast('Example added — poke around, then make it yours.');
+        toast('Example added—poke around, then make it yours.');
         break;
 
       case 'open-ladder':
@@ -1283,7 +1283,7 @@
         save();
         state.view = 'home'; state.ladderId = null; state.editingLadder = false;
         render();
-        toast('Moved to Deleted — you can restore it anytime.');
+        toast('Moved to Deleted—you can restore it anytime.');
         break;
 
       case 'open-trash':
@@ -1298,7 +1298,7 @@
             delete back.deletedAt;
             data.ladders.push(back);
             save(); render();
-            toast('Restored — back on the wall.');
+            toast('Restored—back on the wall.');
             return;
           }
         }
@@ -1326,7 +1326,7 @@
         if (!st) return;
         st.settled = true;
         save(); render();
-        toast('Marked settled — that’s real progress.');
+        toast('Marked settled—that’s real progress.');
       })(); break;
 
       case 'unsettle': (function () {
@@ -1453,7 +1453,7 @@
         note: form.note.value.trim()
       });
       save(); render();
-      toast('Logged — nice work showing up.');
+      toast('Logged—nice work showing up.');
     }
   });
 
