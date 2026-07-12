@@ -1114,6 +1114,9 @@
       var cell = rangeEl.closest('.slider-cell, .slider-line, .edit-grid > div');
       if (!cell) return;
       var out = cell.querySelector('output');
+      /* the edit-step readout lives in the label above the slider row, so
+         reach it through its for="" link when the row itself has none */
+      if (!out && rangeEl.id) out = document.querySelector('output[for="' + rangeEl.id + '"]');
       if (out) out.textContent = v;
       var val = cell.querySelector('[data-role="val"]');
       if (val) val.textContent = v;
