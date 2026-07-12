@@ -1031,7 +1031,7 @@
 
     if (steps.length === 0) {
       h += '<div class="card" style="text-align:center;padding:34px">' +
-        '<p class="quiet">No steps yet. Add the situations that bring this up —<br>small and specific beats big and vague.</p></div>';
+        '<p class="quiet">No steps yet. Add whatever you’re working up to —<br>small and specific beats big and vague.</p></div>';
     } else {
       h += '<div class="rungs">';
       steps.forEach(function (step) {
@@ -1057,7 +1057,7 @@
     h += '<form class="card add-step" data-form="add-step">' +
       '<p class="eyebrow">Add a step</p>' +
       '<div class="row2">' +
-        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="A small, specific situation to practice" required autocomplete="off" aria-label="Step description"></textarea>' +
+        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="Anything you’d like to practice — a task, situation, or moment" required autocomplete="off" aria-label="Step description"></textarea>' +
         '<button class="btn primary" type="submit">Add</button>' +
       '</div>' +
       '<div class="slider-line">' +
