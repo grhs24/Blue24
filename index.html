@@ -236,6 +236,7 @@
   input[type="text"]::placeholder, textarea::placeholder { color: var(--ink3); }
   input[type="text"]:focus, textarea:focus { border-color: var(--accent); outline: none; }
   textarea { resize: vertical; min-height: 60px; }
+  textarea.autogrow { min-height: 0; resize: none; overflow: hidden; }
 
   input[type="range"] {
     accent-color: var(--accent);
@@ -270,8 +271,8 @@
     transition: border-color 0.15s ease;
   }
   .ladder-card:hover { border-color: var(--accent); }
-  .ladder-card h2 { margin-bottom: 2px; }
-  .ladder-card .why { color: var(--ink2); font-size: 14px; margin-bottom: 14px; }
+  .ladder-card h2 { margin-bottom: 2px; overflow-wrap: anywhere; white-space: pre-line; }
+  .ladder-card .why { color: var(--ink2); font-size: 14px; margin-bottom: 14px; overflow-wrap: anywhere; white-space: pre-line; }
   .progress {
     height: 6px;
     border-radius: 3px;
@@ -316,7 +317,8 @@
 
   .ladder-head { margin-bottom: 8px; }
   .ladder-head .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .ladder-head .why { color: var(--ink2); margin-top: 4px; max-width: 54ch; }
+  .ladder-head .row h1 { overflow-wrap: anywhere; white-space: pre-line; }
+  .ladder-head .why { color: var(--ink2); margin-top: 4px; max-width: 54ch; overflow-wrap: anywhere; white-space: pre-line; }
   .ladder-stats { display: flex; gap: 18px; margin: 16px 0 22px; font-size: 13.5px; color: var(--ink2); flex-wrap: wrap; }
   .ladder-stats b { color: var(--ink); font-weight: 600; }
 
@@ -826,9 +828,9 @@
     if (state.addingLadder) {
       h += '<form class="card fade-in edit-grid" data-form="create-ladder">' +
         '<div><label for="nl-name">What are you working toward?</label>' +
-        '<input type="text" id="nl-name" name="name" placeholder="e.g. Driving on the highway again" required maxlength="120" autocomplete="off"></div>' +
+        '<textarea id="nl-name" name="name" class="autogrow" rows="1" data-enter="submit" placeholder="e.g. Driving on the highway again" required autocomplete="off"></textarea></div>' +
         '<div><label for="nl-why">Why it matters <span class="quieter" style="font-weight:400">(optional — worth writing down)</span></label>' +
-        '<input type="text" id="nl-why" name="why" placeholder="e.g. I want road trips back in my life" maxlength="200" autocomplete="off"></div>' +
+        '<textarea id="nl-why" name="why" class="autogrow" rows="2" placeholder="e.g. I want road trips back in my life" autocomplete="off"></textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
           '<button class="btn ghost" type="button" data-action="cancel-new-ladder">Cancel</button>' +
           '<button class="btn primary" type="submit">Create ladder</button>' +
@@ -945,9 +947,9 @@
     if (state.editingLadder) {
       h += '<form class="card edit-grid fade-in" data-form="edit-ladder" style="margin-bottom:22px">' +
         '<div><label for="el-name">Ladder name</label>' +
-        '<input type="text" id="el-name" name="name" value="' + esc(ladder.name) + '" required maxlength="120" autocomplete="off"></div>' +
+        '<textarea id="el-name" name="name" class="autogrow" rows="1" data-enter="submit" required autocomplete="off">' + esc(ladder.name) + '</textarea></div>' +
         '<div><label for="el-why">Why it matters</label>' +
-        '<input type="text" id="el-why" name="why" value="' + esc(ladder.why || '') + '" maxlength="200" autocomplete="off"></div>' +
+        '<textarea id="el-why" name="why" class="autogrow" rows="2" autocomplete="off">' + esc(ladder.why || '') + '</textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:space-between">' +
           '<button class="btn danger tiny" type="button" data-action="del-ladder">Delete ladder</button>' +
           '<span style="display:flex;gap:10px">' +
@@ -1042,6 +1044,25 @@
 
   function bindForms() {
     $all('input[type="range"]').forEach(wireSlider);
+    $all('textarea.autogrow').forEach(function (ta) {
+      function grow() {
+        ta.style.height = 'auto';
+        ta.style.height = (ta.scrollHeight + 2) + 'px';
+      }
+      ta.addEventListener('input', grow);
+      grow();
+      if (ta.getAttribute('data-enter') === 'submit') {
+        ta.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (ta.form) {
+              if (ta.form.requestSubmit) ta.form.requestSubmit();
+              else ta.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            }
+          }
+        });
+      }
+    });
     var first = $('#nl-name') || $('#el-name') || $('#es-title');
     if (first) first.focus();
   }
