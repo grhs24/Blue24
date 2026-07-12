@@ -376,9 +376,27 @@
   }
   .rung-head:hover .title { color: var(--accent); }
   .rung-head .title { font-size: 16px; font-weight: 500; transition: color 0.12s ease; }
+  .rung-head .title[data-action="rename-step"] {
+    cursor: text;
+    border-radius: 6px;
+    margin: -1px -5px;
+    padding: 1px 5px;
+  }
+  .rung-head .title[data-action="rename-step"]:hover { background: var(--surface2); }
   .rung.settled .rung-head .title { color: var(--ink2); }
   .rung-head .sub { font-size: 12.5px; color: var(--ink2); margin-top: 1px; }
   .rung-head .grow { flex: 1; min-width: 0; }
+  div.rung-head { cursor: default; }
+  .rung-head .grow form { display: block; }
+  textarea.rename-step {
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    margin: -3px -7px; /* border + padding offsets, so the text doesn't shift when editing starts */
+    padding: 2px 6px;
+    width: calc(100% + 14px);
+    overflow-wrap: anywhere;
+  }
   .tag {
     display: inline-block;
     font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
@@ -621,7 +639,7 @@
     if (document.visibilityState === 'hidden') save();
   });
   window.addEventListener('beforeunload', save);
-  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, addingLadder: false };
+  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, addingLadder: false };
 
   /* ---------- helpers ---------- */
   function uid() {
@@ -770,7 +788,7 @@
             if (!ok) return;
             data = migrate(incoming);
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, addingLadder: false };
             close();
             render();
             toast('Backup restored.');
@@ -814,7 +832,7 @@
             if (!ok) return;
             data = blank();
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, addingLadder: false };
             close();
             render();
             toast('A clean slate.');
@@ -1041,13 +1059,20 @@
           '<span class="node b' + b + '">' + (step.settled
             ? '<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3.4" fill="none" stroke="var(--on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
             : '') + '</span>' +
-          '<button class="rung-head" data-action="toggle-step" data-id="' + step.id + '" aria-expanded="' + open + '">' +
-            '<span class="grow"><span class="title">' + esc(step.title) + '</span>' +
-              (step.settled ? '<span class="tag">Settled</span>' : (step.id === nextId ? '<span class="tag">Next up</span>' : '')) +
-              '<div class="sub num">' + (step.logs.length ? step.logs.length + ' practice' + (step.logs.length === 1 ? '' : 's') : 'not practiced yet') + '</div>' +
-            '</span>' +
-            chipHTML(step.rating) +
-          '</button>' +
+          (state.renamingStepId === step.id
+            ? '<div class="rung-head">' +
+                '<span class="grow"><form data-form="rename-step" data-id="' + step.id + '">' +
+                  '<textarea id="rs-title" name="title" class="autogrow rename-step" rows="1" data-enter="submit" autocomplete="off" aria-label="Step name">' + esc(step.title) + '</textarea>' +
+                '</form></span>' +
+                chipHTML(step.rating) +
+              '</div>'
+            : '<button class="rung-head" data-action="toggle-step" data-id="' + step.id + '" aria-expanded="' + open + '">' +
+                '<span class="grow"><span class="title" data-action="rename-step" data-id="' + step.id + '" title="Click to rename">' + esc(step.title) + '</span>' +
+                  (step.settled ? '<span class="tag">Settled</span>' : (step.id === nextId ? '<span class="tag">Next up</span>' : '')) +
+                  '<div class="sub num">' + (step.logs.length ? step.logs.length + ' practice' + (step.logs.length === 1 ? '' : 's') : 'not practiced yet') + '</div>' +
+                '</span>' +
+                chipHTML(step.rating) +
+              '</button>') +
           (open ? stepBodyHTML(ladder, step) : '') +
         '</div>';
       });
@@ -1152,11 +1177,11 @@
         });
       }
     });
-    var rn = $('#rn-name');
-    if (rn) {
+    $all('#rn-name, #rs-title').forEach(function (rn) {
       rn.addEventListener('blur', function () {
         /* clicking away commits the rename; skip if Escape already re-rendered */
-        if (document.contains(rn) && state.renamingLadder) {
+        var renaming = rn.id === 'rn-name' ? state.renamingLadder : state.renamingStepId;
+        if (document.contains(rn) && renaming) {
           if (rn.form.requestSubmit) rn.form.requestSubmit();
           else rn.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
         }
@@ -1164,14 +1189,15 @@
       rn.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
           state.renamingLadder = false;
+          state.renamingStepId = null;
           render();
         }
       });
-    }
-    var first = $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
+    });
+    var first = $('#rs-title') || $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
     if (first) {
       first.focus();
-      if (first.id === 'rn-name') first.setSelectionRange(first.value.length, first.value.length);
+      if (first.id === 'rn-name' || first.id === 'rs-title') first.setSelectionRange(first.value.length, first.value.length);
     }
   }
 
@@ -1208,7 +1234,8 @@
     switch (action) {
       case 'go-home':
         state.view = 'home'; state.ladderId = null; state.openStepId = null;
-        state.editingStepId = null; state.editingLadder = false; state.renamingLadder = false;
+        state.editingStepId = null; state.editingLadder = false;
+        state.renamingLadder = false; state.renamingStepId = null;
         render(); break;
 
       case 'open-backup': openBackup(); break;
@@ -1224,7 +1251,7 @@
 
       case 'open-ladder':
         state.view = 'ladder'; state.ladderId = id; state.openStepId = null;
-        state.renamingLadder = false;
+        state.renamingLadder = false; state.renamingStepId = null;
         window.scrollTo(0, 0);
         render(); break;
 
@@ -1239,6 +1266,12 @@
       case 'rename-ladder':
         if (!ladder) break;
         state.renamingLadder = true;
+        render(); break;
+
+      case 'rename-step':
+        if (!ladder) break;
+        state.renamingStepId = id;
+        state.editingStepId = null; /* don't show two editors for the same title */
         render(); break;
 
       case 'del-ladder':
@@ -1283,7 +1316,7 @@
           });
       })(); break;
 
-      case 'edit-step': state.editingStepId = id; render(); break;
+      case 'edit-step': state.editingStepId = id; state.renamingStepId = null; render(); break;
       case 'cancel-edit-step': state.editingStepId = null; render(); break;
 
       case 'settle': (function () {
@@ -1351,6 +1384,19 @@
       state.renamingLadder = false;
       if (newName && newName !== ladder.name) {
         ladder.name = newName;
+        save();
+        toast('Renamed.');
+      }
+      render();
+    }
+
+    if (kind === 'rename-step' && ladder) {
+      var rst = getStep(ladder, form.getAttribute('data-id'));
+      if (!rst) return;
+      var rsTitle = form.title.value.trim();
+      state.renamingStepId = null;
+      if (rsTitle && rsTitle !== rst.title) {
+        rst.title = rsTitle;
         save();
         toast('Renamed.');
       }
