@@ -493,6 +493,29 @@
 
   .add-step-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 
+  /* feedback box in the draft modal */
+  .sug-feedback {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 8px;
+  }
+  .sug-feedback .fb-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .sug-feedback .fb-row p { flex: 1; min-width: 200px; margin: 0; }
+
+  /* deleted ladders */
+  .trash-card { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .trash-card h2 { font-size: 19px; overflow-wrap: anywhere; white-space: pre-line; }
+  .trash-card .meta { font-size: 13px; color: var(--ink2); margin-top: 3px; }
+  .trash-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
   /* ---------- toast ---------- */
   .toast {
     position: fixed;
@@ -573,15 +596,28 @@
   var KEY = 'foothold.v1';
   var memoryOnly = false;
 
-  function blank() { return { version: 1, ladders: [] }; }
+  function blank() {
+    return { version: 2, ladders: [], trash: [], prefs: { bias: 0, spacing: '', boosts: {}, notes: [] } };
+  }
+
+  function migrate(parsed) {
+    if (!parsed || !Array.isArray(parsed.ladders)) return blank();
+    if (!Array.isArray(parsed.trash)) parsed.trash = [];
+    if (!parsed.prefs || typeof parsed.prefs !== 'object') parsed.prefs = {};
+    var p = parsed.prefs;
+    if (typeof p.bias !== 'number' || !isFinite(p.bias)) p.bias = 0;
+    if (typeof p.spacing !== 'string') p.spacing = '';
+    if (!p.boosts || typeof p.boosts !== 'object') p.boosts = {};
+    if (!Array.isArray(p.notes)) p.notes = [];
+    parsed.version = 2;
+    return parsed;
+  }
 
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
       if (!raw) return blank();
-      var parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.ladders)) return blank();
-      return parsed;
+      return migrate(JSON.parse(raw));
     } catch (e) {
       memoryOnly = true;
       return blank();
@@ -599,6 +635,7 @@
   }
 
   var data = load();
+  save(); /* persist any format migration right away */
   var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, addingLadder: false };
 
   /* ---------- helpers ---------- */
@@ -719,8 +756,11 @@
           '</div>' +
         '</div>' +
         '<div class="section">' +
-          '<div class="actions" style="justify-content:space-between">' +
-            '<button class="btn danger tiny" data-x="erase">Erase everything</button>' +
+          '<div class="actions" style="justify-content:space-between;align-items:center">' +
+            '<span style="display:flex;gap:6px;flex-wrap:wrap">' +
+              '<button class="btn danger tiny" data-x="erase">Erase everything</button>' +
+              '<button class="btn ghost tiny" data-x="forget">Forget draft preferences</button>' +
+            '</span>' +
             '<button class="btn ghost" data-x="close">Close</button>' +
           '</div>' +
         '</div>' +
@@ -746,7 +786,7 @@
         confirmModal('Restore this backup?', 'Everything currently here will be replaced by the backup (' + incoming.ladders.length + ' ladder' + (incoming.ladders.length === 1 ? '' : 's') + ').', 'Restore', false)
           .then(function (ok) {
             if (!ok) return;
-            data = incoming;
+            data = migrate(incoming);
             save();
             state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, addingLadder: false };
             close();
@@ -786,8 +826,13 @@
         }
       }
       if (x === 'restore') fileInput.click();
+      if (x === 'forget') {
+        data.prefs = { bias: 0, spacing: '', boosts: {}, notes: [] };
+        save();
+        toast('Draft preferences forgotten — a fresh start.');
+      }
       if (x === 'erase') {
-        confirmModal('Erase everything?', 'Every ladder, step, and practice log on this device will be deleted. This can’t be undone.', 'Erase it all', true)
+        confirmModal('Erase everything?', 'Every ladder — including anything in Deleted — plus all practice logs and learned draft preferences will be erased from this device. This can’t be undone.', 'Erase it all', true)
           .then(function (ok) {
             if (!ok) return;
             data = blank();
@@ -830,6 +875,9 @@
 
   function homeHTML() {
     var h = memoryBanner();
+    var trashLink = data.trash.length
+      ? '<div style="margin-top:14px"><button class="btn ghost tiny" data-action="open-trash">Deleted &middot; <span class="num">' + data.trash.length + '</span></button></div>'
+      : '';
 
     if (data.ladders.length === 0 && !state.addingLadder) {
       h += '<div class="card welcome fade-in">' +
@@ -840,7 +888,7 @@
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +
         '</div>' +
-      '</div><div style="height:16px"></div>' + howtoHTML(false);
+      '</div>' + trashLink + '<div style="height:16px"></div>' + howtoHTML(false);
       return h;
     }
 
@@ -875,7 +923,7 @@
       '</button>';
     });
 
-    h += '</div><div style="height:22px"></div>' + howtoHTML(false);
+    h += '</div>' + trashLink + '<div style="height:22px"></div>' + howtoHTML(false);
     return h;
   }
 
@@ -1036,9 +1084,35 @@
     return h;
   }
 
+  function trashHTML() {
+    var h = memoryBanner() + '<button class="back" data-action="go-home">&larr; All ladders</button>' +
+      '<h1>Deleted</h1>';
+    if (!data.trash.length) {
+      h += '<div style="height:16px"></div><div class="card" style="text-align:center;padding:34px">' +
+        '<p class="quiet">Nothing here. Ladders you delete wait in this space<br>until you restore them or let them go.</p></div>';
+      return h;
+    }
+    h += '<p class="quiet" style="margin-top:4px;max-width:54ch">These keep all their steps and practice logs. Restore them anytime, or let them go for good.</p>' +
+      '<div style="height:18px"></div><div class="stack">';
+    data.trash.forEach(function (l) {
+      var s = ladderStats(l);
+      h += '<div class="card trash-card">' +
+        '<div style="flex:1;min-width:200px"><h2>' + esc(l.name) + '</h2>' +
+        '<p class="meta num">' + s.total + ' step' + (s.total === 1 ? '' : 's') + ' &middot; ' + s.practices + ' practice' + (s.practices === 1 ? '' : 's') +
+        (l.deletedAt ? ' &middot; deleted ' + fmtDate(l.deletedAt) : '') + '</p></div>' +
+        '<div class="trash-actions">' +
+          '<button class="btn tiny" data-action="restore-ladder" data-id="' + l.id + '">Restore</button>' +
+          '<button class="btn danger tiny" data-action="destroy-ladder" data-id="' + l.id + '">Delete forever</button>' +
+        '</div></div>';
+    });
+    h += '</div>';
+    return h;
+  }
+
   /* ---------- render ---------- */
   function render() {
     var app = $('#app');
+    if (state.view === 'trash') { app.innerHTML = trashHTML(); bindForms(); return; }
     if (state.view === 'ladder') {
       var ladder = getLadder(state.ladderId);
       if (!ladder) { state.view = 'home'; state.ladderId = null; }
@@ -1204,35 +1278,136 @@
     [85, 'Do the whole thing, and let however it feels be information, not a verdict', 'Done is the win. The feelings during are data for the log, nothing more.']
   ];
 
-  function generateSteps(text, existingTitles) {
-    var t = ' ' + String(text || '').toLowerCase() + ' ';
-    var scored = THEMES.map(function (th) {
-      var score = 0;
-      th.k.forEach(function (kw) { if (t.indexOf(kw) !== -1) score++; });
-      return { th: th, score: score };
+  var THEME_LABELS = ['going back to check', 'cleanliness worries', 'needing to be sure', 'sticky thoughts', 'health worries', 'speaking up around people', 'driving', 'getting things just right'];
+
+  function clampNum(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  /* extra = per-run steering from feedback: { biasDelta, spacing, boost: [themeIdx], cut: [themeIdx] } */
+  function generateSteps(text, existingTitles, extra) {
+    var t = ' ' + String(text || '').toLowerCase().replace(/’/g, "'") + ' ';
+    var scored = THEMES.map(function (th, i) {
+      var hits = 0;
+      th.k.forEach(function (kw) { if (t.indexOf(kw) !== -1) hits++; });
+      var score = hits * 3 + (data.prefs.boosts[i] || 0);
+      if (extra) {
+        if (extra.boost && extra.boost.indexOf(i) !== -1) score += 6;
+        if (extra.cut && extra.cut.indexOf(i) !== -1) score -= 12;
+      }
+      return { i: i, hits: hits, score: score };
     }).sort(function (a, b) { return b.score - a.score; });
 
-    var raw;
-    if (scored[0].score > 0) {
-      raw = scored[0].th.steps.slice();
-      if (scored[1] && scored[1].score >= 2) {
-        raw = raw.concat(scored[1].th.steps.filter(function (s) { return s[0] >= 30 && s[0] <= 70; }));
+    var raw = [];
+    var best = scored[0];
+    if (best.score >= 2 || (best.hits > 0 && best.score > 0)) {
+      THEMES[best.i].steps.forEach(function (s) { raw.push({ r: s[0], t: s[1], n: s[2], th: best.i }); });
+      var second = scored[1];
+      if (second && second.score > 0 && (second.hits >= 2 || second.score >= 4)) {
+        THEMES[second.i].steps.forEach(function (s) {
+          if (s[0] >= 30 && s[0] <= 70) raw.push({ r: s[0], t: s[1], n: s[2], th: second.i });
+        });
       }
     } else {
-      raw = FALLBACK_STEPS.slice();
+      FALLBACK_STEPS.forEach(function (s) { raw.push({ r: s[0], t: s[1], n: s[2], th: -1 }); });
     }
+
+    var spacing = (extra && extra.spacing) || data.prefs.spacing;
+    if (spacing === 'more') {
+      var extras = [];
+      raw.forEach(function (s) {
+        if (s.r >= 50) extras.push({
+          r: s.r - 12,
+          t: 'A gentler first pass: ' + s.t.charAt(0).toLowerCase() + s.t.slice(1),
+          n: 'Shrink it until it’s uncomfortable but doable: briefer, closer to home, or with backup nearby.',
+          th: s.th
+        });
+      });
+      raw = raw.concat(extras);
+    }
+
+    var bias = clampNum(data.prefs.bias + ((extra && extra.biasDelta) || 0), -25, 25);
+    raw.forEach(function (s) { s.r = clampNum(Math.round((s.r + bias) / 5) * 5, 5, 95); });
 
     var seen = {};
     (existingTitles || []).forEach(function (ti) { seen[ti.trim().toLowerCase()] = true; });
     var out = [];
     raw.forEach(function (s) {
-      var key = s[1].trim().toLowerCase();
+      var key = s.t.trim().toLowerCase();
       if (seen[key]) return;
       seen[key] = true;
-      out.push({ t: s[1], r: s[0], n: s[2] });
+      out.push(s);
     });
     out.sort(function (a, b) { return a.r - b.r; });
-    return out.slice(0, 10);
+
+    if (spacing === 'fewer' && out.length > 5) {
+      var picked = [];
+      for (var j = 0; j < 5; j++) {
+        var cand = out[Math.round(j * (out.length - 1) / 4)];
+        if (picked.indexOf(cand) === -1) picked.push(cand);
+      }
+      out = picked;
+    }
+    return out.slice(0, 9);
+  }
+
+  /* ---------- feedback parsing (all on-device) ---------- */
+  var GENTLER_WORDS = ['too hard', 'too intense', 'too much', 'too scary', 'too steep', 'too big', 'too advanced', 'too fast', 'gentler', 'gentle them', 'easier', 'overwhelm', 'calmer', 'softer', 'slow down', 'less intense'];
+  var STEEPER_WORDS = ['too easy', 'too gentle', 'too simple', 'too basic', 'too soft', 'harder', 'steeper', 'more challenging', 'more intense', 'braver', 'bolder', 'push me'];
+  var SMALLER_WORDS = ['smaller', 'more gradual', 'break it', 'break them', 'baby steps', 'tiny steps', 'in between', 'in-between', 'intermediate', 'more steps', 'extra steps'];
+  var FEWER_WORDS = ['fewer', 'too many', 'less steps', 'fewer steps', 'shorter list', 'trim it'];
+  var NEGATORS = ['not ', "n't ", 'no ', 'less about', 'nothing about', 'without', 'stop ', 'drop ', 'remove ', 'skip ', 'wrong', 'away from'];
+
+  function parseFeedback(text) {
+    var t = ' ' + String(text || '').toLowerCase().replace(/’/g, "'") + ' ';
+    var fb = { biasDelta: 0, spacing: '', boost: [], cut: [], matched: [] };
+    function any(words) {
+      for (var i = 0; i < words.length; i++) if (t.indexOf(words[i]) !== -1) return true;
+      return false;
+    }
+    if (any(STEEPER_WORDS)) { fb.biasDelta = 6; fb.matched.push('a steeper start'); }
+    else if (any(GENTLER_WORDS)) { fb.biasDelta = -6; fb.matched.push('a gentler start'); }
+    if (any(SMALLER_WORDS)) { fb.spacing = 'more'; fb.matched.push('smaller, more gradual steps'); }
+    else if (any(FEWER_WORDS)) { fb.spacing = 'fewer'; fb.matched.push('fewer steps'); }
+    THEMES.forEach(function (th, i) {
+      var hit = false, neg = false;
+      th.k.forEach(function (kw) {
+        var idx = t.indexOf(kw);
+        if (idx === -1) return;
+        hit = true;
+        var before = t.slice(Math.max(0, idx - 18), idx);
+        NEGATORS.forEach(function (ng) { if (before.indexOf(ng) !== -1) neg = true; });
+      });
+      if (!hit) return;
+      if (neg) { fb.cut.push(i); fb.matched.push('less about ' + THEME_LABELS[i]); }
+      else { fb.boost.push(i); fb.matched.push('more about ' + THEME_LABELS[i]); }
+    });
+    return fb;
+  }
+
+  function absorbFeedback(fb, rawText) {
+    var p = data.prefs;
+    p.bias = clampNum(p.bias + fb.biasDelta, -20, 20);
+    if (fb.spacing) p.spacing = fb.spacing;
+    fb.boost.forEach(function (i) { p.boosts[i] = clampNum((p.boosts[i] || 0) + 2, -4, 4); });
+    fb.cut.forEach(function (i) { p.boosts[i] = clampNum((p.boosts[i] || 0) - 2, -4, 4); });
+    if (rawText) {
+      p.notes.push({ date: new Date().toISOString(), text: String(rawText).slice(0, 500) });
+      if (p.notes.length > 20) p.notes = p.notes.slice(-20);
+    }
+    save();
+  }
+
+  function describePrefs() {
+    var p = data.prefs, parts = [];
+    if (p.bias <= -5) parts.push('gentler starts');
+    if (p.bias >= 5) parts.push('steeper starts');
+    if (p.spacing === 'more') parts.push('smaller, more gradual steps');
+    if (p.spacing === 'fewer') parts.push('shorter ladders');
+    var bestI = -1, bestV = 1;
+    Object.keys(p.boosts).forEach(function (k) {
+      if (p.boosts[k] > bestV && THEME_LABELS[+k]) { bestV = p.boosts[k]; bestI = +k; }
+    });
+    if (bestI >= 0) parts.push('often about ' + THEME_LABELS[bestI]);
+    return parts;
   }
 
   function openDraftModal(ladder, sugs) {
@@ -1240,24 +1415,44 @@
 
     var overlay = document.createElement('div');
     overlay.className = 'overlay';
-    var rows = '';
-    sugs.forEach(function (s, i) {
-      var b = bandOf(s.r);
-      rows += '<div class="sug-row" data-idx="' + i + '">' +
-        '<input type="checkbox" class="keep" checked aria-label="Keep this step">' +
-        '<div class="sug-main">' +
-          '<input type="text" value="' + esc(s.t) + '" aria-label="Step wording" autocomplete="off">' +
-          (s.n ? '<p class="sug-note">' + esc(s.n) + '</p>' : '') +
-          '<div class="slider-line"><input type="range" min="0" max="100" step="5" value="' + s.r + '" aria-label="How hard it feels, 0 to 100">' +
-          '<span class="chip b' + b + '" data-role="band"><span class="dot b' + b + '"></span><span class="num" data-role="val">' + s.r + '</span>&nbsp;&middot; ' + BAND_NAMES[b] + '</span></div>' +
-        '</div></div>';
-    });
+
+    function rowsHTML() {
+      var rows = '';
+      sugs.forEach(function (s, i) {
+        var b = bandOf(s.r);
+        rows += '<div class="sug-row" data-idx="' + i + '">' +
+          '<input type="checkbox" class="keep" checked aria-label="Keep this step">' +
+          '<div class="sug-main">' +
+            '<input type="text" value="' + esc(s.t) + '" aria-label="Step wording" autocomplete="off">' +
+            (s.n ? '<p class="sug-note">' + esc(s.n) + '</p>' : '') +
+            '<div class="slider-line"><input type="range" min="0" max="100" step="5" value="' + s.r + '" aria-label="How hard it feels, 0 to 100">' +
+            '<span class="chip b' + b + '" data-role="band"><span class="dot b' + b + '"></span><span class="num" data-role="val">' + s.r + '</span>&nbsp;&middot; ' + BAND_NAMES[b] + '</span></div>' +
+          '</div></div>';
+      });
+      return rows;
+    }
+
+    function learnedText() {
+      var parts = describePrefs();
+      return parts.length
+        ? 'Foothold is adjusting for you: ' + parts.join(' · ')
+        : 'What you write here — and the ratings you tweak — teach Foothold what fits you. Future drafts adapt.';
+    }
+
     overlay.innerHTML =
       '<div class="modal wide fade-in" role="dialog" aria-modal="true" aria-label="A starting draft">' +
         '<p class="eyebrow">A starting draft</p>' +
         '<h2>Steps to consider</h2>' +
         '<p class="quiet small">Sketched from your own words using Foothold’s built-in patterns — drafted right here on your device, sent nowhere. Keep what fits, reword what doesn’t, and above all set each rating to what’s honestly true for you.</p>' +
-        '<div class="sug-list">' + rows + '</div>' +
+        '<div class="sug-list">' + rowsHTML() + '</div>' +
+        '<div class="sug-feedback">' +
+          '<label for="sug-fb">How do these land? Foothold learns from what you tell it.</label>' +
+          '<textarea id="sug-fb" rows="2" placeholder="e.g. gentler starts · smaller jumps · more about the checking, less about germs"></textarea>' +
+          '<div class="fb-row">' +
+            '<p class="quieter small" data-role="learned">' + esc(learnedText()) + '</p>' +
+            '<button class="btn tiny" data-x="redraft">Redraft with this in mind</button>' +
+          '</div>' +
+        '</div>' +
         '<div class="actions">' +
           '<button class="btn ghost" data-x="skip">Skip for now</button>' +
           '<button class="btn primary" data-x="add">Add selected steps</button>' +
@@ -1269,39 +1464,90 @@
       overlay.remove();
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
+    function setLearned(msg) { $('[data-role="learned"]', overlay).textContent = msg; }
 
-    $all('input[type="range"]', overlay).forEach(wireSlider);
-    $all('.keep', overlay).forEach(function (cb) {
-      cb.addEventListener('change', function () {
-        cb.closest('.sug-row').classList.toggle('off', !cb.checked);
+    function wireRows() {
+      $all('input[type="range"]', overlay).forEach(wireSlider);
+      $all('.keep', overlay).forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          cb.closest('.sug-row').classList.toggle('off', !cb.checked);
+        });
       });
-    });
+    }
+    wireRows();
 
     overlay.addEventListener('click', function (e) {
       if (e.target === overlay) { close(); return; }
       var b = e.target.closest('[data-x]');
       if (!b) return;
       var x = b.getAttribute('data-x');
+
       if (x === 'skip') { close(); render(); }
+
+      if (x === 'redraft') {
+        var txt = $('#sug-fb', overlay).value.trim();
+        if (!txt) {
+          setLearned('Tell it something first — try “gentler”, “harder”, “smaller steps”, or a topic to lean into (“more about…”) or away from (“less about…”).');
+          return;
+        }
+        var fb = parseFeedback(txt);
+        absorbFeedback(fb, txt);
+        var existing = ladder.steps.map(function (s) { return s.title; });
+        var fresh = generateSteps(ladder.name + ' ' + (ladder.why || ''), existing,
+          { boost: fb.boost, cut: fb.cut, spacing: fb.spacing, biasDelta: 0 });
+        if (!fresh.length) {
+          setLearned('Saved — but everything that draft had is already on your ladder. Try different words, or add steps by hand.');
+          return;
+        }
+        sugs = fresh;
+        $('.sug-list', overlay).innerHTML = rowsHTML();
+        wireRows();
+        $('#sug-fb', overlay).value = '';
+        setLearned(fb.matched.length
+          ? 'Adjusted and remembered: ' + fb.matched.join(' · ')
+          : 'Noted and saved. It picks up best on “gentler”, “harder”, “smaller steps”, or topics — “more about…”, “less about…”.');
+      }
+
       if (x === 'add') {
         var now = Date.now();
         var added = 0;
+        var deltas = [];
+        var shownByTheme = {}, keptByTheme = {};
         $all('.sug-row', overlay).forEach(function (row, i) {
+          var idx = parseInt(row.getAttribute('data-idx'), 10);
+          var sug = sugs[idx];
+          if (sug && sug.th >= 0) shownByTheme[sug.th] = (shownByTheme[sug.th] || 0) + 1;
           if (!$('.keep', row).checked) return;
           var title = $('input[type="text"]', row).value.trim();
           if (!title) return;
-          var idx = parseInt(row.getAttribute('data-idx'), 10);
+          var rating = parseInt($('input[type="range"]', row).value, 10);
+          if (sug) {
+            deltas.push(rating - sug.r);
+            if (sug.th >= 0) keptByTheme[sug.th] = (keptByTheme[sug.th] || 0) + 1;
+          }
           ladder.steps.push({
             id: uid(),
             title: title,
-            rating: parseInt($('input[type="range"]', row).value, 10),
-            note: (sugs[idx] && sugs[idx].n) || '',
+            rating: rating,
+            note: (sug && sug.n) || '',
             settled: false,
             logs: [],
             createdAt: new Date(now + i).toISOString()
           });
           added++;
         });
+
+        /* quiet learning: rating nudges and kept/skipped themes shape future drafts */
+        if (deltas.length) {
+          var avg = deltas.reduce(function (a, c) { return a + c; }, 0) / deltas.length;
+          if (avg) data.prefs.bias = clampNum(Math.round((data.prefs.bias + avg * 0.4) * 10) / 10, -20, 20);
+        }
+        Object.keys(shownByTheme).forEach(function (k) {
+          var kept = keptByTheme[k] || 0;
+          if (kept >= 3) data.prefs.boosts[k] = clampNum((data.prefs.boosts[k] || 0) + 1, -4, 4);
+          else if (kept === 0 && shownByTheme[k] >= 2) data.prefs.boosts[k] = clampNum((data.prefs.boosts[k] || 0) - 1, -4, 4);
+        });
+
         save();
         close();
         render();
@@ -1354,16 +1600,45 @@
 
       case 'del-ladder':
         if (!ladder) break;
-        confirmModal('Delete this ladder?', '“' + ladder.name + '” and all its steps and practice logs will be deleted.', 'Delete', true)
+        data.ladders = data.ladders.filter(function (l) { return l.id !== ladder.id; });
+        ladder.deletedAt = new Date().toISOString();
+        data.trash.unshift(ladder);
+        save();
+        state.view = 'home'; state.ladderId = null; state.editingLadder = false;
+        render();
+        toast('Moved to Deleted — you can restore it anytime.');
+        break;
+
+      case 'open-trash':
+        state.view = 'trash'; state.ladderId = null;
+        window.scrollTo(0, 0);
+        render(); break;
+
+      case 'restore-ladder': (function () {
+        for (var i = 0; i < data.trash.length; i++) {
+          if (data.trash[i].id === id) {
+            var back = data.trash.splice(i, 1)[0];
+            delete back.deletedAt;
+            data.ladders.push(back);
+            save(); render();
+            toast('Restored — back on the wall.');
+            return;
+          }
+        }
+      })(); break;
+
+      case 'destroy-ladder': (function () {
+        var gone = null;
+        for (var i = 0; i < data.trash.length; i++) if (data.trash[i].id === id) gone = data.trash[i];
+        if (!gone) return;
+        confirmModal('Let this one go for good?', '“' + gone.name + '” and all its steps and practice logs will be permanently deleted. This can’t be undone.', 'Delete forever', true)
           .then(function (ok) {
             if (!ok) return;
-            data.ladders = data.ladders.filter(function (l) { return l.id !== ladder.id; });
-            save();
-            state.view = 'home'; state.ladderId = null; state.editingLadder = false;
-            render();
-            toast('Ladder deleted.');
+            data.trash = data.trash.filter(function (l) { return l.id !== gone.id; });
+            save(); render();
+            toast('Gone for good.');
           });
-        break;
+      })(); break;
 
       case 'draft-steps': (function () {
         if (!ladder) return;

@@ -15,8 +15,17 @@ repeat — until they lose their grip.
   each with a ground rule for skipping the usual escape hatches. Drafting runs
   entirely on your device; review, reword, re-rate, or discard every suggestion
   before it's added. Building steps by hand works exactly as before.
+- **Feedback that teaches it** — tell the draft screen how the suggestions land
+  ("gentler", "smaller steps", "more about the checking, less about germs") and
+  Foothold redrafts on the spot. It distills your feedback — and the rating
+  tweaks you make — into a preference profile (intensity, granularity, topics)
+  that shapes every future draft. What it has learned is always shown in plain
+  words, and can be forgotten with one click in Backup.
 - **Steps** — each rated 0–100; the ladder orders itself, gentlest first, and
   marks your next foothold.
+- **A Deleted place** — deleting a ladder moves it, with all its steps and
+  logs, to a Deleted area where it can be restored anytime or permanently
+  deleted with confirmation.
 - **Practice logs** — record how each practice felt before, at the peak, and
   after, with an optional note. Foothold notices when a step seems to be easing.
 - **Settling** — when a step loses its grip, mark it settled and move up.
