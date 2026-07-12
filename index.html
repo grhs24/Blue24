@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Diffusion — a quiet place to build practice ladders and face the hard things one small step at a time.">
+<meta name="description" content="Foothold — a quiet place to build practice ladders and face the hard things one small step at a time.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
 </head>
 <body>
-<title>Diffusion</title>
+<title>Foothold</title>
 <style>
   @font-face {
     font-family: 'Newsreader';
@@ -527,13 +527,13 @@
 
 <div class="shell">
   <header class="top">
-    <button class="wordmark" data-action="go-home" aria-label="Diffusion — home">
+    <button class="wordmark" data-action="go-home" aria-label="Foothold — home">
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
         <rect class="step" x="2"  y="18" width="9" height="4" rx="2"></rect>
         <rect class="step" x="8.5" y="11" width="9" height="4" rx="2" opacity="0.75"></rect>
         <rect class="step" x="15" y="4"  width="9" height="4" rx="2" opacity="0.5"></rect>
       </svg>
-      Diffusion
+      Foothold
     </button>
     <button class="btn ghost tiny" data-action="open-backup">Backup</button>
   </header>
@@ -541,7 +541,7 @@
   <main id="app" aria-live="polite"></main>
 
   <footer class="colophon">
-    Diffusion is a personal practice companion, not medical care. If you're
+    Foothold is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser — nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
@@ -555,8 +555,10 @@
   'use strict';
 
   /* ---------- storage ---------- */
-  var KEY = 'diffusion.v1';
-  var LEGACY_KEY = 'foothold.v1';
+  var KEY = 'foothold.v1';
+  /* the app was briefly renamed Diffusion; anyone who used it then has their
+     freshest data under this key, so it wins on load and is folded back in */
+  var LEGACY_KEY = 'diffusion.v1';
   var memoryOnly = false;
 
   function blank() {
@@ -573,7 +575,7 @@
 
   function load() {
     try {
-      var raw = localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY);
+      var raw = localStorage.getItem(LEGACY_KEY) || localStorage.getItem(KEY);
       if (!raw) return blank();
       return migrate(JSON.parse(raw));
     } catch (e) {
@@ -586,6 +588,7 @@
     if (memoryOnly) return;
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
+      localStorage.removeItem(LEGACY_KEY); /* or the stale copy would shadow KEY on the next load */
     } catch (e) {
       memoryOnly = true;
       render();
@@ -742,8 +745,8 @@
       var reader = new FileReader();
       reader.onload = function () {
         var incoming;
-        try { incoming = JSON.parse(reader.result); } catch (e) { toast('That file doesn’t look like a Diffusion backup.'); return; }
-        if (!incoming || !Array.isArray(incoming.ladders)) { toast('That file doesn’t look like a Diffusion backup.'); return; }
+        try { incoming = JSON.parse(reader.result); } catch (e) { toast('That file doesn’t look like a Foothold backup.'); return; }
+        if (!incoming || !Array.isArray(incoming.ladders)) { toast('That file doesn’t look like a Foothold backup.'); return; }
         confirmModal('Restore this backup?', 'Everything currently here will be replaced by the backup (' + incoming.ladders.length + ' ladder' + (incoming.ladders.length === 1 ? '' : 's') + ').', 'Restore', false)
           .then(function (ok) {
             if (!ok) return;
@@ -769,7 +772,7 @@
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'diffusion-backup-' + stamp + '.json';
+        a.download = 'foothold-backup-' + stamp + '.json';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -819,13 +822,13 @@
 
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
-      '<summary>How Diffusion works</summary>' +
+      '<summary>How Foothold works</summary>' +
       '<div class="body"><ol>' +
         '<li><b>Name what you’re working toward</b>, and list small, concrete situations that bring it up. Each one is a step on the ladder — written in your own words, as small and specific as you can make them.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now — not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
         '<li><b>Practice on purpose.</b> Stay in the situation without your usual outs — the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, jot how it felt before, at the peak, and after.</li>' +
-        '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next step up.</li>' +
+        '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
       '</ol></div></details>';
   }
 
@@ -839,7 +842,7 @@
       h += '<div class="card welcome fade-in">' +
         '<p class="eyebrow">Welcome</p>' +
         '<h1>A quiet place to practice the hard things.</h1>' +
-        '<p class="quiet">Diffusion helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time — gently, on repeat — until they lose their grip.</p>' +
+        '<p class="quiet">Foothold helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time — gently, on repeat — until they lose their grip.</p>' +
         '<div class="actions">' +
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +
