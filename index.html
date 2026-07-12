@@ -431,7 +431,21 @@
     background: var(--surface);
     padding: 18px;
   }
-  .rung-body .note { color: var(--ink2); font-size: 14px; margin-bottom: 14px; }
+  .rung-body .note {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px 11px;
+    margin-bottom: 16px;
+  }
+  .rung-body .note .eyebrow { color: var(--accent); margin-bottom: 3px; }
+  .rung-body .note p:not(.eyebrow) {
+    color: var(--ink2);
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
   .rung-body hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
 
   .practice-form .sliders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 10px 0 12px; }
@@ -958,7 +972,7 @@
       return h;
     }
 
-    if (step.note) h += '<p class="note">' + esc(step.note) + '</p>';
+    if (step.note) h += '<div class="note"><p class="eyebrow">Note</p><p>' + esc(step.note) + '</p></div>';
 
     h += '<form class="practice-form" data-form="log" data-id="' + step.id + '">' +
       '<p class="eyebrow">Log a practice</p>' +
