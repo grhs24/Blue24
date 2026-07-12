@@ -469,6 +469,29 @@
     color: var(--ink2);
   }
   .modal .section + .section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .modal.wide { max-width: 580px; }
+
+  /* suggested-step rows */
+  .sug-list { margin-top: 6px; }
+  .sug-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .sug-row .keep {
+    accent-color: var(--accent);
+    width: 17px; height: 17px;
+    margin-top: 11px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .sug-main { flex: 1; min-width: 0; display: grid; gap: 8px; }
+  .sug-note { font-size: 12.5px; color: var(--ink2); line-height: 1.5; }
+  .sug-row.off .sug-main { opacity: 0.4; }
+
+  .add-step-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 
   /* ---------- toast ---------- */
   .toast {
@@ -797,7 +820,7 @@
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
       '<summary>How Foothold works</summary>' +
       '<div class="body"><ol>' +
-        '<li><b>Name what you’re working toward</b>, and list small, concrete situations that bring it up. Each one is a step on the ladder.</li>' +
+        '<li><b>Name what you’re working toward</b>, and list small, concrete situations that bring it up. Each one is a step on the ladder. Write your own, or let Foothold draft a starting set from your words — drafted right on this device, sent nowhere.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now — not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
         '<li><b>Practice on purpose.</b> Stay in the situation without your usual outs — the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, jot how it felt before, at the peak, and after.</li>' +
@@ -831,10 +854,13 @@
         '<textarea id="nl-name" name="name" class="autogrow" rows="1" data-enter="submit" placeholder="e.g. Driving on the highway again" required autocomplete="off"></textarea></div>' +
         '<div><label for="nl-why">Why it matters <span class="quieter" style="font-weight:400">(optional — worth writing down)</span></label>' +
         '<textarea id="nl-why" name="why" class="autogrow" rows="2" placeholder="e.g. I want road trips back in my life" autocomplete="off"></textarea></div>' +
-        '<div style="display:flex;gap:10px;justify-content:flex-end">' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">' +
           '<button class="btn ghost" type="button" data-action="cancel-new-ladder">Cancel</button>' +
-          '<button class="btn primary" type="submit">Create ladder</button>' +
-        '</div></form>';
+          '<button class="btn" type="submit" data-mode="empty">I’ll build it myself</button>' +
+          '<button class="btn primary" type="submit" data-mode="draft">Draft the steps for me</button>' +
+        '</div>' +
+        '<p class="quieter small" style="text-align:right">Drafting happens right here on your device — nothing you write is sent anywhere.</p>' +
+        '</form>';
     }
 
     data.ladders.forEach(function (l) {
@@ -996,7 +1022,8 @@
     }
 
     h += '<form class="card add-step" data-form="add-step">' +
-      '<p class="eyebrow" style="margin-bottom:10px">Add a step</p>' +
+      '<div class="add-step-head"><p class="eyebrow">Add a step</p>' +
+      '<button class="btn ghost tiny" type="button" data-action="draft-steps">Draft some for me</button></div>' +
       '<div class="row2">' +
         '<input type="text" name="title" placeholder="A small, specific situation to practice" required maxlength="160" autocomplete="off" aria-label="Step description">' +
         '<button class="btn primary" type="submit">Add</button>' +
@@ -1056,7 +1083,8 @@
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             if (ta.form) {
-              if (ta.form.requestSubmit) ta.form.requestSubmit();
+              var primary = ta.form.querySelector('button[type="submit"].primary');
+              if (ta.form.requestSubmit) ta.form.requestSubmit(primary || undefined);
               else ta.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
             }
           }
@@ -1087,6 +1115,203 @@
         step('Openly disagree in a meeting, once', 85, 5)
       ]
     };
+  }
+
+  /* ---------- step drafting (all on-device) ---------- */
+  /* Each theme: keyword fragments matched against the user's own words,
+     and a graded set of [rating, step, ground-rule note]. */
+  var THEMES = [
+    { k: ['check', 'lock', 'stove', 'oven', 'applianc', 'switch', 'unplug', 'door', 'alarm', 'iron', 'faucet', 'tap ', 'window', 'circl', 'recheck', 'left on', 'went back'],
+      steps: [
+        [20, 'Leave a room you’ve just tidied without a final once-over', 'One look is the budget. If the pull to re-scan shows up, walk out anyway and let it grumble.'],
+        [30, 'Lock the door once, then walk away without testing the handle', 'One turn of the key, zero handle-jiggles. Stand with the discomfort, not by the door.'],
+        [40, 'Leave home without photographing or revisiting the stove, plugs, or taps', 'No photos, no walk-backs, no asking someone else to look. Uncertainty rides along today.'],
+        [55, 'Go out and stay out for an hour, with no returning to verify anything', 'When the “what if” images arrive, name them — “there’s the doubt” — and keep walking.'],
+        [70, 'Leave an appliance you rarely use plugged in, and go about your day', 'The doubt stays unanswered on purpose. Let it peak and pass without acting on it.'],
+        [85, 'Head out for a full day or overnight with just one ordinary lock-up', 'One pass, then the day is yours. Afterward, log how the peak actually behaved.']
+      ] },
+    { k: ['germ', 'contamin', 'wash', 'dirty', 'sanitiz', 'soap', 'bathroom', 'toilet', 'sticky', 'gross', 'hygien', 'disinfect', 'wipe'],
+      steps: [
+        [20, 'Touch a doorknob at home, then wait ten minutes before any washing', 'Set a timer. Watch the urge crest and settle before it rings.'],
+        [30, 'Hold your phone right after coming home, before any wipe-down', 'The phone stays “unfinished”. Carry on with something you enjoy while it does.'],
+        [40, 'Use a public door handle bare-handed, then carry on with your errand', 'No sanitizer this trip. Hands stay as they are until the next ordinary wash.'],
+        [55, 'Sit on public seating, and let those clothes stay on for the day', 'No early laundry, no changing when you get home. Let the feeling fade on its own schedule.'],
+        [70, 'Touch the sole of your shoe, then go about your evening after one brief wash', 'One short, ordinary wash — no repeats, no special soap, no particular order.'],
+        [85, 'Eat something with your hands after touching a “contaminated” surface', 'One brief wash first, done once. Then dinner, and let the doubt eat with you.']
+      ] },
+    { k: ['reassur', 'am i sure', 'make sure', 'certain', 'confess', 'google', 'look up', 'looked up', 'replay', 'ruminat', 'keep asking', 'did i '],
+      steps: [
+        [20, 'Notice one “are you sure?” urge and jot it down instead of asking', 'The notebook gets the question. Nobody else does — not today.'],
+        [30, 'Delay one reassurance question by thirty minutes', 'Most urges don’t survive the wait. If this one does, delay it again.'],
+        [40, 'Accept one answer without the follow-up “but really, is it okay?”', 'One answer is the ration. The second ask never actually settles it anyway.'],
+        [55, 'Go a full evening without asking anyone to confirm you did the right thing', 'If you catch yourself fishing for it sideways, smile, and drop the line.'],
+        [70, 'Leave a nagging question un-searched for a whole day', 'No search box, no forums, no “just quickly checking”. Let it nag; log the urges.'],
+        [85, 'Let a big “what if” stay unanswered all week', 'Each time it knocks, note it in the log instead of opening the door.']
+      ] },
+    { k: ['intrusive', 'unwanted thought', 'bad thought', 'horrible thought', 'thoughts', 'images in my head', 'stuck in my head', 'can’t stop thinking', 'cant stop thinking'],
+      steps: [
+        [20, 'Write the sticky thought down once, in plain words, and leave it on the page', 'No softening it, no adding “but that’s not me” at the end. It’s a thought, not a verdict.'],
+        [30, 'Read what you wrote, twice through, without arguing with it', 'No mental canceling, replacing, or checking how you feel about it. Just read.'],
+        [40, 'Say the thought out loud to yourself, once', 'Said in your own voice, it’s just words in a room. Let them hang there.'],
+        [55, 'Let the thought sit for five minutes while you do nothing about it', 'No fixing, no figuring out, no testing yourself. Boredom is the goal.'],
+        [70, 'Write the “worst case” version as one short paragraph and read it daily this week', 'Same paragraph, once a day. Notice it getting duller with every read.'],
+        [85, 'Do something you genuinely enjoy while the thought tags along uninvited', 'It can ride in the back seat. It doesn’t get to drive, and you don’t have to stop.']
+      ] },
+    { k: ['health', 'symptom', 'disease', 'illness', 'cancer', 'heart', 'doctor', 'sick', 'dying', 'lump', 'headache'],
+      steps: [
+        [20, 'Notice a body sensation and wait an hour before checking or mentioning it', 'Sensations are weather. Give this one an hour of sky to move through.'],
+        [30, 'Skip one symptom search you’d normally run', 'The search box stays closed. Write the worry in your log instead.'],
+        [40, 'Leave an ache or flutter unexamined for a full day', 'No mirror checks, no prodding, no comparing to yesterday. Hands off, eyes elsewhere.'],
+        [55, 'Read a health headline and don’t click through', 'Headlines are bait. Let this one bob on the water while you scroll on.'],
+        [70, 'Sit with “it’s probably nothing, and I can’t be one hundred percent sure” through an evening', 'Both halves of that sentence stay true at once. Practice letting them.'],
+        [85, 'Retire the extra self-check ritual for a week, logging urges instead', 'Ordinary care stays; the extra rounds go. The log catches what the ritual used to.']
+      ] },
+    { k: ['social', 'speak', 'speaking up', 'talk to', 'meeting', 'judg', 'embarrass', 'presentation', 'phone call', 'party', 'crowd', 'small talk', 'say no', 'conflict', 'awkward'],
+      steps: [
+        [20, 'Share an opinion in the group chat', 'Post it, then put the phone down. No re-reading it five times afterward.'],
+        [30, 'Ask one question in a small meeting', 'A plain question, asked once. Resist rehearsing it into perfection first.'],
+        [40, 'Make a phone call you’ve been putting off', 'Dial before the script is ready. Awkward pauses are allowed to exist.'],
+        [55, 'Give one person one piece of direct, kind feedback', 'Say it once, clearly, and let the silence after it belong to them.'],
+        [70, 'Present a short update to a group', 'Aim for done, not polished. No apologizing for taking up the air.'],
+        [85, 'Openly disagree in a meeting, once, and let the silence sit', 'State it, then stop talking. The urge to soften it afterward is the practice.']
+      ] },
+    { k: ['driv', ' car ', 'highway', 'motorway', 'freeway', 'behind the wheel', 'accident', 'hit someone', 'ran over', 'traffic'],
+      steps: [
+        [20, 'Sit in the driver’s seat with the engine on for five minutes', 'Hands on the wheel, radio on if you like. Just be there while the feeling settles.'],
+        [30, 'Drive one familiar loop around the neighborhood', 'One loop means one loop — no repeating the route to make sure nothing happened.'],
+        [40, 'Drive to a nearby store at a quiet hour', 'Park, buy one thing, drive home. No replaying the trip mile by mile afterward.'],
+        [55, 'Take a busier road for ten minutes', 'No circling back to check the road behind you. Bumps are usually potholes; let them be.'],
+        [70, 'Merge onto the highway for one exit', 'One exit, then off. The white knuckles get to come along; they don’t get a vote.'],
+        [85, 'Drive somewhere new, alone, music on', 'No rehearsing the route until it feels safe first. Let the map surprise you a little.']
+      ] },
+    { k: ['symmetr', 'straight', 'align', 'arrang', 'just right', 'redo', 'redoing', 'rewrite', 'reread', 're-read', 'perfect', 'tidy', 'exact', 'crooked'],
+      steps: [
+        [20, 'Leave one picture frame or object slightly crooked overnight', 'Walk past it. Let the “off” feeling hum without reaching out to fix it.'],
+        [30, 'Send a two-line message after a single read-through', 'One pass, then send. Typos are allowed to exist in the world.'],
+        [40, 'Let someone else arrange the shelf or load the dishwasher, their way', 'Their way stays. Redoing it later, quietly, still counts as redoing it.'],
+        [55, 'Do a chore to “good enough” on purpose, and stop', 'Set the bar at done. When the pull to circle back arrives, note it in the log instead.'],
+        [70, 'Submit a piece of work at ninety percent polish', 'Ship it before it feels ready — that feeling arrives long after the work is fine.'],
+        [85, 'Let your space stay a little “off” for a full week', 'Seven days of crooked and uneven. Watch the hum fade into background noise.']
+      ] }
+  ];
+
+  var FALLBACK_STEPS = [
+    [20, 'Spend two minutes at the edge of it — nearby, planning it, or picturing it', 'Two minutes of contact, no escape hatch. Rewrite this step in your own words.'],
+    [30, 'Do the smallest real version of it, with an easy exit you don’t use', 'Knowing the exit is there is fine. Using it is the habit we’re retiring.'],
+    [40, 'Do it again, a little longer, without the easy exit', 'Stay through the peak. It crests and comes down on its own — let it show you.'],
+    [55, 'Do the middle-sized version, on your own', 'No companion, no checking in halfway. Just you, the thing, and the log afterward.'],
+    [70, 'Do it at nearly full size, leaving the safety nets at home', 'Whatever you usually lean on to make it bearable — let it sit this round out.'],
+    [85, 'Do the whole thing, and let however it feels be information, not a verdict', 'Done is the win. The feelings during are data for the log, nothing more.']
+  ];
+
+  function generateSteps(text, existingTitles) {
+    var t = ' ' + String(text || '').toLowerCase() + ' ';
+    var scored = THEMES.map(function (th) {
+      var score = 0;
+      th.k.forEach(function (kw) { if (t.indexOf(kw) !== -1) score++; });
+      return { th: th, score: score };
+    }).sort(function (a, b) { return b.score - a.score; });
+
+    var raw;
+    if (scored[0].score > 0) {
+      raw = scored[0].th.steps.slice();
+      if (scored[1] && scored[1].score >= 2) {
+        raw = raw.concat(scored[1].th.steps.filter(function (s) { return s[0] >= 30 && s[0] <= 70; }));
+      }
+    } else {
+      raw = FALLBACK_STEPS.slice();
+    }
+
+    var seen = {};
+    (existingTitles || []).forEach(function (ti) { seen[ti.trim().toLowerCase()] = true; });
+    var out = [];
+    raw.forEach(function (s) {
+      var key = s[1].trim().toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      out.push({ t: s[1], r: s[0], n: s[2] });
+    });
+    out.sort(function (a, b) { return a.r - b.r; });
+    return out.slice(0, 10);
+  }
+
+  function openDraftModal(ladder, sugs) {
+    if (!sugs.length) { toast('Nothing new to suggest here — you know this one best.'); return; }
+
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    var rows = '';
+    sugs.forEach(function (s, i) {
+      var b = bandOf(s.r);
+      rows += '<div class="sug-row" data-idx="' + i + '">' +
+        '<input type="checkbox" class="keep" checked aria-label="Keep this step">' +
+        '<div class="sug-main">' +
+          '<input type="text" value="' + esc(s.t) + '" aria-label="Step wording" autocomplete="off">' +
+          (s.n ? '<p class="sug-note">' + esc(s.n) + '</p>' : '') +
+          '<div class="slider-line"><input type="range" min="0" max="100" step="5" value="' + s.r + '" aria-label="How hard it feels, 0 to 100">' +
+          '<span class="chip b' + b + '" data-role="band"><span class="dot b' + b + '"></span><span class="num" data-role="val">' + s.r + '</span>&nbsp;&middot; ' + BAND_NAMES[b] + '</span></div>' +
+        '</div></div>';
+    });
+    overlay.innerHTML =
+      '<div class="modal wide fade-in" role="dialog" aria-modal="true" aria-label="A starting draft">' +
+        '<p class="eyebrow">A starting draft</p>' +
+        '<h2>Steps to consider</h2>' +
+        '<p class="quiet small">Sketched from your own words using Foothold’s built-in patterns — drafted right here on your device, sent nowhere. Keep what fits, reword what doesn’t, and above all set each rating to what’s honestly true for you.</p>' +
+        '<div class="sug-list">' + rows + '</div>' +
+        '<div class="actions">' +
+          '<button class="btn ghost" data-x="skip">Skip for now</button>' +
+          '<button class="btn primary" data-x="add">Add selected steps</button>' +
+        '</div>' +
+      '</div>';
+
+    function close() {
+      document.removeEventListener('keydown', onKey);
+      overlay.remove();
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+
+    $all('input[type="range"]', overlay).forEach(wireSlider);
+    $all('.keep', overlay).forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        cb.closest('.sug-row').classList.toggle('off', !cb.checked);
+      });
+    });
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) { close(); return; }
+      var b = e.target.closest('[data-x]');
+      if (!b) return;
+      var x = b.getAttribute('data-x');
+      if (x === 'skip') { close(); render(); }
+      if (x === 'add') {
+        var now = Date.now();
+        var added = 0;
+        $all('.sug-row', overlay).forEach(function (row, i) {
+          if (!$('.keep', row).checked) return;
+          var title = $('input[type="text"]', row).value.trim();
+          if (!title) return;
+          var idx = parseInt(row.getAttribute('data-idx'), 10);
+          ladder.steps.push({
+            id: uid(),
+            title: title,
+            rating: parseInt($('input[type="range"]', row).value, 10),
+            note: (sugs[idx] && sugs[idx].n) || '',
+            settled: false,
+            logs: [],
+            createdAt: new Date(now + i).toISOString()
+          });
+          added++;
+        });
+        save();
+        close();
+        render();
+        toast(added
+          ? added + ' step' + (added === 1 ? '' : 's') + ' added — keep rewording them until they sound like you.'
+          : 'No steps selected — the ladder is all yours to build.');
+      }
+    });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
   }
 
   /* ---------- event delegation ---------- */
@@ -1139,6 +1364,12 @@
             toast('Ladder deleted.');
           });
         break;
+
+      case 'draft-steps': (function () {
+        if (!ladder) return;
+        var existing = ladder.steps.map(function (s) { return s.title; });
+        openDraftModal(ladder, generateSteps(ladder.name + ' ' + (ladder.why || ''), existing));
+      })(); break;
 
       case 'edit-step': state.editingStepId = id; render(); break;
       case 'cancel-edit-step': state.editingStepId = null; render(); break;
@@ -1194,13 +1425,18 @@
     if (kind === 'create-ladder') {
       var name = form.name.value.trim();
       if (!name) return;
+      var draft = !(e.submitter && e.submitter.getAttribute('data-mode') === 'empty');
       var l = { id: uid(), name: name, why: form.why.value.trim(), createdAt: new Date().toISOString(), steps: [] };
       data.ladders.push(l);
       save();
       state.addingLadder = false;
       state.view = 'ladder'; state.ladderId = l.id;
       render();
-      toast('Ladder created. Now add a few steps.');
+      if (draft) {
+        openDraftModal(l, generateSteps(l.name + ' ' + l.why, []));
+      } else {
+        toast('Ladder created. Now add a few steps.');
+      }
     }
 
     if (kind === 'edit-ladder' && ladder) {

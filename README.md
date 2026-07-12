@@ -10,6 +10,11 @@ repeat — until they lose their grip.
 ## Features
 
 - **Ladders** — one per thing you're working toward, with a note on why it matters.
+- **Drafted starting steps** — describe what you're working toward and Foothold
+  sketches a graded set of practice steps from its built-in pattern library,
+  each with a ground rule for skipping the usual escape hatches. Drafting runs
+  entirely on your device; review, reword, re-rate, or discard every suggestion
+  before it's added. Building steps by hand works exactly as before.
 - **Steps** — each rated 0–100; the ladder orders itself, gentlest first, and
   marks your next foothold.
 - **Practice logs** — record how each practice felt before, at the peak, and
