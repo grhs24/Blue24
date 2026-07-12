@@ -318,6 +318,24 @@
   .ladder-head { margin-bottom: 8px; }
   .ladder-head .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .ladder-head .row h1 { overflow-wrap: anywhere; white-space: pre-line; }
+  .ladder-head .row h1[data-action="rename-ladder"] {
+    cursor: text;
+    border-radius: 8px;
+    margin: -2px -6px;
+    padding: 2px 6px;
+  }
+  .ladder-head .row h1[data-action="rename-ladder"]:hover { background: var(--surface2); }
+  .ladder-head .row form { flex: 1; }
+  textarea.rename {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.2;
+    border-radius: 8px;
+    margin: -3px -7px; /* border + padding offsets, so the text doesn't shift when editing starts */
+    padding: 2px 6px;
+    overflow-wrap: anywhere;
+  }
   .ladder-head .why { color: var(--ink2); margin-top: 4px; max-width: 54ch; overflow-wrap: anywhere; white-space: pre-line; }
   .ladder-stats { display: flex; gap: 18px; margin: 16px 0 22px; font-size: 13.5px; color: var(--ink2); flex-wrap: wrap; }
   .ladder-stats b { color: var(--ink); font-weight: 600; }
@@ -603,7 +621,7 @@
     if (document.visibilityState === 'hidden') save();
   });
   window.addEventListener('beforeunload', save);
-  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, addingLadder: false };
+  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, addingLadder: false };
 
   /* ---------- helpers ---------- */
   function uid() {
@@ -752,7 +770,7 @@
             if (!ok) return;
             data = migrate(incoming);
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, addingLadder: false };
             close();
             render();
             toast('Backup restored.');
@@ -796,7 +814,7 @@
             if (!ok) return;
             data = blank();
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, addingLadder: false };
             close();
             render();
             toast('A clean slate.');
@@ -994,7 +1012,12 @@
           '</span>' +
         '</div></form>';
     } else {
-      h += '<div class="ladder-head"><div class="row"><h1>' + esc(ladder.name) + '</h1>' +
+      var nameHTML = state.renamingLadder
+        ? '<form data-form="rename-ladder">' +
+            '<textarea id="rn-name" name="name" class="autogrow rename" rows="1" data-enter="submit" autocomplete="off" aria-label="Ladder name">' + esc(ladder.name) + '</textarea>' +
+          '</form>'
+        : '<h1 data-action="rename-ladder" title="Click to rename">' + esc(ladder.name) + '</h1>';
+      h += '<div class="ladder-head"><div class="row">' + nameHTML +
         '<button class="btn ghost tiny" data-action="edit-ladder">Edit</button></div>' +
         (ladder.why ? '<p class="why">' + esc(ladder.why) + '</p>' : '') +
         '</div>';
@@ -1126,8 +1149,27 @@
         });
       }
     });
-    var first = $('#nl-name') || $('#el-name') || $('#es-title');
-    if (first) first.focus();
+    var rn = $('#rn-name');
+    if (rn) {
+      rn.addEventListener('blur', function () {
+        /* clicking away commits the rename; skip if Escape already re-rendered */
+        if (document.contains(rn) && state.renamingLadder) {
+          if (rn.form.requestSubmit) rn.form.requestSubmit();
+          else rn.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      });
+      rn.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          state.renamingLadder = false;
+          render();
+        }
+      });
+    }
+    var first = $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
+    if (first) {
+      first.focus();
+      if (first.id === 'rn-name') first.setSelectionRange(first.value.length, first.value.length);
+    }
   }
 
   /* ---------- example ladder ---------- */
@@ -1163,7 +1205,7 @@
     switch (action) {
       case 'go-home':
         state.view = 'home'; state.ladderId = null; state.openStepId = null;
-        state.editingStepId = null; state.editingLadder = false;
+        state.editingStepId = null; state.editingLadder = false; state.renamingLadder = false;
         render(); break;
 
       case 'open-backup': openBackup(); break;
@@ -1179,6 +1221,7 @@
 
       case 'open-ladder':
         state.view = 'ladder'; state.ladderId = id; state.openStepId = null;
+        state.renamingLadder = false;
         window.scrollTo(0, 0);
         render(); break;
 
@@ -1187,8 +1230,13 @@
         state.editingStepId = null;
         render(); break;
 
-      case 'edit-ladder': state.editingLadder = true; render(); break;
+      case 'edit-ladder': state.editingLadder = true; state.renamingLadder = false; render(); break;
       case 'cancel-edit-ladder': state.editingLadder = false; render(); break;
+
+      case 'rename-ladder':
+        if (!ladder) break;
+        state.renamingLadder = true;
+        render(); break;
 
       case 'del-ladder':
         if (!ladder) break;
@@ -1293,6 +1341,17 @@
       state.view = 'ladder'; state.ladderId = l.id;
       render();
       toast('Ladder created. Now add a few steps.');
+    }
+
+    if (kind === 'rename-ladder' && ladder) {
+      var newName = form.name.value.trim();
+      state.renamingLadder = false;
+      if (newName && newName !== ladder.name) {
+        ladder.name = newName;
+        save();
+        toast('Renamed.');
+      }
+      render();
     }
 
     if (kind === 'edit-ladder' && ladder) {
