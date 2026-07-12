@@ -546,6 +546,21 @@
 
   .add-step .eyebrow { margin-bottom: 10px; }
 
+  /* completed steps, set aside per ladder */
+  .completed-list { margin-top: 8px; }
+  .completed-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+  .completed-row .grow { flex: 1; min-width: 0; }
+  .completed-row .title { font-size: 15px; font-weight: 500; color: var(--ink2); overflow-wrap: anywhere; }
+  .completed-row .sub { font-size: 12.5px; color: var(--ink3); margin-top: 1px; }
+  .completed-row .btn { flex-shrink: 0; }
+  .completed-row .node-mini {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
   /* deleted ladders */
   .trash-card { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
   .trash-card h2 { font-size: 19px; overflow-wrap: anywhere; white-space: pre-line; }
@@ -1047,7 +1062,8 @@
 
     h += '<div class="rung-actions">' +
       (step.settled
-        ? '<button class="btn tiny" data-action="unsettle" data-id="' + step.id + '">Reopen this step</button>'
+        ? '<button class="btn tiny" data-action="unsettle" data-id="' + step.id + '">Reopen this step</button>' +
+          '<button class="btn tiny" data-action="archive-step" data-id="' + step.id + '">Move to Completed</button>'
         : '<button class="btn tiny" data-action="settle" data-id="' + step.id + '">Feels settled—mark it</button>') +
       '<span class="spacer"></span>' +
       '<button class="btn ghost tiny" data-action="edit-step" data-id="' + step.id + '">Edit</button>' +
@@ -1058,7 +1074,8 @@
 
   function ladderHTML(ladder) {
     var s = ladderStats(ladder);
-    var steps = sortedSteps(ladder);
+    var steps = [], doneAside = [];
+    sortedSteps(ladder).forEach(function (st) { (st.archived ? doneAside : steps).push(st); });
     var nextId = null;
     for (var i = 0; i < steps.length; i++) { if (!steps[i].settled) { nextId = steps[i].id; break; } }
 
@@ -1097,7 +1114,10 @@
 
     if (steps.length === 0) {
       h += '<div class="card" style="text-align:center;padding:34px">' +
-        '<p class="quiet">No steps yet. Add whatever you’re working up to—<br>small and specific beats big and vague.</p></div>';
+        (doneAside.length
+          ? '<p class="quiet">Every step here is completed and set aside.<br>Add a new one, or bring one back from Completed below.</p>'
+          : '<p class="quiet">No steps yet. Add whatever you’re working up to—<br>small and specific beats big and vague.</p>') +
+        '</div>';
     } else {
       h += '<div class="rungs">';
       steps.forEach(function (step) {
@@ -1138,6 +1158,23 @@
         '<input type="range" name="rating" min="0" max="100" step="5" value="40" aria-label="How hard it feels, 0 to 100">' +
         '<span class="chip b1" data-role="band"><span class="dot b1"></span><span class="num" data-role="val">40</span>&nbsp;&middot; ' + BAND_NAMES[1] + '</span>' +
       '</div></form>';
+
+    if (doneAside.length) {
+      h += '<div style="height:18px"></div>' +
+        '<details class="howto completed-details"' + (state.completedOpen ? ' open' : '') + '>' +
+        '<summary><span>Completed &middot; <span class="num">' + doneAside.length + '</span></span></summary>' +
+        '<div class="body"><p class="quiet small" style="margin-bottom:4px">Settled steps you’ve set aside. They keep their practice logs—bring one back anytime.</p>' +
+        '<div class="completed-list">';
+      doneAside.forEach(function (st) {
+        h += '<div class="completed-row">' +
+          '<span class="node-mini" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 12 12"><path d="M2 6.2 4.8 9 10 3.4" fill="none" stroke="var(--on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+          '<div class="grow"><span class="title">' + esc(st.title) + '</span>' +
+          '<div class="sub num">' + (st.logs.length ? st.logs.length + ' practice' + (st.logs.length === 1 ? '' : 's') : 'not practiced') + '</div></div>' +
+          '<button class="btn tiny" data-action="unarchive-step" data-id="' + st.id + '">Return to ladder</button>' +
+        '</div>';
+      });
+      h += '</div></div></details>';
+    }
 
     return h;
   }
@@ -1247,6 +1284,8 @@
         }
       });
     });
+    var comp = $('.completed-details');
+    if (comp) comp.addEventListener('toggle', function () { state.completedOpen = comp.open; });
     var first = $('#en-note') || $('#rs-title') || $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
     if (first) {
       first.focus();
@@ -1406,6 +1445,25 @@
         if (!st) return;
         st.settled = false;
         save(); render();
+      })(); break;
+
+      case 'archive-step': (function () {
+        if (!ladder) return;
+        var st = getStep(ladder, id);
+        if (!st) return;
+        st.archived = true;
+        if (state.openStepId === st.id) state.openStepId = null;
+        save(); render();
+        toast('Set aside in Completed—it keeps all its practices.');
+      })(); break;
+
+      case 'unarchive-step': (function () {
+        if (!ladder) return;
+        var st = getStep(ladder, id);
+        if (!st) return;
+        st.archived = false;
+        save(); render();
+        toast('Back on the ladder.');
       })(); break;
 
       case 'del-step': (function () {
