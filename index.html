@@ -1067,7 +1067,8 @@
                 chipHTML(step.rating) +
               '</div>'
             : '<button class="rung-head" data-action="toggle-step" data-id="' + step.id + '" aria-expanded="' + open + '">' +
-                '<span class="grow"><span class="title" data-action="rename-step" data-id="' + step.id + '" title="Click to rename">' + esc(step.title) + '</span>' +
+                /* the text is click-to-rename only while the step is open; closed, it just opens the step */
+                '<span class="grow"><span class="title"' + (open ? ' data-action="rename-step" data-id="' + step.id + '" title="Click to rename"' : '') + '>' + esc(step.title) + '</span>' +
                   (step.settled ? '<span class="tag">Settled</span>' : (step.id === nextId ? '<span class="tag">Next up</span>' : '')) +
                   '<div class="sub num">' + (step.logs.length ? step.logs.length + ' practice' + (step.logs.length === 1 ? '' : 's') : 'not practiced yet') + '</div>' +
                 '</span>' +
