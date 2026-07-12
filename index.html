@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Foothold — a quiet place to build practice ladders and face the hard things one small step at a time.">
+<meta name="description" content="Diffusion — a quiet place to build practice ladders and face the hard things one small step at a time.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
 </head>
 <body>
-<title>Foothold</title>
+<title>Diffusion</title>
 <style>
   @font-face {
     font-family: 'Newsreader';
@@ -469,46 +469,8 @@
     color: var(--ink2);
   }
   .modal .section + .section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
-  .modal.wide { max-width: 580px; }
 
-  /* suggested-step rows */
-  .sug-list { margin-top: 6px; }
-  .sug-row {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 14px 0;
-    border-top: 1px solid var(--line);
-  }
-  .sug-row .keep {
-    accent-color: var(--accent);
-    width: 17px; height: 17px;
-    margin-top: 11px;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-  .sug-main { flex: 1; min-width: 0; display: grid; gap: 8px; }
-  .sug-note { font-size: 12.5px; color: var(--ink2); line-height: 1.5; }
-  .sug-row.off .sug-main { opacity: 0.4; }
-
-  .add-step-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-
-  /* feedback box in the draft modal */
-  .sug-feedback {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
-    display: grid;
-    gap: 8px;
-  }
-  .sug-feedback .fb-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  .sug-feedback .fb-row p { flex: 1; min-width: 200px; margin: 0; }
+  .add-step .eyebrow { margin-bottom: 10px; }
 
   /* deleted ladders */
   .trash-card { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
@@ -565,13 +527,13 @@
 
 <div class="shell">
   <header class="top">
-    <button class="wordmark" data-action="go-home" aria-label="Foothold — home">
+    <button class="wordmark" data-action="go-home" aria-label="Diffusion — home">
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
         <rect class="step" x="2"  y="18" width="9" height="4" rx="2"></rect>
         <rect class="step" x="8.5" y="11" width="9" height="4" rx="2" opacity="0.75"></rect>
         <rect class="step" x="15" y="4"  width="9" height="4" rx="2" opacity="0.5"></rect>
       </svg>
-      Foothold
+      Diffusion
     </button>
     <button class="btn ghost tiny" data-action="open-backup">Backup</button>
   </header>
@@ -579,7 +541,7 @@
   <main id="app" aria-live="polite"></main>
 
   <footer class="colophon">
-    Foothold is a personal practice companion, not medical care. If you're
+    Diffusion is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser — nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
@@ -593,29 +555,25 @@
   'use strict';
 
   /* ---------- storage ---------- */
-  var KEY = 'foothold.v1';
+  var KEY = 'diffusion.v1';
+  var LEGACY_KEY = 'foothold.v1';
   var memoryOnly = false;
 
   function blank() {
-    return { version: 2, ladders: [], trash: [], prefs: { bias: 0, spacing: '', boosts: {}, notes: [] } };
+    return { version: 2, ladders: [], trash: [] };
   }
 
   function migrate(parsed) {
     if (!parsed || !Array.isArray(parsed.ladders)) return blank();
     if (!Array.isArray(parsed.trash)) parsed.trash = [];
-    if (!parsed.prefs || typeof parsed.prefs !== 'object') parsed.prefs = {};
-    var p = parsed.prefs;
-    if (typeof p.bias !== 'number' || !isFinite(p.bias)) p.bias = 0;
-    if (typeof p.spacing !== 'string') p.spacing = '';
-    if (!p.boosts || typeof p.boosts !== 'object') p.boosts = {};
-    if (!Array.isArray(p.notes)) p.notes = [];
+    delete parsed.prefs;
     parsed.version = 2;
     return parsed;
   }
 
   function load() {
     try {
-      var raw = localStorage.getItem(KEY);
+      var raw = localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY);
       if (!raw) return blank();
       return migrate(JSON.parse(raw));
     } catch (e) {
@@ -636,6 +594,12 @@
 
   var data = load();
   save(); /* persist any format migration right away */
+
+  /* flush to storage whenever the page is backgrounded or closed, as extra insurance */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') save();
+  });
+  window.addEventListener('beforeunload', save);
   var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, addingLadder: false };
 
   /* ---------- helpers ---------- */
@@ -757,10 +721,7 @@
         '</div>' +
         '<div class="section">' +
           '<div class="actions" style="justify-content:space-between;align-items:center">' +
-            '<span style="display:flex;gap:6px;flex-wrap:wrap">' +
-              '<button class="btn danger tiny" data-x="erase">Erase everything</button>' +
-              '<button class="btn ghost tiny" data-x="forget">Forget draft preferences</button>' +
-            '</span>' +
+            '<button class="btn danger tiny" data-x="erase">Erase everything</button>' +
             '<button class="btn ghost" data-x="close">Close</button>' +
           '</div>' +
         '</div>' +
@@ -781,8 +742,8 @@
       var reader = new FileReader();
       reader.onload = function () {
         var incoming;
-        try { incoming = JSON.parse(reader.result); } catch (e) { toast('That file doesn’t look like a Foothold backup.'); return; }
-        if (!incoming || !Array.isArray(incoming.ladders)) { toast('That file doesn’t look like a Foothold backup.'); return; }
+        try { incoming = JSON.parse(reader.result); } catch (e) { toast('That file doesn’t look like a Diffusion backup.'); return; }
+        if (!incoming || !Array.isArray(incoming.ladders)) { toast('That file doesn’t look like a Diffusion backup.'); return; }
         confirmModal('Restore this backup?', 'Everything currently here will be replaced by the backup (' + incoming.ladders.length + ' ladder' + (incoming.ladders.length === 1 ? '' : 's') + ').', 'Restore', false)
           .then(function (ok) {
             if (!ok) return;
@@ -808,7 +769,7 @@
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'foothold-backup-' + stamp + '.json';
+        a.download = 'diffusion-backup-' + stamp + '.json';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -826,13 +787,8 @@
         }
       }
       if (x === 'restore') fileInput.click();
-      if (x === 'forget') {
-        data.prefs = { bias: 0, spacing: '', boosts: {}, notes: [] };
-        save();
-        toast('Draft preferences forgotten — a fresh start.');
-      }
       if (x === 'erase') {
-        confirmModal('Erase everything?', 'Every ladder — including anything in Deleted — plus all practice logs and learned draft preferences will be erased from this device. This can’t be undone.', 'Erase it all', true)
+        confirmModal('Erase everything?', 'Every ladder — including anything in Deleted — plus all practice logs will be erased from this device. This can’t be undone.', 'Erase it all', true)
           .then(function (ok) {
             if (!ok) return;
             data = blank();
@@ -863,13 +819,13 @@
 
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
-      '<summary>How Foothold works</summary>' +
+      '<summary>How Diffusion works</summary>' +
       '<div class="body"><ol>' +
-        '<li><b>Name what you’re working toward</b>, and list small, concrete situations that bring it up. Each one is a step on the ladder. Write your own, or let Foothold draft a starting set from your words — drafted right on this device, sent nowhere.</li>' +
+        '<li><b>Name what you’re working toward</b>, and list small, concrete situations that bring it up. Each one is a step on the ladder — written in your own words, as small and specific as you can make them.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now — not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
         '<li><b>Practice on purpose.</b> Stay in the situation without your usual outs — the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, jot how it felt before, at the peak, and after.</li>' +
-        '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
+        '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next step up.</li>' +
       '</ol></div></details>';
   }
 
@@ -883,7 +839,7 @@
       h += '<div class="card welcome fade-in">' +
         '<p class="eyebrow">Welcome</p>' +
         '<h1>A quiet place to practice the hard things.</h1>' +
-        '<p class="quiet">Foothold helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time — gently, on repeat — until they lose their grip.</p>' +
+        '<p class="quiet">Diffusion helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time — gently, on repeat — until they lose their grip.</p>' +
         '<div class="actions">' +
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +
@@ -904,10 +860,8 @@
         '<textarea id="nl-why" name="why" class="autogrow" rows="2" placeholder="e.g. I want road trips back in my life" autocomplete="off"></textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">' +
           '<button class="btn ghost" type="button" data-action="cancel-new-ladder">Cancel</button>' +
-          '<button class="btn" type="submit" data-mode="empty">I’ll build it myself</button>' +
-          '<button class="btn primary" type="submit" data-mode="draft">Draft the steps for me</button>' +
+          '<button class="btn primary" type="submit">Create ladder</button>' +
         '</div>' +
-        '<p class="quieter small" style="text-align:right">Drafting happens right here on your device — nothing you write is sent anywhere.</p>' +
         '</form>';
     }
 
@@ -952,12 +906,12 @@
     if (state.editingStepId === step.id) {
       h += '<form class="edit-grid" data-form="edit-step" data-id="' + step.id + '">' +
         '<div><label for="es-title">Step</label>' +
-        '<input type="text" id="es-title" name="title" value="' + esc(step.title) + '" required maxlength="160" autocomplete="off"></div>' +
+        '<textarea id="es-title" name="title" class="autogrow" rows="1" data-enter="submit" required autocomplete="off">' + esc(step.title) + '</textarea></div>' +
         '<div><label for="es-rating">How hard does it feel right now? <output for="es-rating" class="num">' + step.rating + '</output></label>' +
         '<div class="slider-line"><input type="range" id="es-rating" name="rating" min="0" max="100" step="5" value="' + step.rating + '">' +
         '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '"></span>' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
         '<div><label for="es-note">Notes <span class="quieter" style="font-weight:400">(optional)</span></label>' +
-        '<textarea id="es-note" name="note" maxlength="500" placeholder="What counts as doing this step? Any ground rules for yourself?">' + esc(step.note || '') + '</textarea></div>' +
+        '<textarea id="es-note" name="note" placeholder="What counts as doing this step? Any ground rules for yourself?">' + esc(step.note || '') + '</textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
           '<button class="btn ghost" type="button" data-action="cancel-edit-step">Cancel</button>' +
           '<button class="btn primary" type="submit">Save</button>' +
@@ -970,16 +924,21 @@
     h += '<form class="practice-form" data-form="log" data-id="' + step.id + '">' +
       '<p class="eyebrow">Log a practice</p>' +
       '<div class="sliders">';
+    /* start each slider from this step's own last practice, so the numbers
+       reflect where THIS step currently is — never another step's session */
+    var lastLog = step.logs.length ? step.logs[step.logs.length - 1] : null;
     [['before', 'Before'], ['peak', 'At the peak'], ['after', 'After']].forEach(function (pair) {
       var key = pair[0], lab = pair[1];
-      var init = key === 'after' ? Math.max(0, step.rating - 10) : step.rating;
+      var init = lastLog && typeof lastLog[key] === 'number'
+        ? lastLog[key]
+        : (key === 'after' ? Math.max(0, step.rating - 10) : step.rating);
       h += '<div class="slider-cell"><label for="lg-' + key + '-' + step.id + '">' + lab +
         '<output for="lg-' + key + '-' + step.id + '" class="num">' + init + '</output></label>' +
         '<input type="range" id="lg-' + key + '-' + step.id + '" name="' + key + '" min="0" max="100" step="5" value="' + init + '"></div>';
     });
     h += '</div>' +
       '<div style="display:flex;gap:10px;align-items:center">' +
-        '<input type="text" name="note" placeholder="A word about how it went (optional)" maxlength="300" autocomplete="off" style="flex:1">' +
+        '<input type="text" name="note" placeholder="A word about how it went (optional)" autocomplete="off" style="flex:1">' +
         '<button class="btn primary" type="submit">Save</button>' +
       '</div></form>';
 
@@ -1070,10 +1029,9 @@
     }
 
     h += '<form class="card add-step" data-form="add-step">' +
-      '<div class="add-step-head"><p class="eyebrow">Add a step</p>' +
-      '<button class="btn ghost tiny" type="button" data-action="draft-steps">Draft some for me</button></div>' +
+      '<p class="eyebrow">Add a step</p>' +
       '<div class="row2">' +
-        '<input type="text" name="title" placeholder="A small, specific situation to practice" required maxlength="160" autocomplete="off" aria-label="Step description">' +
+        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="A small, specific situation to practice" required autocomplete="off" aria-label="Step description"></textarea>' +
         '<button class="btn primary" type="submit">Add</button>' +
       '</div>' +
       '<div class="slider-line">' +
@@ -1191,375 +1149,6 @@
     };
   }
 
-  /* ---------- step drafting (all on-device) ---------- */
-  /* Each theme: keyword fragments matched against the user's own words,
-     and a graded set of [rating, step, ground-rule note]. */
-  var THEMES = [
-    { k: ['check', 'lock', 'stove', 'oven', 'applianc', 'switch', 'unplug', 'door', 'alarm', 'iron', 'faucet', 'tap ', 'window', 'circl', 'recheck', 'left on', 'went back'],
-      steps: [
-        [20, 'Leave a room you’ve just tidied without a final once-over', 'One look is the budget. If the pull to re-scan shows up, walk out anyway and let it grumble.'],
-        [30, 'Lock the door once, then walk away without testing the handle', 'One turn of the key, zero handle-jiggles. Stand with the discomfort, not by the door.'],
-        [40, 'Leave home without photographing or revisiting the stove, plugs, or taps', 'No photos, no walk-backs, no asking someone else to look. Uncertainty rides along today.'],
-        [55, 'Go out and stay out for an hour, with no returning to verify anything', 'When the “what if” images arrive, name them — “there’s the doubt” — and keep walking.'],
-        [70, 'Leave an appliance you rarely use plugged in, and go about your day', 'The doubt stays unanswered on purpose. Let it peak and pass without acting on it.'],
-        [85, 'Head out for a full day or overnight with just one ordinary lock-up', 'One pass, then the day is yours. Afterward, log how the peak actually behaved.']
-      ] },
-    { k: ['germ', 'contamin', 'wash', 'dirty', 'sanitiz', 'soap', 'bathroom', 'toilet', 'sticky', 'gross', 'hygien', 'disinfect', 'wipe'],
-      steps: [
-        [20, 'Touch a doorknob at home, then wait ten minutes before any washing', 'Set a timer. Watch the urge crest and settle before it rings.'],
-        [30, 'Hold your phone right after coming home, before any wipe-down', 'The phone stays “unfinished”. Carry on with something you enjoy while it does.'],
-        [40, 'Use a public door handle bare-handed, then carry on with your errand', 'No sanitizer this trip. Hands stay as they are until the next ordinary wash.'],
-        [55, 'Sit on public seating, and let those clothes stay on for the day', 'No early laundry, no changing when you get home. Let the feeling fade on its own schedule.'],
-        [70, 'Touch the sole of your shoe, then go about your evening after one brief wash', 'One short, ordinary wash — no repeats, no special soap, no particular order.'],
-        [85, 'Eat something with your hands after touching a “contaminated” surface', 'One brief wash first, done once. Then dinner, and let the doubt eat with you.']
-      ] },
-    { k: ['reassur', 'am i sure', 'make sure', 'certain', 'confess', 'google', 'look up', 'looked up', 'replay', 'ruminat', 'keep asking', 'did i '],
-      steps: [
-        [20, 'Notice one “are you sure?” urge and jot it down instead of asking', 'The notebook gets the question. Nobody else does — not today.'],
-        [30, 'Delay one reassurance question by thirty minutes', 'Most urges don’t survive the wait. If this one does, delay it again.'],
-        [40, 'Accept one answer without the follow-up “but really, is it okay?”', 'One answer is the ration. The second ask never actually settles it anyway.'],
-        [55, 'Go a full evening without asking anyone to confirm you did the right thing', 'If you catch yourself fishing for it sideways, smile, and drop the line.'],
-        [70, 'Leave a nagging question un-searched for a whole day', 'No search box, no forums, no “just quickly checking”. Let it nag; log the urges.'],
-        [85, 'Let a big “what if” stay unanswered all week', 'Each time it knocks, note it in the log instead of opening the door.']
-      ] },
-    { k: ['intrusive', 'unwanted thought', 'bad thought', 'horrible thought', 'thoughts', 'images in my head', 'stuck in my head', 'can’t stop thinking', 'cant stop thinking'],
-      steps: [
-        [20, 'Write the sticky thought down once, in plain words, and leave it on the page', 'No softening it, no adding “but that’s not me” at the end. It’s a thought, not a verdict.'],
-        [30, 'Read what you wrote, twice through, without arguing with it', 'No mental canceling, replacing, or checking how you feel about it. Just read.'],
-        [40, 'Say the thought out loud to yourself, once', 'Said in your own voice, it’s just words in a room. Let them hang there.'],
-        [55, 'Let the thought sit for five minutes while you do nothing about it', 'No fixing, no figuring out, no testing yourself. Boredom is the goal.'],
-        [70, 'Write the “worst case” version as one short paragraph and read it daily this week', 'Same paragraph, once a day. Notice it getting duller with every read.'],
-        [85, 'Do something you genuinely enjoy while the thought tags along uninvited', 'It can ride in the back seat. It doesn’t get to drive, and you don’t have to stop.']
-      ] },
-    { k: ['health', 'symptom', 'disease', 'illness', 'cancer', 'heart', 'doctor', 'sick', 'dying', 'lump', 'headache'],
-      steps: [
-        [20, 'Notice a body sensation and wait an hour before checking or mentioning it', 'Sensations are weather. Give this one an hour of sky to move through.'],
-        [30, 'Skip one symptom search you’d normally run', 'The search box stays closed. Write the worry in your log instead.'],
-        [40, 'Leave an ache or flutter unexamined for a full day', 'No mirror checks, no prodding, no comparing to yesterday. Hands off, eyes elsewhere.'],
-        [55, 'Read a health headline and don’t click through', 'Headlines are bait. Let this one bob on the water while you scroll on.'],
-        [70, 'Sit with “it’s probably nothing, and I can’t be one hundred percent sure” through an evening', 'Both halves of that sentence stay true at once. Practice letting them.'],
-        [85, 'Retire the extra self-check ritual for a week, logging urges instead', 'Ordinary care stays; the extra rounds go. The log catches what the ritual used to.']
-      ] },
-    { k: ['social', 'speak', 'speaking up', 'talk to', 'meeting', 'judg', 'embarrass', 'presentation', 'phone call', 'party', 'crowd', 'small talk', 'say no', 'conflict', 'awkward'],
-      steps: [
-        [20, 'Share an opinion in the group chat', 'Post it, then put the phone down. No re-reading it five times afterward.'],
-        [30, 'Ask one question in a small meeting', 'A plain question, asked once. Resist rehearsing it into perfection first.'],
-        [40, 'Make a phone call you’ve been putting off', 'Dial before the script is ready. Awkward pauses are allowed to exist.'],
-        [55, 'Give one person one piece of direct, kind feedback', 'Say it once, clearly, and let the silence after it belong to them.'],
-        [70, 'Present a short update to a group', 'Aim for done, not polished. No apologizing for taking up the air.'],
-        [85, 'Openly disagree in a meeting, once, and let the silence sit', 'State it, then stop talking. The urge to soften it afterward is the practice.']
-      ] },
-    { k: ['driv', ' car ', 'highway', 'motorway', 'freeway', 'behind the wheel', 'accident', 'hit someone', 'ran over', 'traffic'],
-      steps: [
-        [20, 'Sit in the driver’s seat with the engine on for five minutes', 'Hands on the wheel, radio on if you like. Just be there while the feeling settles.'],
-        [30, 'Drive one familiar loop around the neighborhood', 'One loop means one loop — no repeating the route to make sure nothing happened.'],
-        [40, 'Drive to a nearby store at a quiet hour', 'Park, buy one thing, drive home. No replaying the trip mile by mile afterward.'],
-        [55, 'Take a busier road for ten minutes', 'No circling back to check the road behind you. Bumps are usually potholes; let them be.'],
-        [70, 'Merge onto the highway for one exit', 'One exit, then off. The white knuckles get to come along; they don’t get a vote.'],
-        [85, 'Drive somewhere new, alone, music on', 'No rehearsing the route until it feels safe first. Let the map surprise you a little.']
-      ] },
-    { k: ['symmetr', 'straight', 'align', 'arrang', 'just right', 'redo', 'redoing', 'rewrite', 'reread', 're-read', 'perfect', 'tidy', 'exact', 'crooked'],
-      steps: [
-        [20, 'Leave one picture frame or object slightly crooked overnight', 'Walk past it. Let the “off” feeling hum without reaching out to fix it.'],
-        [30, 'Send a two-line message after a single read-through', 'One pass, then send. Typos are allowed to exist in the world.'],
-        [40, 'Let someone else arrange the shelf or load the dishwasher, their way', 'Their way stays. Redoing it later, quietly, still counts as redoing it.'],
-        [55, 'Do a chore to “good enough” on purpose, and stop', 'Set the bar at done. When the pull to circle back arrives, note it in the log instead.'],
-        [70, 'Submit a piece of work at ninety percent polish', 'Ship it before it feels ready — that feeling arrives long after the work is fine.'],
-        [85, 'Let your space stay a little “off” for a full week', 'Seven days of crooked and uneven. Watch the hum fade into background noise.']
-      ] }
-  ];
-
-  var FALLBACK_STEPS = [
-    [20, 'Spend two minutes at the edge of it — nearby, planning it, or picturing it', 'Two minutes of contact, no escape hatch. Rewrite this step in your own words.'],
-    [30, 'Do the smallest real version of it, with an easy exit you don’t use', 'Knowing the exit is there is fine. Using it is the habit we’re retiring.'],
-    [40, 'Do it again, a little longer, without the easy exit', 'Stay through the peak. It crests and comes down on its own — let it show you.'],
-    [55, 'Do the middle-sized version, on your own', 'No companion, no checking in halfway. Just you, the thing, and the log afterward.'],
-    [70, 'Do it at nearly full size, leaving the safety nets at home', 'Whatever you usually lean on to make it bearable — let it sit this round out.'],
-    [85, 'Do the whole thing, and let however it feels be information, not a verdict', 'Done is the win. The feelings during are data for the log, nothing more.']
-  ];
-
-  var THEME_LABELS = ['going back to check', 'cleanliness worries', 'needing to be sure', 'sticky thoughts', 'health worries', 'speaking up around people', 'driving', 'getting things just right'];
-
-  function clampNum(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
-
-  /* extra = per-run steering from feedback: { biasDelta, spacing, boost: [themeIdx], cut: [themeIdx] } */
-  function generateSteps(text, existingTitles, extra) {
-    var t = ' ' + String(text || '').toLowerCase().replace(/’/g, "'") + ' ';
-    var scored = THEMES.map(function (th, i) {
-      var hits = 0;
-      th.k.forEach(function (kw) { if (t.indexOf(kw) !== -1) hits++; });
-      var score = hits * 3 + (data.prefs.boosts[i] || 0);
-      if (extra) {
-        if (extra.boost && extra.boost.indexOf(i) !== -1) score += 6;
-        if (extra.cut && extra.cut.indexOf(i) !== -1) score -= 12;
-      }
-      return { i: i, hits: hits, score: score };
-    }).sort(function (a, b) { return b.score - a.score; });
-
-    var raw = [];
-    var best = scored[0];
-    if (best.score >= 2 || (best.hits > 0 && best.score > 0)) {
-      THEMES[best.i].steps.forEach(function (s) { raw.push({ r: s[0], t: s[1], n: s[2], th: best.i }); });
-      var second = scored[1];
-      if (second && second.score > 0 && (second.hits >= 2 || second.score >= 4)) {
-        THEMES[second.i].steps.forEach(function (s) {
-          if (s[0] >= 30 && s[0] <= 70) raw.push({ r: s[0], t: s[1], n: s[2], th: second.i });
-        });
-      }
-    } else {
-      FALLBACK_STEPS.forEach(function (s) { raw.push({ r: s[0], t: s[1], n: s[2], th: -1 }); });
-    }
-
-    var spacing = (extra && extra.spacing) || data.prefs.spacing;
-    if (spacing === 'more') {
-      var extras = [];
-      raw.forEach(function (s) {
-        if (s.r >= 50) extras.push({
-          r: s.r - 12,
-          t: 'A gentler first pass: ' + s.t.charAt(0).toLowerCase() + s.t.slice(1),
-          n: 'Shrink it until it’s uncomfortable but doable: briefer, closer to home, or with backup nearby.',
-          th: s.th
-        });
-      });
-      raw = raw.concat(extras);
-    }
-
-    var bias = clampNum(data.prefs.bias + ((extra && extra.biasDelta) || 0), -25, 25);
-    raw.forEach(function (s) { s.r = clampNum(Math.round((s.r + bias) / 5) * 5, 5, 95); });
-
-    var seen = {};
-    (existingTitles || []).forEach(function (ti) { seen[ti.trim().toLowerCase()] = true; });
-    var out = [];
-    raw.forEach(function (s) {
-      var key = s.t.trim().toLowerCase();
-      if (seen[key]) return;
-      seen[key] = true;
-      out.push(s);
-    });
-    out.sort(function (a, b) { return a.r - b.r; });
-
-    if (spacing === 'fewer' && out.length > 5) {
-      var picked = [];
-      for (var j = 0; j < 5; j++) {
-        var cand = out[Math.round(j * (out.length - 1) / 4)];
-        if (picked.indexOf(cand) === -1) picked.push(cand);
-      }
-      out = picked;
-    }
-    return out.slice(0, 9);
-  }
-
-  /* ---------- feedback parsing (all on-device) ---------- */
-  var GENTLER_WORDS = ['too hard', 'too intense', 'too much', 'too scary', 'too steep', 'too big', 'too advanced', 'too fast', 'gentler', 'gentle them', 'easier', 'overwhelm', 'calmer', 'softer', 'slow down', 'less intense'];
-  var STEEPER_WORDS = ['too easy', 'too gentle', 'too simple', 'too basic', 'too soft', 'harder', 'steeper', 'more challenging', 'more intense', 'braver', 'bolder', 'push me'];
-  var SMALLER_WORDS = ['smaller', 'more gradual', 'break it', 'break them', 'baby steps', 'tiny steps', 'in between', 'in-between', 'intermediate', 'more steps', 'extra steps'];
-  var FEWER_WORDS = ['fewer', 'too many', 'less steps', 'fewer steps', 'shorter list', 'trim it'];
-  var NEGATORS = ['not ', "n't ", 'no ', 'less about', 'nothing about', 'without', 'stop ', 'drop ', 'remove ', 'skip ', 'wrong', 'away from'];
-
-  function parseFeedback(text) {
-    var t = ' ' + String(text || '').toLowerCase().replace(/’/g, "'") + ' ';
-    var fb = { biasDelta: 0, spacing: '', boost: [], cut: [], matched: [] };
-    function any(words) {
-      for (var i = 0; i < words.length; i++) if (t.indexOf(words[i]) !== -1) return true;
-      return false;
-    }
-    if (any(STEEPER_WORDS)) { fb.biasDelta = 6; fb.matched.push('a steeper start'); }
-    else if (any(GENTLER_WORDS)) { fb.biasDelta = -6; fb.matched.push('a gentler start'); }
-    if (any(SMALLER_WORDS)) { fb.spacing = 'more'; fb.matched.push('smaller, more gradual steps'); }
-    else if (any(FEWER_WORDS)) { fb.spacing = 'fewer'; fb.matched.push('fewer steps'); }
-    THEMES.forEach(function (th, i) {
-      var hit = false, neg = false;
-      th.k.forEach(function (kw) {
-        var idx = t.indexOf(kw);
-        if (idx === -1) return;
-        hit = true;
-        var before = t.slice(Math.max(0, idx - 18), idx);
-        NEGATORS.forEach(function (ng) { if (before.indexOf(ng) !== -1) neg = true; });
-      });
-      if (!hit) return;
-      if (neg) { fb.cut.push(i); fb.matched.push('less about ' + THEME_LABELS[i]); }
-      else { fb.boost.push(i); fb.matched.push('more about ' + THEME_LABELS[i]); }
-    });
-    return fb;
-  }
-
-  function absorbFeedback(fb, rawText) {
-    var p = data.prefs;
-    p.bias = clampNum(p.bias + fb.biasDelta, -20, 20);
-    if (fb.spacing) p.spacing = fb.spacing;
-    fb.boost.forEach(function (i) { p.boosts[i] = clampNum((p.boosts[i] || 0) + 2, -4, 4); });
-    fb.cut.forEach(function (i) { p.boosts[i] = clampNum((p.boosts[i] || 0) - 2, -4, 4); });
-    if (rawText) {
-      p.notes.push({ date: new Date().toISOString(), text: String(rawText).slice(0, 500) });
-      if (p.notes.length > 20) p.notes = p.notes.slice(-20);
-    }
-    save();
-  }
-
-  function describePrefs() {
-    var p = data.prefs, parts = [];
-    if (p.bias <= -5) parts.push('gentler starts');
-    if (p.bias >= 5) parts.push('steeper starts');
-    if (p.spacing === 'more') parts.push('smaller, more gradual steps');
-    if (p.spacing === 'fewer') parts.push('shorter ladders');
-    var bestI = -1, bestV = 1;
-    Object.keys(p.boosts).forEach(function (k) {
-      if (p.boosts[k] > bestV && THEME_LABELS[+k]) { bestV = p.boosts[k]; bestI = +k; }
-    });
-    if (bestI >= 0) parts.push('often about ' + THEME_LABELS[bestI]);
-    return parts;
-  }
-
-  function openDraftModal(ladder, sugs) {
-    if (!sugs.length) { toast('Nothing new to suggest here — you know this one best.'); return; }
-
-    var overlay = document.createElement('div');
-    overlay.className = 'overlay';
-
-    function rowsHTML() {
-      var rows = '';
-      sugs.forEach(function (s, i) {
-        var b = bandOf(s.r);
-        rows += '<div class="sug-row" data-idx="' + i + '">' +
-          '<input type="checkbox" class="keep" checked aria-label="Keep this step">' +
-          '<div class="sug-main">' +
-            '<input type="text" value="' + esc(s.t) + '" aria-label="Step wording" autocomplete="off">' +
-            (s.n ? '<p class="sug-note">' + esc(s.n) + '</p>' : '') +
-            '<div class="slider-line"><input type="range" min="0" max="100" step="5" value="' + s.r + '" aria-label="How hard it feels, 0 to 100">' +
-            '<span class="chip b' + b + '" data-role="band"><span class="dot b' + b + '"></span><span class="num" data-role="val">' + s.r + '</span>&nbsp;&middot; ' + BAND_NAMES[b] + '</span></div>' +
-          '</div></div>';
-      });
-      return rows;
-    }
-
-    function learnedText() {
-      var parts = describePrefs();
-      return parts.length
-        ? 'Foothold is adjusting for you: ' + parts.join(' · ')
-        : 'What you write here — and the ratings you tweak — teach Foothold what fits you. Future drafts adapt.';
-    }
-
-    overlay.innerHTML =
-      '<div class="modal wide fade-in" role="dialog" aria-modal="true" aria-label="A starting draft">' +
-        '<p class="eyebrow">A starting draft</p>' +
-        '<h2>Steps to consider</h2>' +
-        '<p class="quiet small">Sketched from your own words using Foothold’s built-in patterns — drafted right here on your device, sent nowhere. Keep what fits, reword what doesn’t, and above all set each rating to what’s honestly true for you.</p>' +
-        '<div class="sug-list">' + rowsHTML() + '</div>' +
-        '<div class="sug-feedback">' +
-          '<label for="sug-fb">How do these land? Foothold learns from what you tell it.</label>' +
-          '<textarea id="sug-fb" rows="2" placeholder="e.g. gentler starts · smaller jumps · more about the checking, less about germs"></textarea>' +
-          '<div class="fb-row">' +
-            '<p class="quieter small" data-role="learned">' + esc(learnedText()) + '</p>' +
-            '<button class="btn tiny" data-x="redraft">Redraft with this in mind</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="actions">' +
-          '<button class="btn ghost" data-x="skip">Skip for now</button>' +
-          '<button class="btn primary" data-x="add">Add selected steps</button>' +
-        '</div>' +
-      '</div>';
-
-    function close() {
-      document.removeEventListener('keydown', onKey);
-      overlay.remove();
-    }
-    function onKey(e) { if (e.key === 'Escape') close(); }
-    function setLearned(msg) { $('[data-role="learned"]', overlay).textContent = msg; }
-
-    function wireRows() {
-      $all('input[type="range"]', overlay).forEach(wireSlider);
-      $all('.keep', overlay).forEach(function (cb) {
-        cb.addEventListener('change', function () {
-          cb.closest('.sug-row').classList.toggle('off', !cb.checked);
-        });
-      });
-    }
-    wireRows();
-
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) { close(); return; }
-      var b = e.target.closest('[data-x]');
-      if (!b) return;
-      var x = b.getAttribute('data-x');
-
-      if (x === 'skip') { close(); render(); }
-
-      if (x === 'redraft') {
-        var txt = $('#sug-fb', overlay).value.trim();
-        if (!txt) {
-          setLearned('Tell it something first — try “gentler”, “harder”, “smaller steps”, or a topic to lean into (“more about…”) or away from (“less about…”).');
-          return;
-        }
-        var fb = parseFeedback(txt);
-        absorbFeedback(fb, txt);
-        var existing = ladder.steps.map(function (s) { return s.title; });
-        var fresh = generateSteps(ladder.name + ' ' + (ladder.why || ''), existing,
-          { boost: fb.boost, cut: fb.cut, spacing: fb.spacing, biasDelta: 0 });
-        if (!fresh.length) {
-          setLearned('Saved — but everything that draft had is already on your ladder. Try different words, or add steps by hand.');
-          return;
-        }
-        sugs = fresh;
-        $('.sug-list', overlay).innerHTML = rowsHTML();
-        wireRows();
-        $('#sug-fb', overlay).value = '';
-        setLearned(fb.matched.length
-          ? 'Adjusted and remembered: ' + fb.matched.join(' · ')
-          : 'Noted and saved. It picks up best on “gentler”, “harder”, “smaller steps”, or topics — “more about…”, “less about…”.');
-      }
-
-      if (x === 'add') {
-        var now = Date.now();
-        var added = 0;
-        var deltas = [];
-        var shownByTheme = {}, keptByTheme = {};
-        $all('.sug-row', overlay).forEach(function (row, i) {
-          var idx = parseInt(row.getAttribute('data-idx'), 10);
-          var sug = sugs[idx];
-          if (sug && sug.th >= 0) shownByTheme[sug.th] = (shownByTheme[sug.th] || 0) + 1;
-          if (!$('.keep', row).checked) return;
-          var title = $('input[type="text"]', row).value.trim();
-          if (!title) return;
-          var rating = parseInt($('input[type="range"]', row).value, 10);
-          if (sug) {
-            deltas.push(rating - sug.r);
-            if (sug.th >= 0) keptByTheme[sug.th] = (keptByTheme[sug.th] || 0) + 1;
-          }
-          ladder.steps.push({
-            id: uid(),
-            title: title,
-            rating: rating,
-            note: (sug && sug.n) || '',
-            settled: false,
-            logs: [],
-            createdAt: new Date(now + i).toISOString()
-          });
-          added++;
-        });
-
-        /* quiet learning: rating nudges and kept/skipped themes shape future drafts */
-        if (deltas.length) {
-          var avg = deltas.reduce(function (a, c) { return a + c; }, 0) / deltas.length;
-          if (avg) data.prefs.bias = clampNum(Math.round((data.prefs.bias + avg * 0.4) * 10) / 10, -20, 20);
-        }
-        Object.keys(shownByTheme).forEach(function (k) {
-          var kept = keptByTheme[k] || 0;
-          if (kept >= 3) data.prefs.boosts[k] = clampNum((data.prefs.boosts[k] || 0) + 1, -4, 4);
-          else if (kept === 0 && shownByTheme[k] >= 2) data.prefs.boosts[k] = clampNum((data.prefs.boosts[k] || 0) - 1, -4, 4);
-        });
-
-        save();
-        close();
-        render();
-        toast(added
-          ? added + ' step' + (added === 1 ? '' : 's') + ' added — keep rewording them until they sound like you.'
-          : 'No steps selected — the ladder is all yours to build.');
-      }
-    });
-    document.addEventListener('keydown', onKey);
-    document.body.appendChild(overlay);
-  }
-
   /* ---------- event delegation ---------- */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-action]');
@@ -1640,12 +1229,6 @@
           });
       })(); break;
 
-      case 'draft-steps': (function () {
-        if (!ladder) return;
-        var existing = ladder.steps.map(function (s) { return s.title; });
-        openDraftModal(ladder, generateSteps(ladder.name + ' ' + (ladder.why || ''), existing));
-      })(); break;
-
       case 'edit-step': state.editingStepId = id; render(); break;
       case 'cancel-edit-step': state.editingStepId = null; render(); break;
 
@@ -1700,18 +1283,13 @@
     if (kind === 'create-ladder') {
       var name = form.name.value.trim();
       if (!name) return;
-      var draft = !(e.submitter && e.submitter.getAttribute('data-mode') === 'empty');
       var l = { id: uid(), name: name, why: form.why.value.trim(), createdAt: new Date().toISOString(), steps: [] };
       data.ladders.push(l);
       save();
       state.addingLadder = false;
       state.view = 'ladder'; state.ladderId = l.id;
       render();
-      if (draft) {
-        openDraftModal(l, generateSteps(l.name + ' ' + l.why, []));
-      } else {
-        toast('Ladder created. Now add a few steps.');
-      }
+      toast('Ladder created. Now add a few steps.');
     }
 
     if (kind === 'edit-ladder' && ladder) {
@@ -1734,7 +1312,7 @@
         createdAt: new Date().toISOString()
       });
       save(); render();
-      var t = $('.add-step input[name="title"]');
+      var t = $('.add-step [name="title"]');
       if (t) t.focus();
     }
 
