@@ -1111,6 +1111,7 @@
     h += '<div class="ladder-stats">' +
       '<span><b class="num">' + s.settled + '</b> of <b class="num">' + s.total + '</b> settled</span>' +
       '<span><b class="num">' + s.practices + '</b> practice' + (s.practices === 1 ? '' : 's') + ' logged</span>' +
+      (s.archived ? '<span><b class="num">' + s.archived + '</b> in Completed</span>' : '') +
       (s.last ? '<span>last practiced <b>' + fmtDate(s.last) + '</b></span>' : '') +
       '</div>';
 
