@@ -970,7 +970,7 @@
       var key = pair[0], lab = pair[1];
       var init = lastLog && typeof lastLog[key] === 'number'
         ? lastLog[key]
-        : (key === 'after' ? Math.max(0, step.rating - 10) : step.rating);
+        : step.rating;
       h += '<div class="slider-cell"><label for="lg-' + key + '-' + step.id + '">' + lab +
         '<output for="lg-' + key + '-' + step.id + '" class="num">' + init + '</output></label>' +
         '<input type="range" id="lg-' + key + '-' + step.id + '" name="' + key + '" min="0" max="100" step="5" value="' + init + '"></div>';
