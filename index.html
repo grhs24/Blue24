@@ -928,9 +928,9 @@
       h += '<form class="edit-grid" data-form="edit-step" data-id="' + step.id + '">' +
         '<div><label for="es-title">Step</label>' +
         '<textarea id="es-title" name="title" class="autogrow" rows="1" data-enter="submit" required autocomplete="off">' + esc(step.title) + '</textarea></div>' +
-        '<div><label for="es-rating">How hard does it feel right now? <output for="es-rating" class="num">' + step.rating + '</output></label>' +
+        '<div><label for="es-rating">How hard does it feel right now?</label>' +
         '<div class="slider-line"><input type="range" id="es-rating" name="rating" min="0" max="100" step="5" value="' + step.rating + '">' +
-        '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '"></span>' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
+        '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '"></span><span class="num" data-role="val">' + step.rating + '</span>&nbsp;&middot; ' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
         '<div><label for="es-note">Notes <span class="quieter" style="font-weight:400">(optional)</span></label>' +
         '<textarea id="es-note" name="note" placeholder="What counts as doing this step? Any ground rules for yourself?">' + esc(step.note || '') + '</textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
