@@ -737,13 +737,14 @@
   }
 
   function ladderStats(ladder) {
-    var settled = 0, practices = 0, last = null;
+    var settled = 0, practices = 0, archived = 0, last = null;
     ladder.steps.forEach(function (s) {
       if (s.settled) settled++;
+      if (s.archived) archived++;
       practices += s.logs.length;
       s.logs.forEach(function (l) { if (!last || l.date > last) last = l.date; });
     });
-    return { settled: settled, total: ladder.steps.length, practices: practices, last: last };
+    return { settled: settled, total: ladder.steps.length, practices: practices, archived: archived, last: last };
   }
 
   var toastTimer = null;
@@ -964,7 +965,8 @@
         '<h2>' + esc(l.name) + '</h2>' +
         (l.why ? '<p class="why">' + esc(l.why) + '</p>' : '<div style="height:10px"></div>') +
         '<div class="progress" role="img" aria-label="' + s.settled + ' of ' + s.total + ' steps settled"><span style="width:' + pct + '%"></span></div>' +
-        '<div class="meta"><span class="num">' + s.settled + ' of ' + s.total + ' settled &middot; ' + s.practices + ' practice' + (s.practices === 1 ? '' : 's') + '</span>' +
+        '<div class="meta"><span class="num">' + s.settled + ' of ' + s.total + ' settled &middot; ' + s.practices + ' practice' + (s.practices === 1 ? '' : 's') +
+        (s.archived ? ' &middot; ' + s.archived + ' in Completed' : '') + '</span>' +
         '<span>' + (s.last ? 'last practiced ' + fmtDate(s.last) : 'not practiced yet') + '</span></div>' +
       '</button>';
     });
