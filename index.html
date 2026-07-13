@@ -1302,7 +1302,7 @@
         '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
-        '<li><b>Practice on purpose.</b> Stay with it, without your usual outs—the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, rate how it felt before, at the peak, and after.</li>' +
+        '<li><b>Practice on purpose.</b> Stay with it, without your usual outs—the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, rate how it felt before, at the peak, and after—the after rating becomes the step’s new score on the ladder.</li>' +
         '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
       '</ol></div></details>';
   }
@@ -1976,16 +1976,21 @@
     if (kind === 'log' && ladder) {
       var stp = getStep(ladder, form.getAttribute('data-id'));
       if (!stp) return;
+      var afterVal = parseInt(form.after.value, 10);
       stp.logs.push({
         id: uid(),
         date: new Date().toISOString(),
         before: parseInt(form.before.value, 10),
         peak: parseInt(form.peak.value, 10),
-        after: parseInt(form.after.value, 10),
+        after: afterVal,
         note: form.note.value.trim()
       });
+      var ratingMoved = stp.rating !== afterVal;
+      stp.rating = afterVal; /* the after rating is the newest read of how hard this step feels */
       save(); render();
-      toast('Logged—nice work showing up.');
+      toast(ratingMoved
+        ? 'Logged—nice work showing up. This step now sits at ' + afterVal + '.'
+        : 'Logged—nice work showing up.');
     }
   });
 
