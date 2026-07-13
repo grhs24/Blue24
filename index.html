@@ -625,7 +625,10 @@
       </svg>
       Foothold
     </button>
-    <button class="btn ghost tiny" data-action="open-backup">Backup</button>
+    <span style="display:flex;gap:6px">
+      <button class="btn ghost tiny" data-action="open-account" hidden>Sign in</button>
+      <button class="btn ghost tiny" data-action="open-backup">Backup</button>
+    </span>
   </header>
 
   <main id="app" aria-live="polite"></main>
@@ -674,8 +677,20 @@
     }
   }
 
+  /* savedAt marks when the CONTENT last changed (not merely when it was
+     rewritten), so a signed-in device can tell whose copy is newer */
+  function contentSig(d) {
+    return JSON.stringify({ l: d.ladders, t: d.trash });
+  }
+  var lastContentSig = null;
+
   function save() {
     if (memoryOnly) return;
+    if (contentSig(data) !== lastContentSig || !data.savedAt) {
+      data.savedAt = new Date().toISOString();
+      lastContentSig = contentSig(data);
+      queuePush(); /* no-op except on the hosted Pro build, signed in */
+    }
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
       localStorage.removeItem(LEGACY_KEY); /* or the stale copy would shadow KEY on the next load */
@@ -686,6 +701,7 @@
   }
 
   var data = load();
+  lastContentSig = data.savedAt ? contentSig(data) : null;
   save(); /* persist any format migration right away */
 
   /* flush to storage whenever the page is backgrounded or closed, as extra insurance */
@@ -787,6 +803,366 @@
       $('[data-x="yes"]', overlay).focus();
     });
   }
+
+  /* ---------- account & sync (Foothold Pro—dormant unless configured) ----------
+     The free build leaves SYNC empty and none of this runs: no button, no
+     network calls, nothing. The hosted Pro build fills in these three values
+     (see PRODUCT.md) and gains email sign-in plus cross-device sync, talking
+     to Supabase's REST API directly with fetch—no libraries, no CDN. */
+  var SYNC = {
+    url: '',        /* Supabase project URL, e.g. 'https://abcd1234.supabase.co' */
+    anonKey: '',    /* Supabase anon (public) key */
+    checkoutUrl: '' /* Lemon Squeezy hosted checkout link for the Pro subscription */
+  };
+  var syncEnabled = !!(SYNC.url && SYNC.anonKey);
+  var SESSION_KEY = 'foothold.session.v1';
+  var SYNCMARK_KEY = 'foothold.syncmark.v1';
+  var session = null;      /* { access_token, refresh_token, user: { id, email } } */
+  var profile = null;      /* { sub_status, is_comped } */
+  var pushTimer = null;
+  var suppressPush = false;
+  var lastSyncedAt = null;
+
+  function isPro() {
+    return !!(profile && (profile.is_comped || profile.sub_status === 'active' || profile.sub_status === 'on_trial'));
+  }
+
+  function loadStoredSession() {
+    try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { session = null; }
+    if (session && !session.access_token) session = null;
+  }
+
+  function storeSession() {
+    try {
+      if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      else localStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+  }
+
+  function getMark() {
+    try { return JSON.parse(localStorage.getItem(SYNCMARK_KEY)) || null; } catch (e) { return null; }
+  }
+
+  function setMark(savedAt, serverUpdatedAt) {
+    try { localStorage.setItem(SYNCMARK_KEY, JSON.stringify({ pushedSavedAt: savedAt || null, serverUpdatedAt: serverUpdatedAt || null })); } catch (e) {}
+  }
+
+  function signOutLocal() {
+    session = null;
+    profile = null;
+    storeSession();
+    try { localStorage.removeItem(SYNCMARK_KEY); } catch (e) {}
+    updateAccountButton();
+  }
+
+  function refreshSession() {
+    return fetch(SYNC.url + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('refresh failed');
+      return r.json();
+    }).then(function (j) {
+      session.access_token = j.access_token;
+      if (j.refresh_token) session.refresh_token = j.refresh_token;
+      if (j.user && j.user.id) session.user = { id: j.user.id, email: j.user.email };
+      storeSession();
+    });
+  }
+
+  /* fetch with auth headers; retries once through a token refresh on 401 */
+  function authFetch(path, init, retried) {
+    init = init || {};
+    var send = {
+      method: init.method || 'GET',
+      headers: Object.assign({
+        apikey: SYNC.anonKey,
+        Authorization: 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json'
+      }, init.headers || {}),
+      body: init.body
+    };
+    if (init.keepalive) send.keepalive = true;
+    return fetch(SYNC.url + path, send).then(function (r) {
+      if (r.status === 401 && !retried && session && session.refresh_token) {
+        return refreshSession().then(
+          function () { return authFetch(path, init, true); },
+          function () { signOutLocal(); throw new Error('session expired'); }
+        );
+      }
+      return r;
+    });
+  }
+
+  function fetchUser() {
+    return authFetch('/auth/v1/user').then(function (r) {
+      if (!r.ok) throw new Error('user ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      session.user = { id: j.id, email: j.email };
+      storeSession();
+    });
+  }
+
+  function fetchProfile() {
+    return authFetch('/rest/v1/profiles?select=sub_status,is_comped').then(function (r) {
+      if (!r.ok) throw new Error('profile ' + r.status);
+      return r.json();
+    }).then(function (rows) {
+      profile = (rows && rows[0]) || null;
+    });
+  }
+
+  function pullRow() {
+    return authFetch('/rest/v1/user_data?select=data,updated_at').then(function (r) {
+      if (!r.ok) throw new Error('pull ' + r.status);
+      return r.json();
+    }).then(function (rows) {
+      return (rows && rows[0]) || null;
+    });
+  }
+
+  function adoptSnapshot(row) {
+    suppressPush = true;
+    data = migrate(row.data);
+    lastContentSig = null; /* force a fresh savedAt for this device */
+    save();
+    suppressPush = false;
+    setMark(data.savedAt, row.updated_at);
+    state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
+    render();
+  }
+
+  function pushToServer(opts) {
+    opts = opts || {};
+    if (!syncEnabled || !session || !session.user || !isPro()) return Promise.resolve(false);
+    clearTimeout(pushTimer);
+    pushTimer = null;
+    var now = new Date().toISOString();
+    return authFetch('/rest/v1/user_data', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ user_id: session.user.id, data: data, updated_at: now }]),
+      keepalive: !!opts.keepalive
+    }).then(function (r) {
+      if (!r.ok) throw new Error('push ' + r.status);
+      lastSyncedAt = now;
+      setMark(data.savedAt, now);
+      return true;
+    }).catch(function (e) {
+      if (opts.manual) toast('Couldn’t reach your account—your ladders are safe on this device.');
+      return false;
+    });
+  }
+
+  function queuePush() {
+    if (!syncEnabled || !session || !session.user || suppressPush || !isPro()) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () { pushToServer(); }, 1500);
+  }
+
+  /* on sign-in or page load: adopt the account copy when it's safe to,
+     push the local copy when it's the one that moved */
+  function maybeAutoPull() {
+    return pullRow().then(function (row) {
+      var localEmpty = !data.ladders.length && !data.trash.length;
+      if (!row) {
+        if (!localEmpty) pushToServer();
+        return;
+      }
+      if (localEmpty) {
+        adoptSnapshot(row);
+        toast('Your ladders are here—loaded from your account.');
+        return;
+      }
+      var mark = getMark();
+      var unchangedSinceSync = !!(mark && mark.pushedSavedAt && mark.pushedSavedAt === data.savedAt);
+      var serverNewer = !mark || !mark.serverUpdatedAt || row.updated_at > mark.serverUpdatedAt;
+      if (unchangedSinceSync && serverNewer) adoptSnapshot(row);
+      else if (!unchangedSinceSync) pushToServer();
+    }).catch(function () {});
+  }
+
+  function updateAccountButton() {
+    var b = $('[data-action="open-account"]');
+    if (b) b.textContent = session ? 'Account' : 'Sign in';
+  }
+
+  function checkoutHref() {
+    if (!SYNC.checkoutUrl || !session || !session.user) return '';
+    return SYNC.checkoutUrl + (SYNC.checkoutUrl.indexOf('?') === -1 ? '?' : '&') +
+      'checkout[email]=' + encodeURIComponent(session.user.email || '') +
+      '&checkout[custom][user_id]=' + encodeURIComponent(session.user.id);
+  }
+
+  function openAccount() {
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    var linkSentTo = '';
+
+    function bodyHTML() {
+      if (!session) {
+        return '<p class="eyebrow">Account</p><h2>Sign in</h2>' +
+          (linkSentTo
+            ? '<p class="quiet small">Check your email—your sign-in link is on its way to <b>' + esc(linkSentTo) + '</b>. You can close this window.</p>' +
+              '<div class="actions"><button class="btn ghost" data-x="close">Close</button></div>'
+            : '<p class="quiet small">Foothold Pro keeps your ladders in sync across your devices. Enter your email and we’ll send a one-tap sign-in link—no password to remember.</p>' +
+              '<form data-role="signin"><div class="edit-grid">' +
+              '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
+              '</div><div class="actions">' +
+              '<button class="btn ghost" type="button" data-x="close">Cancel</button>' +
+              '<button class="btn primary" type="submit">Email me a sign-in link</button>' +
+              '</div></form>');
+      }
+      var who = '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>';
+      if (!isPro()) {
+        return who +
+          '<p class="quiet small">You’re signed in. Foothold Pro keeps your ladders in sync across your devices—every change saved to your account as you make it.</p>' +
+          '<div class="actions" style="justify-content:flex-start">' +
+          (checkoutHref() ? '<a class="btn primary" href="' + esc(checkoutHref()) + '" target="_blank" rel="noopener">Upgrade to Pro</a>' : '') +
+          '<button class="btn" data-x="refresh">Refresh status</button>' +
+          '</div>' +
+          '<p class="quieter small">Just subscribed? Give it a moment, then refresh status.</p>' +
+          '<div class="actions" style="justify-content:space-between">' +
+          '<button class="btn ghost tiny" data-x="signout">Sign out</button>' +
+          '<button class="btn ghost" data-x="close">Close</button></div>';
+      }
+      return who +
+        '<p class="quiet small">Pro is active—your ladders sync to your account as you change them.</p>' +
+        '<p class="quieter small">' + (lastSyncedAt ? 'Last synced at ' + new Date(lastSyncedAt).toLocaleTimeString() + '.' : 'Not synced yet this visit.') + '</p>' +
+        '<div class="actions" style="justify-content:flex-start">' +
+        '<button class="btn" data-x="sync-now">Sync now</button>' +
+        '<button class="btn" data-x="load-server">Load from account…</button>' +
+        '</div>' +
+        '<div class="actions" style="justify-content:space-between">' +
+        '<button class="btn ghost tiny" data-x="signout">Sign out</button>' +
+        '<button class="btn ghost" data-x="close">Close</button></div>';
+    }
+
+    var modal = document.createElement('div');
+    modal.className = 'modal fade-in';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Account');
+    overlay.appendChild(modal);
+
+    function renderBody() {
+      modal.innerHTML = bodyHTML();
+      var em = $('input[name="email"]', modal);
+      if (em) em.focus();
+    }
+    renderBody();
+
+    function close() {
+      document.removeEventListener('keydown', onKey);
+      overlay.remove();
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+
+    overlay.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      if (form.getAttribute('data-role') !== 'signin') return;
+      var email = form.email.value.trim();
+      if (!email) return;
+      fetch(SYNC.url + '/auth/v1/otp', {
+        method: 'POST',
+        headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, create_user: true })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('otp ' + r.status);
+        linkSentTo = email;
+        renderBody();
+      }).catch(function () {
+        toast('Couldn’t send the link—check the address and try again.');
+      });
+    });
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) { close(); return; }
+      var b = e.target.closest('[data-x]');
+      if (!b) return;
+      var x = b.getAttribute('data-x');
+      if (x === 'close') close();
+      if (x === 'signout') {
+        signOutLocal();
+        renderBody();
+        toast('Signed out—your ladders stay on this device.');
+      }
+      if (x === 'refresh') {
+        fetchProfile().then(function () {
+          renderBody();
+          if (isPro()) { maybeAutoPull(); toast('Pro is active—welcome.'); }
+        }, function () { toast('Couldn’t check just now—try again in a moment.'); });
+      }
+      if (x === 'sync-now') {
+        pushToServer({ manual: true }).then(function (okPush) {
+          if (okPush) { renderBody(); toast('Synced.'); }
+        });
+      }
+      if (x === 'load-server') {
+        confirmModal('Load your account copy?', 'The ladders saved to your account will replace what’s on this device.', 'Load', false)
+          .then(function (okLoad) {
+            if (!okLoad) return;
+            pullRow().then(function (row) {
+              if (!row) { toast('Nothing saved to your account yet.'); return; }
+              adoptSnapshot(row);
+              close();
+              toast('Loaded from your account.');
+            }, function () { toast('Couldn’t reach your account—try again in a moment.'); });
+          });
+      }
+    });
+
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
+  }
+
+  function parseHashSession() {
+    var h = location.hash || '';
+    if (h.indexOf('access_token=') === -1) {
+      if (h.indexOf('error=') !== -1) {
+        toast('That sign-in link didn’t work—it may have expired. Send yourself a fresh one.');
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+      return false;
+    }
+    var p = {};
+    h.slice(1).split('&').forEach(function (kv) {
+      var i = kv.indexOf('=');
+      if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+    });
+    if (!p.access_token) return false;
+    session = { access_token: p.access_token, refresh_token: p.refresh_token || '', user: null };
+    storeSession();
+    history.replaceState(null, '', location.pathname + location.search);
+    return true;
+  }
+
+  function initSync() {
+    updateAccountButton();
+    var fromLink = parseHashSession();
+    if (!session) loadStoredSession();
+    if (!session) { updateAccountButton(); return; }
+    var ensureUser = session.user ? Promise.resolve() : fetchUser();
+    ensureUser.catch(function () {
+      return refreshSession().then(fetchUser);
+    }).then(function () {
+      updateAccountButton();
+      return fetchProfile();
+    }).then(function () {
+      if (fromLink) toast('Signed in.');
+      if (isPro()) return maybeAutoPull();
+    }).catch(function () {
+      signOutLocal();
+    });
+  }
+
+  /* flush a pending sync push when the page is backgrounded */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && pushTimer) pushToServer({ keepalive: true });
+  });
 
   /* ---------- backup modal ---------- */
   function openBackup() {
@@ -1343,6 +1719,7 @@
         render(); break;
 
       case 'open-backup': openBackup(); break;
+      case 'open-account': if (syncEnabled) openAccount(); break;
 
       case 'new-ladder': state.addingLadder = true; render(); break;
       case 'cancel-new-ladder': state.addingLadder = false; render(); break;
@@ -1613,6 +1990,11 @@
   });
 
   render();
+  if (syncEnabled) {
+    var accountBtn = $('[data-action="open-account"]');
+    if (accountBtn) accountBtn.hidden = false;
+    initSync();
+  }
 })();
 </script>
 

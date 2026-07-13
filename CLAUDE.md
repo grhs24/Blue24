@@ -4,6 +4,12 @@ A single-file web app (`index.html`) for building practice ladders. All markup,
 styles, and script live in that one file; the app stores its data in
 `localStorage` under `foothold.v1`.
 
+The file also contains a dormant account/sync layer (`var SYNC = ...`) for a
+future paid deployment—see `PRODUCT.md`. Its config must stay EMPTY in this
+repo and in the published artifact: when empty, the app must behave exactly
+like the free local version (no Sign in button, zero network calls). The
+`supabase/` directory holds the backend pieces for that future deployment.
+
 ## Copy style
 
 - Em-dashes connect directly to the words on either side, with no spaces:
