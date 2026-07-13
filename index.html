@@ -711,7 +711,7 @@
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function bandOf(v) { return v < 25 ? 0 : v < 50 ? 1 : v < 75 ? 2 : 3; }
-  var BAND_NAMES = ['Gentle', 'Moderate', 'Challenging', 'Steep'];
+  var BAND_NAMES = ['Gentle', 'Moderate', 'Uphill', 'Steep'];
 
   function fmtDate(iso) {
     var d = new Date(iso);
