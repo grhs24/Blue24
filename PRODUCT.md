@@ -1,4 +1,4 @@
-# Turning Foothold into a paid product
+# Turning Foothold Now into a paid product
 
 The repo already contains everything code-shaped. What remains is creating
 accounts and pasting keys. Nothing here affects the free version: with the

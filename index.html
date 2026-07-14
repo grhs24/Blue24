@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Foothold—a quiet place to build practice ladders and face the hard things one small step at a time.">
+<meta name="description" content="Foothold Now—a quiet place to build practice ladders and face the hard things one small step at a time.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
 </head>
 <body>
-<title>Foothold</title>
+<title>Foothold Now</title>
 <style>
   @font-face {
     font-family: 'Newsreader';
@@ -617,13 +617,13 @@
 
 <div class="shell">
   <header class="top">
-    <button class="wordmark" data-action="go-home" aria-label="Foothold—home">
+    <button class="wordmark" data-action="go-home" aria-label="Foothold Now—home">
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
         <rect class="step" x="2"  y="18" width="9" height="4" rx="2"></rect>
         <rect class="step" x="8.5" y="11" width="9" height="4" rx="2" opacity="0.75"></rect>
         <rect class="step" x="15" y="4"  width="9" height="4" rx="2" opacity="0.5"></rect>
       </svg>
-      Foothold
+      Foothold Now
     </button>
     <span style="display:flex;gap:6px">
       <button class="btn ghost tiny" data-action="open-account" hidden>Sign in</button>
@@ -634,7 +634,7 @@
   <main id="app" aria-live="polite"></main>
 
   <footer class="colophon">
-    Foothold is a personal practice companion, not medical care. If you're
+    Foothold Now is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
@@ -804,7 +804,7 @@
     });
   }
 
-  /* ---------- account & sync (Foothold Pro—dormant unless configured) ----------
+  /* ---------- account & sync (Foothold Now Pro—dormant unless configured) ----------
      The free build leaves SYNC empty and none of this runs: no button, no
      network calls, nothing. The hosted Pro build fills in these three values
      (see PRODUCT.md) and gains email sign-in plus cross-device sync, talking
@@ -1007,7 +1007,7 @@
           (linkSentTo
             ? '<p class="quiet small">Check your email—your sign-in link is on its way to <b>' + esc(linkSentTo) + '</b>. You can close this window.</p>' +
               '<div class="actions"><button class="btn ghost" data-x="close">Close</button></div>'
-            : '<p class="quiet small">Foothold Pro keeps your ladders in sync across your devices. Enter your email and we’ll send a one-tap sign-in link—no password to remember.</p>' +
+            : '<p class="quiet small">Foothold Now Pro keeps your ladders in sync across your devices. Enter your email and we’ll send a one-tap sign-in link—no password to remember.</p>' +
               '<form data-role="signin"><div class="edit-grid">' +
               '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
               '</div><div class="actions">' +
@@ -1018,7 +1018,7 @@
       var who = '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>';
       if (!isPro()) {
         return who +
-          '<p class="quiet small">You’re signed in. Foothold Pro keeps your ladders in sync across your devices—every change saved to your account as you make it.</p>' +
+          '<p class="quiet small">You’re signed in. Foothold Now Pro keeps your ladders in sync across your devices—every change saved to your account as you make it.</p>' +
           '<div class="actions" style="justify-content:flex-start">' +
           (checkoutHref() ? '<a class="btn primary" href="' + esc(checkoutHref()) + '" target="_blank" rel="noopener">Upgrade to Pro</a>' : '') +
           '<button class="btn" data-x="refresh">Refresh status</button>' +
@@ -1213,8 +1213,8 @@
 
     function tryRestore(text) {
       var incoming;
-      try { incoming = JSON.parse(text); } catch (e) { toast('That doesn’t look like a Foothold backup.'); return; }
-      if (!incoming || !Array.isArray(incoming.ladders)) { toast('That doesn’t look like a Foothold backup.'); return; }
+      try { incoming = JSON.parse(text); } catch (e) { toast('That doesn’t look like a Foothold Now backup.'); return; }
+      if (!incoming || !Array.isArray(incoming.ladders)) { toast('That doesn’t look like a Foothold Now backup.'); return; }
       confirmModal('Restore this backup?', 'Everything currently here will be replaced by the backup (' + incoming.ladders.length + ' ladder' + (incoming.ladders.length === 1 ? '' : 's') + ').', 'Restore', false)
         .then(function (ok) {
           if (!ok) return;
@@ -1246,7 +1246,7 @@
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'foothold-backup-' + stamp + '.json';
+        a.download = 'foothold-now-backup-' + stamp + '.json';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1297,7 +1297,7 @@
 
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
-      '<summary>How Foothold works</summary>' +
+      '<summary>How Foothold Now works</summary>' +
       '<div class="body"><ol>' +
         '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
@@ -1317,7 +1317,7 @@
       h += '<div class="card welcome fade-in">' +
         '<p class="eyebrow">Welcome</p>' +
         '<h1>A quiet place to practice the hard things.</h1>' +
-        '<p class="quiet">Foothold helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time—gently, on repeat—until they lose their grip.</p>' +
+        '<p class="quiet">Foothold Now helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time—gently, on repeat—until they lose their grip.</p>' +
         '<div class="actions">' +
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +

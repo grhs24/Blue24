@@ -1,4 +1,4 @@
-# Foothold
+# Foothold Now
 
 A single-file web app (`index.html`) for building practice ladders. All markup,
 styles, and script live in that one file; the app stores its data in
