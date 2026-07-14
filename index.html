@@ -1034,7 +1034,12 @@
       if (form.getAttribute('data-role') !== 'signin') return;
       var email = form.email.value.trim();
       if (!email) return;
-      fetch(SYNC.url + '/auth/v1/otp', {
+      /* redirect_to brings the magic link back to THIS page, wherever it's
+         served—so it never falls back to the project's default Site URL
+         (which is localhost on a fresh Supabase project). The origin must be
+         in the project's Redirect URLs allowlist. */
+      var redirectTo = window.location.origin + window.location.pathname;
+      fetch(SYNC.url + '/auth/v1/otp?redirect_to=' + encodeURIComponent(redirectTo), {
         method: 'POST',
         headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, create_user: true })
