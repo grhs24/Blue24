@@ -1044,11 +1044,19 @@
         headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, create_user: true })
       }).then(function (r) {
-        if (!r.ok) throw new Error('otp ' + r.status);
-        linkSentTo = email;
-        renderBody();
+        if (r.ok) { linkSentTo = email; renderBody(); return; }
+        return r.json().catch(function () { return {}; }).then(function (body) {
+          var msg = (body && (body.msg || body.error_description || body.error || body.message)) || '';
+          if (r.status === 429 || /rate limit/i.test(msg)) {
+            toast('Too many sign-in emails just now—wait a few minutes, then try once more.');
+          } else if (r.status === 422 || /redirect|url/i.test(msg)) {
+            toast('This address isn’t allowed for sign-in yet—add it to Supabase’s Redirect URLs.');
+          } else {
+            toast('Couldn’t send the link' + (msg ? '—' + msg : '—please try again in a moment.'));
+          }
+        });
       }).catch(function () {
-        toast('Couldn’t send the link—check the address and try again.');
+        toast('Couldn’t reach the sign-in service—check your connection and try again.');
       });
     });
 
