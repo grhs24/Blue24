@@ -1413,14 +1413,12 @@
     h += '<form class="practice-form" data-form="log" data-id="' + step.id + '">' +
       '<p class="eyebrow">Log a practice</p>' +
       '<div class="sliders">';
-    /* start each slider from this step's own last practice, so the numbers
-       reflect where THIS step currently is—never another step's session */
-    var lastLog = step.logs.length ? step.logs[step.logs.length - 1] : null;
+    /* every slider starts from the step's current score—the rating it was
+       given at creation, then whatever the last input made it (the newest
+       after, or a hand edit). Each step keeps its own starting point. */
     [['before', 'Before'], ['peak', 'At the peak'], ['after', 'After']].forEach(function (pair) {
       var key = pair[0], lab = pair[1];
-      var init = lastLog && typeof lastLog[key] === 'number'
-        ? lastLog[key]
-        : step.rating;
+      var init = step.rating;
       h += '<div class="slider-cell"><label for="lg-' + key + '-' + step.id + '">' + lab +
         '<output for="lg-' + key + '-' + step.id + '" class="num">' + init + '</output></label>' +
         '<input type="range" id="lg-' + key + '-' + step.id + '" name="' + key + '" min="0" max="100" step="5" value="' + init + '"></div>';
