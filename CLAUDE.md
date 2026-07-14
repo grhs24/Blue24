@@ -4,11 +4,17 @@ A single-file web app (`index.html`) for building practice ladders. All markup,
 styles, and script live in that one file; the app stores its data in
 `localStorage` under `foothold.v1`.
 
-The file also contains a dormant account/sync layer (`var SYNC = ...`) for a
-future paid deployment—see `PRODUCT.md`. Its config must stay EMPTY in this
-repo and in the published artifact: when empty, the app must behave exactly
-like the free local version (no Sign in button, zero network calls). The
-`supabase/` directory holds the backend pieces for that future deployment.
+The file also contains an account/sync layer (`var SYNC = ...`). It is now
+configured with a Supabase project: signing in with an email magic link syncs
+the whole app snapshot to the `user_progress` table (keyed by user id, guarded
+by row-level security), while `localStorage` stays the offline cache and source
+of truth. Any signed-in user syncs—there is no paywall on the sync itself.
+Setting `SYNC` back to empty strings fully disables it (no Sign in button, zero
+network calls)—that is how the published artifact should stay, so it keeps
+behaving like the free local version. Run `supabase/user_progress.sql` in the
+Supabase SQL editor to create the table. `PRODUCT.md` and the other
+`supabase/` files describe the optional future paid tier (Lemon Squeezy
+billing, Pro gating), which is not wired into the current app.
 
 ## Copy style
 

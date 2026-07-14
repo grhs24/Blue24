@@ -804,28 +804,26 @@
     });
   }
 
-  /* ---------- account & sync (Foothold Now Pro—dormant unless configured) ----------
-     The free build leaves SYNC empty and none of this runs: no button, no
-     network calls, nothing. The hosted Pro build fills in these three values
-     (see PRODUCT.md) and gains email sign-in plus cross-device sync, talking
-     to Supabase's REST API directly with fetch—no libraries, no CDN. */
+  /* ---------- account & sync ----------
+     When SYNC is configured, signing in with an email link syncs the whole
+     app snapshot to a Supabase row (table user_progress), keyed by user id
+     and protected by row-level security so each person can only touch their
+     own row. localStorage stays the offline cache and source of truth; the
+     account row is a mirror kept up to date on every change. Leaving SYNC
+     empty (e.g. in the published artifact) disables all of it: no Sign in
+     button, no network calls—identical to the free local app. Talks to
+     Supabase's REST/auth API directly with fetch—no libraries, no CDN. */
   var SYNC = {
-    url: '',        /* Supabase project URL, e.g. 'https://abcd1234.supabase.co' */
-    anonKey: '',    /* Supabase anon (public) key */
-    checkoutUrl: '' /* Lemon Squeezy hosted checkout link for the Pro subscription */
+    url: 'https://buqwzfbhqmirqjyqlpey.supabase.co', /* Supabase project URL */
+    anonKey: 'sb_publishable_EjaKYV5TBRyuTSBbSUqrng_AaSKjFhW' /* Supabase publishable key (safe to ship; RLS protects data) */
   };
   var syncEnabled = !!(SYNC.url && SYNC.anonKey);
   var SESSION_KEY = 'foothold.session.v1';
   var SYNCMARK_KEY = 'foothold.syncmark.v1';
   var session = null;      /* { access_token, refresh_token, user: { id, email } } */
-  var profile = null;      /* { sub_status, is_comped } */
   var pushTimer = null;
   var suppressPush = false;
   var lastSyncedAt = null;
-
-  function isPro() {
-    return !!(profile && (profile.is_comped || profile.sub_status === 'active' || profile.sub_status === 'on_trial'));
-  }
 
   function loadStoredSession() {
     try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { session = null; }
@@ -849,7 +847,6 @@
 
   function signOutLocal() {
     session = null;
-    profile = null;
     storeSession();
     try { localStorage.removeItem(SYNCMARK_KEY); } catch (e) {}
     updateAccountButton();
@@ -905,17 +902,8 @@
     });
   }
 
-  function fetchProfile() {
-    return authFetch('/rest/v1/profiles?select=sub_status,is_comped').then(function (r) {
-      if (!r.ok) throw new Error('profile ' + r.status);
-      return r.json();
-    }).then(function (rows) {
-      profile = (rows && rows[0]) || null;
-    });
-  }
-
   function pullRow() {
-    return authFetch('/rest/v1/user_data?select=data,updated_at').then(function (r) {
+    return authFetch('/rest/v1/user_progress?select=data,updated_at').then(function (r) {
       if (!r.ok) throw new Error('pull ' + r.status);
       return r.json();
     }).then(function (rows) {
@@ -936,11 +924,11 @@
 
   function pushToServer(opts) {
     opts = opts || {};
-    if (!syncEnabled || !session || !session.user || !isPro()) return Promise.resolve(false);
+    if (!syncEnabled || !session || !session.user) return Promise.resolve(false);
     clearTimeout(pushTimer);
     pushTimer = null;
     var now = new Date().toISOString();
-    return authFetch('/rest/v1/user_data', {
+    return authFetch('/rest/v1/user_progress', {
       method: 'POST',
       headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify([{ user_id: session.user.id, data: data, updated_at: now }]),
@@ -957,7 +945,7 @@
   }
 
   function queuePush() {
-    if (!syncEnabled || !session || !session.user || suppressPush || !isPro()) return;
+    if (!syncEnabled || !session || !session.user || suppressPush) return;
     clearTimeout(pushTimer);
     pushTimer = setTimeout(function () { pushToServer(); }, 1500);
   }
@@ -989,13 +977,6 @@
     if (b) b.textContent = session ? 'Account' : 'Sign in';
   }
 
-  function checkoutHref() {
-    if (!SYNC.checkoutUrl || !session || !session.user) return '';
-    return SYNC.checkoutUrl + (SYNC.checkoutUrl.indexOf('?') === -1 ? '?' : '&') +
-      'checkout[email]=' + encodeURIComponent(session.user.email || '') +
-      '&checkout[custom][user_id]=' + encodeURIComponent(session.user.id);
-  }
-
   function openAccount() {
     var overlay = document.createElement('div');
     overlay.className = 'overlay';
@@ -1007,7 +988,7 @@
           (linkSentTo
             ? '<p class="quiet small">Check your email—your sign-in link is on its way to <b>' + esc(linkSentTo) + '</b>. You can close this window.</p>' +
               '<div class="actions"><button class="btn ghost" data-x="close">Close</button></div>'
-            : '<p class="quiet small">Foothold Now Pro keeps your ladders in sync across your devices. Enter your email and we’ll send a one-tap sign-in link—no password to remember.</p>' +
+            : '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a one-tap sign-in link—no password to remember.</p>' +
               '<form data-role="signin"><div class="edit-grid">' +
               '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
               '</div><div class="actions">' +
@@ -1015,21 +996,8 @@
               '<button class="btn primary" type="submit">Email me a sign-in link</button>' +
               '</div></form>');
       }
-      var who = '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>';
-      if (!isPro()) {
-        return who +
-          '<p class="quiet small">You’re signed in. Foothold Now Pro keeps your ladders in sync across your devices—every change saved to your account as you make it.</p>' +
-          '<div class="actions" style="justify-content:flex-start">' +
-          (checkoutHref() ? '<a class="btn primary" href="' + esc(checkoutHref()) + '" target="_blank" rel="noopener">Upgrade to Pro</a>' : '') +
-          '<button class="btn" data-x="refresh">Refresh status</button>' +
-          '</div>' +
-          '<p class="quieter small">Just subscribed? Give it a moment, then refresh status.</p>' +
-          '<div class="actions" style="justify-content:space-between">' +
-          '<button class="btn ghost tiny" data-x="signout">Sign out</button>' +
-          '<button class="btn ghost" data-x="close">Close</button></div>';
-      }
-      return who +
-        '<p class="quiet small">Pro is active—your ladders sync to your account as you change them.</p>' +
+      return '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>' +
+        '<p class="quiet small">Signed in—your ladders sync to your account as you change them, and stay on this device to work offline.</p>' +
         '<p class="quieter small">' + (lastSyncedAt ? 'Last synced at ' + new Date(lastSyncedAt).toLocaleTimeString() + '.' : 'Not synced yet this visit.') + '</p>' +
         '<div class="actions" style="justify-content:flex-start">' +
         '<button class="btn" data-x="sync-now">Sync now</button>' +
@@ -1090,12 +1058,6 @@
         renderBody();
         toast('Signed out—your ladders stay on this device.');
       }
-      if (x === 'refresh') {
-        fetchProfile().then(function () {
-          renderBody();
-          if (isPro()) { maybeAutoPull(); toast('Pro is active—welcome.'); }
-        }, function () { toast('Couldn’t check just now—try again in a moment.'); });
-      }
       if (x === 'sync-now') {
         pushToServer({ manual: true }).then(function (okPush) {
           if (okPush) { renderBody(); toast('Synced.'); }
@@ -1150,10 +1112,8 @@
       return refreshSession().then(fetchUser);
     }).then(function () {
       updateAccountButton();
-      return fetchProfile();
-    }).then(function () {
       if (fromLink) toast('Signed in.');
-      if (isPro()) return maybeAutoPull();
+      return maybeAutoPull();
     }).catch(function () {
       signOutLocal();
     });

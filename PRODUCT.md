@@ -1,5 +1,13 @@
 # Turning Foothold Now into a paid product
 
+> **Current state (already live in `index.html`):** email magic-link sign-in
+> plus cross-device sync for **every signed-in user**, stored in the
+> `user_progress` table (see `supabase/user_progress.sql`). This is free sync,
+> not a paywall. The rest of this document describes an *optional future* paid
+> tier (Lemon Squeezy billing, Pro gating via the `profiles`/`user_data` tables
+> and the webhook) that is **not** wired into the current app. Treat it as a
+> roadmap, not a description of what ships today.
+
 The repo already contains everything code-shaped. What remains is creating
 accounts and pasting keys. Nothing here affects the free version: with the
 `SYNC` config left empty, the app has no sign-in button, makes no network
