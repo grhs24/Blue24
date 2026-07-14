@@ -1413,12 +1413,15 @@
     h += '<form class="practice-form" data-form="log" data-id="' + step.id + '">' +
       '<p class="eyebrow">Log a practice</p>' +
       '<div class="sliders">';
-    /* every slider starts from the step's current score—the rating it was
-       given at creation, then whatever the last input made it (the newest
-       after, or a hand edit). Each step keeps its own starting point. */
+    /* Before starts from the step's current score; At the peak and After
+       recall their own entries from the last practice. A step not yet
+       practiced starts everything from the first score it was given. */
+    var lastLog = step.logs.length ? step.logs[step.logs.length - 1] : null;
     [['before', 'Before'], ['peak', 'At the peak'], ['after', 'After']].forEach(function (pair) {
       var key = pair[0], lab = pair[1];
-      var init = step.rating;
+      var init = key !== 'before' && lastLog && typeof lastLog[key] === 'number'
+        ? lastLog[key]
+        : step.rating;
       h += '<div class="slider-cell"><label for="lg-' + key + '-' + step.id + '">' + lab +
         '<output for="lg-' + key + '-' + step.id + '" class="num">' + init + '</output></label>' +
         '<input type="range" id="lg-' + key + '-' + step.id + '" name="' + key + '" min="0" max="100" step="5" value="' + init + '"></div>';
