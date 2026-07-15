@@ -1,0 +1,6 @@
+# Supabase CLI config. Only the health check runs without JWT verification;
+# every other function keeps the default (verify_jwt = true).
+project_id = "buqwzfbhqmirqjyqlpey"
+
+[functions.health]
+verify_jwt = false
