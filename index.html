@@ -702,7 +702,7 @@
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
-    <div class="contact">Suggestions or questions? Email <a href="mailto:footholdnow@gmail.com">footholdnow@gmail.com</a>.</div>
+    <div class="contact">Suggestions or questions? Email <a href="mailto:footholdnowsupport@gmail.com">footholdnowsupport@gmail.com</a>.</div>
   </footer>
 </div>
 
@@ -1002,6 +1002,29 @@
     return fetchProfile().then(ensureGate, function () {});
   }
 
+  /* while in beta, quietly record signed-in users so we can offer them the
+     50%-off launch coupon. Insert-only under RLS, idempotent, best-effort—it
+     never blocks or interrupts anything. See supabase/beta_signups.sql. */
+  function recordBetaSignup() {
+    if (GATE.mode !== 'beta' || !syncEnabled || !session || !session.user) return;
+    authFetch('/rest/v1/beta_signups', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify({ id: session.user.id, email: session.user.email })
+    }).catch(function () {});
+  }
+
+  /* run after any successful sign-in (or a page load with a stored session):
+     capture the beta signup, and—since signing in is a stronger opt-in than the
+     one-tap bypass—let a beta user straight past the welcome gate. */
+  function afterSignIn() {
+    recordBetaSignup();
+    if (GATE.mode === 'beta') {
+      try { localStorage.setItem(GATE_PASS_KEY, 'yes'); } catch (e) {}
+      ensureGate();
+    }
+  }
+
   function pullRow() {
     return authFetch('/rest/v1/user_progress?select=data,updated_at').then(function (r) {
       if (!r.ok) throw new Error('pull ' + r.status);
@@ -1208,6 +1231,7 @@
             renderBody();
             toast('Signed in.');
             maybeAutoPull();
+            afterSignIn();     /* beta: record the signup and pass the welcome gate */
             refreshPaidGate(); /* paid mode: drop the wall if this account is a subscriber */
           });
         });
@@ -1299,6 +1323,7 @@
       if (fromLink) toast('Signed in.');
       return maybeAutoPull();
     }).then(function () {
+      afterSignIn();            /* beta: record the signup and pass the welcome gate */
       return refreshPaidGate(); /* paid mode: a returning subscriber skips the wall */
     }).catch(function () {
       signOutLocal();
@@ -2210,7 +2235,7 @@
         '<h1>Free while we’re in beta.</h1>' +
         '<p class="quiet">Foothold Now is becoming a subscription—$4.99 a month, with a free trial. While we’re testing, it’s free for early users like you. Thank you for helping shape it.</p>' +
         '<div class="gate-actions"><button class="btn primary" data-gate="beta">Continue free as a beta user</button></div>' +
-        '<p class="quieter small">You can subscribe later—for now, enjoy full access.</p>'
+        '<p class="quieter small">Beta users get <b>50% off</b> when the subscription launches. Sign in with your email to lock it in—we’ll send your coupon then. <button class="linklike" data-gate="signin">Sign in with email</button></p>'
       : '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span></div>' +
         '<h1>Practice the hard things.</h1>' +
         '<p class="quiet">Foothold Now is $4.99 a month, with a free trial. Start your trial to build your ladders and keep them in sync across your devices.</p>' +
@@ -2219,6 +2244,7 @@
             ? '<a class="btn primary" href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Start your free trial</a>'
             : '<button class="btn primary" disabled>Start your free trial</button>') +
         '</div>' +
+        '<p class="quieter small">Have a beta coupon? Add it at checkout for 50% off.</p>' +
         '<p class="quieter small">Already subscribed? <button class="linklike" data-gate="signin">Sign in</button></p>';
 
     var overlay = document.createElement('div');

@@ -98,6 +98,70 @@ calls, and behaves exactly as it always has.
    custom SMTP sender (Resend has a free tier) under Authentication →
    Emails when you want reliable magic links.
 
+## Billing with Stripe (alternative to Lemon Squeezy)
+
+Steps 3–4 above use Lemon Squeezy. If you bill with **Stripe** instead, the
+repo already has the matching backend: `supabase/functions/stripe-webhook`.
+Everything else (Supabase, Pages, the gate, `is_comped` comps) is identical —
+you swap which webhook you deploy and which checkout link goes in
+`CHECKOUT_URL`. Pick one provider; don't run both.
+
+1. **Product & price**: Stripe Dashboard → Product catalog → add a product with
+   a recurring monthly price ($4.99). Add a free trial on the price if you want
+   one.
+2. **Column**: if your `profiles` table predates Stripe, run
+   `supabase/stripe.sql` once (a fresh `schema.sql` already has the
+   `stripe_customer_id` column).
+3. **Checkout link**: create a **Payment Link** for that price, and turn on
+   **"Allow promotion codes"** (so beta users can enter their coupon). Put the
+   link in the `CHECKOUT_URL` env var. So the webhook knows whose row to
+   update, the checkout must carry the Supabase user id:
+   - append `?client_reference_id=<user_id>` to the link, **and**
+   - set the subscription metadata `user_id = <user_id>` (Payment Link →
+     subscription settings → metadata, or pass it when you create a Checkout
+     Session in code).
+   Metadata is what every later renewal/cancel event carries, so it's the
+   reliable key. **Still to wire at launch:** the gate currently links to
+   `GATE.checkoutUrl` as-is, so make the user sign in *before* checkout and
+   append their id to the link (or create the Checkout Session server-side with
+   the id). Simplest is to lead the paid flow with sign-in, then subscribe.
+4. **Webhook**: `supabase functions deploy stripe-webhook --no-verify-jwt`, then
+   Stripe → Developers → Webhooks → add an endpoint at the function URL and
+   subscribe to `checkout.session.completed` and the `customer.subscription.*`
+   events. Copy that endpoint's signing secret and
+   `supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...`. The function verifies
+   Stripe's signature, maps `trialing → on_trial` and `canceled → cancelled`
+   (the words the app's gating already understands), and updates only
+   `sub_status`. Use Test mode to run a purchase end-to-end before going live.
+
+Keeping both webhook files in the repo is fine — only the one you deploy runs.
+
+## Beta users and the 50%-off launch coupon
+
+While `GATE.mode` is `'beta'`, the app records every signed-in user in the
+`beta_signups` table (run `supabase/beta_signups.sql` once; it's insert-only
+under RLS, so a user can only add their own row). This is the list of people to
+reward at launch. The beta welcome gate tells users they get **50% off** if they
+sign in with their email now, and the paid wall reminds them to add their coupon
+at checkout.
+
+At launch:
+
+1. Create the discount in your provider — Stripe: a 50%-off **coupon** plus a
+   **promotion code** (e.g. `BETA50`); Lemon Squeezy: a 50% **discount code**.
+   Make it apply to the first N months (or forever) as you prefer.
+2. Pull the beta list: Supabase → Table Editor → `beta_signups` (or
+   `select email from beta_signups order by joined_at`), and email those
+   addresses the code.
+3. Enable promotion codes on the checkout so the code works (Stripe Payment
+   Link → "Allow promotion codes"; Lemon Squeezy → the discount is entered on
+   the checkout automatically or via the code field).
+
+Not every beta user signs in — the one-tap "continue free" bypass doesn't
+require it — so only those who sign in are captured (which is also the only way
+you'd have an address to send a coupon to). The gate copy nudges sign-in for
+exactly this reason.
+
 ## Sync model (v1), for future reference
 
 Local storage remains the source of truth; the account holds a snapshot

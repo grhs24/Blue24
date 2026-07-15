@@ -11,6 +11,7 @@ create table if not exists public.profiles (
   email text,
   sub_status text not null default 'none',
   is_comped boolean not null default false,
+  stripe_customer_id text, -- set once by the Stripe webhook at checkout (if you bill with Stripe)
   created_at timestamptz not null default now()
 );
 

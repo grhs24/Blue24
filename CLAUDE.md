@@ -13,15 +13,24 @@ Setting `SYNC` back to empty strings fully disables it (no Sign in button, zero
 network calls)—that is how the published artifact should stay, so it keeps
 behaving like the free local version. Run `supabase/user_progress.sql` in the
 Supabase SQL editor to create the table. `PRODUCT.md` and the other
-`supabase/` files describe the optional future paid tier (Lemon Squeezy
-billing, Pro gating), which is not wired into the current app.
+`supabase/` files describe the optional future paid tier (Pro gating, plus two
+alternative billing back ends—`supabase/functions/lemonsqueezy-webhook` and
+`supabase/functions/stripe-webhook`; pick one at launch), which is not wired
+into the current app. Both webhooks write only `profiles.sub_status` (Stripe
+also binds `profiles.stripe_customer_id` at checkout) and never touch
+`is_comped`.
+
+While `mode: 'beta'`, signed-in users are recorded in the `beta_signups` table
+(`supabase/beta_signups.sql`, insert-only under RLS) so they can be offered a
+50%-off launch coupon—the beta gate and paid wall mention that coupon.
 
 There is also an access gate (`var GATE = ...`). `mode: 'off'` disables it
 (free/local build & the published artifact should stay this way). `mode: 'beta'`
 (current, live on footholdnow.com) shows a welcome gate with a one-tap
 "continue free as a beta user" button, remembered in `localStorage`
 (`foothold.betapass.v1`)—nothing is charged. `mode: 'paid'` shows a
-subscribe-only wall wired to `GATE.checkoutUrl` (Lemon Squeezy Buy link); this
+subscribe-only wall wired to `GATE.checkoutUrl` (a Lemon Squeezy Buy link or a
+Stripe Payment Link/Checkout URL); this
 is scaffolded for launch and not yet enforced server-side—the real barrier will
 be a Supabase RLS policy requiring an active subscription. Flip to `'paid'` and
 add the checkout URL when the paid tier goes live.
