@@ -22,7 +22,7 @@ body with something like:
 
 ```html
 <h2>Sign in to Foothold Now</h2>
-<p>Enter this 6-digit code in the app:</p>
+<p>Enter this code in the app:</p>
 <p style="font-size:28px;font-weight:700;letter-spacing:4px;font-family:monospace">{{ .Token }}</p>
 <p>This code expires in 1 hour and can be used once.</p>
 <p>Or, on the same device, tap to sign in:</p>

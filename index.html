@@ -992,9 +992,9 @@
       if (!session) {
         if (codeSentTo) {
           return '<p class="eyebrow">Account</p><h2>Enter your code</h2>' +
-            '<p class="quiet small">We emailed a 6-digit sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right in this app, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
+            '<p class="quiet small">We emailed a sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right in this app, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
             '<form data-role="verify"><div class="edit-grid">' +
-            '<input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" placeholder="6-digit code" aria-label="Sign-in code">' +
+            '<input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" placeholder="Enter the code" aria-label="Sign-in code">' +
             '</div><div class="actions" style="justify-content:space-between;align-items:center">' +
             '<button class="btn ghost tiny" type="button" data-x="resend">Resend code</button>' +
             '<span style="display:flex;gap:10px">' +
@@ -1003,7 +1003,7 @@
             '</span></div></form>';
         }
         return '<p class="eyebrow">Account</p><h2>Sign in</h2>' +
-          '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a 6-digit sign-in code—no password to remember.</p>' +
+          '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a one-time sign-in code—no password to remember.</p>' +
           '<form data-role="signin"><div class="edit-grid">' +
           '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
           '</div><div class="actions">' +
