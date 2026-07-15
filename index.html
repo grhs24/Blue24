@@ -578,6 +578,31 @@
     flex-shrink: 0;
   }
 
+  /* access gate (paywall / beta welcome) */
+  .gate {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; overflow-y: auto;
+    z-index: 45; /* covers the app, but below modals (50) so paid-mode Sign in works */
+  }
+  .gate-card {
+    max-width: 440px; width: 100%;
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 34px 30px;
+  }
+  .gate-brand { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 20px; }
+  .gate-brand .gate-name { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); }
+  .gate-card h1 { font-size: 26px; margin-bottom: 12px; }
+  .gate-card p { max-width: 42ch; margin: 0 auto; }
+  .gate-actions { display: flex; justify-content: center; margin: 22px 0 12px; }
+  .gate-actions .btn { font-size: 15px; padding: 11px 22px; }
+  .linklike { background: none; border: none; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; }
+
   /* deleted ladders */
   .trash-card { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
   .trash-card h2 { font-size: 19px; overflow-wrap: anywhere; white-space: pre-line; }
@@ -839,6 +864,24 @@
   var syncEnabled = !!(SYNC.url && SYNC.anonKey);
   var SESSION_KEY = 'foothold.session.v1';
   var SYNCMARK_KEY = 'foothold.syncmark.v1';
+
+  /* ---------- access gate (paywall) ----------
+     mode: 'off'  = no gate, app is open (the free/local build & artifact).
+           'beta' = show a welcome gate with a one-tap "continue free as a beta
+                    user" button; that click is remembered so they aren't asked
+                    again. Nothing is charged.
+           'paid' = show a subscribe wall (scaffolded for launch): the app is
+                    for subscribers only, opened via the Lemon Squeezy checkout.
+     Flip mode to 'paid' and fill checkoutUrl when the paid tier goes live. */
+  var GATE = {
+    mode: 'beta',
+    checkoutUrl: '' /* Lemon Squeezy Buy link, used in 'paid' mode */
+  };
+  var GATE_PASS_KEY = 'foothold.betapass.v1';
+
+  function betaGatePassed() {
+    try { return localStorage.getItem(GATE_PASS_KEY) === 'yes'; } catch (e) { return true; }
+  }
   var session = null;      /* { access_token, refresh_token, user: { id, email } } */
   var pushTimer = null;
   var suppressPush = false;
@@ -2053,12 +2096,58 @@
     }
   });
 
+  /* ---------- access gate ---------- */
+  function renderGate() {
+    if (GATE.mode === 'off') return;
+    var beta = GATE.mode === 'beta';
+    if (beta && betaGatePassed()) return;
+
+    var logo = '<svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true">' +
+      '<rect x="2" y="18" width="9" height="4" rx="2" fill="var(--accent)"></rect>' +
+      '<rect x="8.5" y="11" width="9" height="4" rx="2" fill="var(--accent)" opacity="0.75"></rect>' +
+      '<rect x="15" y="4" width="9" height="4" rx="2" fill="var(--accent)" opacity="0.5"></rect></svg>';
+
+    var body = beta
+      ? '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span><span class="beta-badge">Beta</span></div>' +
+        '<h1>Free while we’re in beta.</h1>' +
+        '<p class="quiet">Foothold Now is becoming a subscription—$4.99 a month, with a free trial. While we’re testing, it’s free for early users like you. Thank you for helping shape it.</p>' +
+        '<div class="gate-actions"><button class="btn primary" data-gate="beta">Continue free as a beta user</button></div>' +
+        '<p class="quieter small">You can subscribe later—for now, enjoy full access.</p>'
+      : '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span></div>' +
+        '<h1>Practice the hard things.</h1>' +
+        '<p class="quiet">Foothold Now is $4.99 a month, with a free trial. Start your trial to build your ladders and keep them in sync across your devices.</p>' +
+        '<div class="gate-actions">' +
+          (GATE.checkoutUrl
+            ? '<a class="btn primary" href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Start your free trial</a>'
+            : '<button class="btn primary" disabled>Start your free trial</button>') +
+        '</div>' +
+        '<p class="quieter small">Already subscribed? <button class="linklike" data-gate="signin">Sign in</button></p>';
+
+    var overlay = document.createElement('div');
+    overlay.className = 'gate';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Foothold Now');
+    overlay.innerHTML = '<div class="gate-card fade-in">' + body + '</div>';
+    overlay.addEventListener('click', function (e) {
+      if (e.target.closest('[data-gate="beta"]')) {
+        try { localStorage.setItem(GATE_PASS_KEY, 'yes'); } catch (er) {}
+        overlay.remove();
+      }
+      if (e.target.closest('[data-gate="signin"]') && syncEnabled) openAccount();
+    });
+    document.body.appendChild(overlay);
+    var btn = overlay.querySelector('.btn');
+    if (btn) btn.focus();
+  }
+
   render();
   if (syncEnabled) {
     var accountBtn = $('[data-action="open-account"]');
     if (accountBtn) accountBtn.hidden = false;
     initSync();
   }
+  renderGate();
 })();
 </script>
 

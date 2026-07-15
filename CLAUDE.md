@@ -16,6 +16,16 @@ Supabase SQL editor to create the table. `PRODUCT.md` and the other
 `supabase/` files describe the optional future paid tier (Lemon Squeezy
 billing, Pro gating), which is not wired into the current app.
 
+There is also an access gate (`var GATE = ...`). `mode: 'off'` disables it
+(free/local build & the published artifact should stay this way). `mode: 'beta'`
+(current, live on footholdnow.com) shows a welcome gate with a one-tap
+"continue free as a beta user" button, remembered in `localStorage`
+(`foothold.betapass.v1`)—nothing is charged. `mode: 'paid'` shows a
+subscribe-only wall wired to `GATE.checkoutUrl` (Lemon Squeezy Buy link); this
+is scaffolded for launch and not yet enforced server-side—the real barrier will
+be a Supabase RLS policy requiring an active subscription. Flip to `'paid'` and
+add the checkout URL when the paid tier goes live.
+
 ## Copy style
 
 - Em-dashes connect directly to the words on either side, with no spaces:
