@@ -905,9 +905,11 @@
 
   function signOutLocal() {
     session = null;
+    profile = null;
     storeSession();
     try { localStorage.removeItem(SYNCMARK_KEY); } catch (e) {}
     updateAccountButton();
+    ensureGate(); /* in 'paid' mode, signing out re-raises the wall */
   }
 
   function refreshSession() {
@@ -958,6 +960,25 @@
       session.user = { id: j.id, email: j.email };
       storeSession();
     });
+  }
+
+  /* entitlement, used only by the 'paid' gate: is this signed-in user a
+     subscriber (or comped)? Set by the Lemon Squeezy webhook in profiles. */
+  var profile = null;
+  function fetchProfile() {
+    return authFetch('/rest/v1/profiles?select=sub_status,is_comped').then(function (r) {
+      if (!r.ok) throw new Error('profile ' + r.status);
+      return r.json();
+    }).then(function (rows) { profile = (rows && rows[0]) || null; });
+  }
+  function isEntitled() {
+    return !!(profile && (profile.is_comped || profile.sub_status === 'active' || profile.sub_status === 'on_trial'));
+  }
+  /* in 'paid' mode, drop the wall for an entitled subscriber; otherwise keep it */
+  function refreshPaidGate() {
+    if (GATE.mode !== 'paid') return Promise.resolve();
+    if (!syncEnabled || !session || !session.user) { ensureGate(); return Promise.resolve(); }
+    return fetchProfile().then(ensureGate, function () {});
   }
 
   function pullRow() {
@@ -1166,6 +1187,7 @@
             renderBody();
             toast('Signed in.');
             maybeAutoPull();
+            refreshPaidGate(); /* paid mode: drop the wall if this account is a subscriber */
           });
         });
       }).catch(function () {
@@ -1255,6 +1277,8 @@
       updateAccountButton();
       if (fromLink) toast('Signed in.');
       return maybeAutoPull();
+    }).then(function () {
+      return refreshPaidGate(); /* paid mode: a returning subscriber skips the wall */
     }).catch(function () {
       signOutLocal();
     });
@@ -2097,10 +2121,27 @@
   });
 
   /* ---------- access gate ---------- */
+  var gateOverlay = null;
+
+  /* show/hide the gate for the current mode + entitlement. Idempotent. */
+  function ensureGate() {
+    if (GATE.mode === 'off') { removeGate(); return; }
+    if (GATE.mode === 'beta') {
+      if (betaGatePassed()) removeGate();
+      else if (!gateOverlay) gateOverlay = renderGate();
+      return;
+    }
+    /* paid: a signed-in, entitled subscriber walks straight in; everyone else
+       hits the wall (the real, un-bypassable check is the Supabase RLS policy) */
+    if (syncEnabled && session && session.user && isEntitled()) removeGate();
+    else if (!gateOverlay) gateOverlay = renderGate();
+  }
+  function removeGate() {
+    if (gateOverlay) { gateOverlay.remove(); gateOverlay = null; }
+  }
+
   function renderGate() {
-    if (GATE.mode === 'off') return;
     var beta = GATE.mode === 'beta';
-    if (beta && betaGatePassed()) return;
 
     var logo = '<svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true">' +
       '<rect x="2" y="18" width="9" height="4" rx="2" fill="var(--accent)"></rect>' +
@@ -2132,13 +2173,14 @@
     overlay.addEventListener('click', function (e) {
       if (e.target.closest('[data-gate="beta"]')) {
         try { localStorage.setItem(GATE_PASS_KEY, 'yes'); } catch (er) {}
-        overlay.remove();
+        removeGate();
       }
       if (e.target.closest('[data-gate="signin"]') && syncEnabled) openAccount();
     });
     document.body.appendChild(overlay);
     var btn = overlay.querySelector('.btn');
     if (btn) btn.focus();
+    return overlay;
   }
 
   render();
@@ -2147,7 +2189,8 @@
     if (accountBtn) accountBtn.hidden = false;
     initSync();
   }
-  renderGate();
+  ensureGate();        /* beta/off decided now; paid shows the wall by default */
+  refreshPaidGate();   /* paid: if a subscriber is already signed in, drop the wall */
 })();
 </script>
 
