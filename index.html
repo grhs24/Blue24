@@ -289,6 +289,24 @@
   }
   .ladder-card:hover { border-color: var(--accent); }
   .ladder-card h2 { margin-bottom: 2px; overflow-wrap: anywhere; white-space: pre-line; }
+  .ladder-card h2[data-action="rename-home-ladder"] {
+    cursor: text;
+    border-radius: 8px;
+    margin: -2px -6px 0;
+    padding: 2px 6px;
+  }
+  .ladder-card h2[data-action="rename-home-ladder"]:hover { background: var(--surface2); }
+  .ladder-card.renaming { cursor: default; }
+  textarea.rename-home {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.25;
+    border-radius: 8px;
+    margin: -3px -7px 2px; /* border + padding offsets, so the text doesn't shift when editing starts */
+    padding: 2px 6px;
+    overflow-wrap: anywhere;
+  }
   .ladder-card .why { color: var(--ink2); font-size: 14px; margin-bottom: 14px; overflow-wrap: anywhere; white-space: pre-line; }
   .progress {
     height: 6px;
@@ -647,6 +665,8 @@
     line-height: 1.7;
     max-width: 58ch;
   }
+  footer.colophon a { color: var(--accent); text-decoration: underline; }
+  footer.colophon .contact { margin-top: 10px; }
 
   .fade-in { animation: fadeIn 0.25s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -682,6 +702,7 @@
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
+    <div class="contact">Suggestions or questions? Email <a href="mailto:footholdnow@gmail.com">footholdnow@gmail.com</a>.</div>
   </footer>
 </div>
 
@@ -753,7 +774,7 @@
     if (document.visibilityState === 'hidden') save();
   });
   window.addEventListener('beforeunload', save);
-  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
+  var state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, renamingHomeId: null, editingNoteId: null, addingLadder: false };
 
   /* ---------- helpers ---------- */
   function uid() {
@@ -1000,7 +1021,7 @@
     save();
     suppressPush = false;
     setMark(data.savedAt, row.updated_at);
-    state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
+    state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, renamingHomeId: null, editingNoteId: null, addingLadder: false };
     render();
   }
 
@@ -1345,7 +1366,7 @@
           if (!ok) return;
           data = migrate(incoming);
           save();
-          state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
+          state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, renamingHomeId: null, editingNoteId: null, addingLadder: false };
           close();
           render();
           toast('Backup restored.');
@@ -1396,7 +1417,7 @@
             if (!ok) return;
             data = blank();
             save();
-            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, editingNoteId: null, addingLadder: false };
+            state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, renamingHomeId: null, editingNoteId: null, addingLadder: false };
             close();
             render();
             toast('A clean slate.');
@@ -1471,14 +1492,24 @@
     data.ladders.forEach(function (l) {
       var s = ladderStats(l);
       var pct = s.total ? Math.round((s.settled / s.total) * 100) : 0;
-      h += '<button class="card ladder-card" data-action="open-ladder" data-id="' + l.id + '">' +
-        '<h2>' + esc(l.name) + '</h2>' +
+      var body =
         (l.why ? '<p class="why">' + esc(l.why) + '</p>' : '<div style="height:10px"></div>') +
         '<div class="progress" role="img" aria-label="' + s.settled + ' of ' + s.total + ' steps settled"><span style="width:' + pct + '%"></span></div>' +
         '<div class="meta"><span class="num">' + s.settled + ' of ' + s.total + ' settled &middot; ' + s.practices + ' practice' + (s.practices === 1 ? '' : 's') +
         (s.archived ? ' &middot; ' + s.archived + ' in Completed' : '') + '</span>' +
-        '<span>' + (s.last ? 'last practiced ' + fmtDate(s.last) : 'not practiced yet') + '</span></div>' +
-      '</button>';
+        '<span>' + (s.last ? 'last practiced ' + fmtDate(s.last) : 'not practiced yet') + '</span></div>';
+      if (state.renamingHomeId === l.id) {
+        h += '<div class="card ladder-card renaming">' +
+          '<form data-form="rename-home-ladder" data-id="' + l.id + '">' +
+            '<textarea id="hn-name" name="name" class="autogrow rename-home" rows="1" data-enter="submit" autocomplete="off" aria-label="Ladder name">' + esc(l.name) + '</textarea>' +
+          '</form>' + body +
+        '</div>';
+      } else {
+        h += '<button class="card ladder-card" data-action="open-ladder" data-id="' + l.id + '">' +
+          '<h2 data-action="rename-home-ladder" data-id="' + l.id + '" title="Click to rename">' + esc(l.name) + '</h2>' +
+          body +
+        '</button>';
+      }
     });
 
     h += '</div>' + trashLink + '<div style="height:22px"></div>' + howtoHTML(false);
@@ -1777,12 +1808,13 @@
         });
       }
     });
-    var INLINE_EDITORS = { 'rn-name': 1, 'rs-title': 1, 'en-note': 1 };
-    $all('#rn-name, #rs-title, #en-note').forEach(function (rn) {
+    var INLINE_EDITORS = { 'rn-name': 1, 'rs-title': 1, 'en-note': 1, 'hn-name': 1 };
+    $all('#rn-name, #rs-title, #en-note, #hn-name').forEach(function (rn) {
       rn.addEventListener('blur', function () {
         /* clicking away commits the edit; skip if Escape already re-rendered */
         var active = rn.id === 'rn-name' ? state.renamingLadder
           : rn.id === 'rs-title' ? state.renamingStepId
+          : rn.id === 'hn-name' ? state.renamingHomeId
           : state.editingNoteId;
         if (document.contains(rn) && active) {
           if (rn.form.requestSubmit) rn.form.requestSubmit();
@@ -1793,6 +1825,7 @@
         if (e.key === 'Escape') {
           state.renamingLadder = false;
           state.renamingStepId = null;
+          state.renamingHomeId = null;
           state.editingNoteId = null;
           render();
         }
@@ -1800,7 +1833,7 @@
     });
     var comp = $('.completed-details');
     if (comp) comp.addEventListener('toggle', function () { state.completedOpen = comp.open; });
-    var first = $('#en-note') || $('#rs-title') || $('#rn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
+    var first = $('#en-note') || $('#rs-title') || $('#rn-name') || $('#hn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
     if (first) {
       first.focus();
       if (INLINE_EDITORS[first.id]) first.setSelectionRange(first.value.length, first.value.length);
@@ -1842,6 +1875,7 @@
         state.view = 'home'; state.ladderId = null; state.openStepId = null;
         state.editingStepId = null; state.editingLadder = false;
         state.renamingLadder = false; state.renamingStepId = null; state.editingNoteId = null;
+        state.renamingHomeId = null;
         render(); break;
 
       case 'open-backup': openBackup(); break;
@@ -1859,7 +1893,12 @@
       case 'open-ladder':
         state.view = 'ladder'; state.ladderId = id; state.openStepId = null;
         state.renamingLadder = false; state.renamingStepId = null; state.editingNoteId = null;
+        state.renamingHomeId = null;
         window.scrollTo(0, 0);
+        render(); break;
+
+      case 'rename-home-ladder':
+        state.renamingHomeId = id;
         render(); break;
 
       case 'toggle-step':
@@ -2035,6 +2074,20 @@
       render();
     }
 
+    if (kind === 'rename-home-ladder') {
+      var homeLadder = getLadder(form.getAttribute('data-id'));
+      state.renamingHomeId = null;
+      if (homeLadder) {
+        var homeName = form.name.value.trim();
+        if (homeName && homeName !== homeLadder.name) {
+          homeLadder.name = homeName;
+          save();
+          toast('Renamed.');
+        }
+      }
+      render();
+    }
+
     if (kind === 'rename-step' && ladder) {
       var rst = getStep(ladder, form.getAttribute('data-id'));
       if (!rst) return;
@@ -2113,10 +2166,14 @@
       });
       var ratingMoved = stp.rating !== afterVal;
       stp.rating = afterVal; /* the after rating is the newest read of how hard this step feels */
+      var autoSettled = false;
+      if (afterVal === 0 && !stp.settled) { stp.settled = true; autoSettled = true; } /* a step at zero has eased—mark it settled, but leave it on the ladder */
       save(); render();
-      toast(ratingMoved
-        ? 'Logged—nice work showing up. This step now sits at ' + afterVal + '.'
-        : 'Logged—nice work showing up.');
+      toast(autoSettled
+        ? 'Logged—it’s all the way down to zero, so this step is settled. It stays on the ladder until you set it aside.'
+        : ratingMoved
+          ? 'Logged—nice work showing up. This step now sits at ' + afterVal + '.'
+          : 'Logged—nice work showing up.');
     }
   });
 
