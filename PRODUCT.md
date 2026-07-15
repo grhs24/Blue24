@@ -1,12 +1,39 @@
 # Turning Foothold Now into a paid product
 
-> **Current state (already live in `index.html`):** email magic-link sign-in
-> plus cross-device sync for **every signed-in user**, stored in the
-> `user_progress` table (see `supabase/user_progress.sql`). This is free sync,
-> not a paywall. The rest of this document describes an *optional future* paid
-> tier (Lemon Squeezy billing, Pro gating via the `profiles`/`user_data` tables
-> and the webhook) that is **not** wired into the current app. Treat it as a
-> roadmap, not a description of what ships today.
+> **Current state (already live in `index.html`):** email sign-in — a 6-digit
+> **code** (best on iPhone / Home Screen apps) *and* the magic **link**, both
+> from one email — plus cross-device sync for **every signed-in user**, stored
+> in the `user_progress` table (see `supabase/user_progress.sql`). This is free
+> sync, not a paywall. The rest of this document describes an *optional future*
+> paid tier (Lemon Squeezy billing, Pro gating via the `profiles`/`user_data`
+> tables and the webhook) that is **not** wired into the current app. Treat it
+> as a roadmap, not a description of what ships today.
+
+## Email sign-in: show the 6-digit code (required for code sign-in)
+
+The app sends the code with `signInWithOtp` (via `POST /auth/v1/otp`) and
+verifies it with `verifyOtp` (via `POST /auth/v1/verify`, `type: "email"`) —
+no SDK, just fetch, so it works under the artifact's strict CSP. For the code
+to appear in the email, the template must include `{{ .Token }}` (the default
+only has the magic link).
+
+In Supabase → **Authentication → Email Templates → "Magic Link"**, replace the
+body with something like:
+
+```html
+<h2>Sign in to Foothold Now</h2>
+<p>Enter this 6-digit code in the app:</p>
+<p style="font-size:28px;font-weight:700;letter-spacing:4px;font-family:monospace">{{ .Token }}</p>
+<p>This code expires in 1 hour and can be used once.</p>
+<p>Or, on the same device, tap to sign in:</p>
+<p><a href="{{ .ConfirmationURL }}">Sign in to Foothold Now</a></p>
+```
+
+Keeping `{{ .ConfirmationURL }}` means the tap-to-sign-in link still works for
+anyone who prefers it. New users (first sign-in) get the **"Confirm signup"**
+template instead — add the same `{{ .Token }}` block there if you want code
+sign-in to work for brand-new accounts too. Optionally tune **Authentication →
+Providers → Email → OTP Expiry** if an hour isn't what you want.
 
 The repo already contains everything code-shaped. What remains is creating
 accounts and pasting keys. Nothing here affects the free version: with the

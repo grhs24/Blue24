@@ -837,10 +837,6 @@
     } catch (e) {}
   }
 
-  function getMark() {
-    try { return JSON.parse(localStorage.getItem(SYNCMARK_KEY)) || null; } catch (e) { return null; }
-  }
-
   function setMark(savedAt, serverUpdatedAt) {
     try { localStorage.setItem(SYNCMARK_KEY, JSON.stringify({ pushedSavedAt: savedAt || null, serverUpdatedAt: serverUpdatedAt || null })); } catch (e) {}
   }
@@ -914,7 +910,10 @@
   function adoptSnapshot(row) {
     suppressPush = true;
     data = migrate(row.data);
-    lastContentSig = null; /* force a fresh savedAt for this device */
+    /* adopted content matches the account; keep its savedAt so identical
+       copies don't ping-pong between devices (save() re-stamps only if the
+       incoming row somehow lacked a savedAt) */
+    lastContentSig = data.savedAt ? contentSig(data) : null;
     save();
     suppressPush = false;
     setMark(data.savedAt, row.updated_at);
@@ -964,11 +963,18 @@
         toast('Your ladders are here—loaded from your account.');
         return;
       }
-      var mark = getMark();
-      var unchangedSinceSync = !!(mark && mark.pushedSavedAt && mark.pushedSavedAt === data.savedAt);
-      var serverNewer = !mark || !mark.serverUpdatedAt || row.updated_at > mark.serverUpdatedAt;
-      if (unchangedSinceSync && serverNewer) adoptSnapshot(row);
-      else if (!unchangedSinceSync) pushToServer();
+      /* both sides have data: the copy edited most recently wins. Every change
+         stamps data.savedAt, and that stamp rides along inside the synced row,
+         so this compares like with like across devices. */
+      var serverAt = (row.data && row.data.savedAt) || row.updated_at || '';
+      var localAt = data.savedAt || '';
+      if (serverAt > localAt) {
+        adoptSnapshot(row);
+        toast('Loaded your latest—synced from another device.');
+      } else if (localAt > serverAt) {
+        pushToServer();
+      }
+      /* equal timestamps → already in sync, nothing to do */
     }).catch(function () {});
   }
 
@@ -980,21 +986,30 @@
   function openAccount() {
     var overlay = document.createElement('div');
     overlay.className = 'overlay';
-    var linkSentTo = '';
+    var codeSentTo = ''; /* email a code was just sent to; switches to the code-entry step */
 
     function bodyHTML() {
       if (!session) {
+        if (codeSentTo) {
+          return '<p class="eyebrow">Account</p><h2>Enter your code</h2>' +
+            '<p class="quiet small">We emailed a 6-digit sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right in this app, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
+            '<form data-role="verify"><div class="edit-grid">' +
+            '<input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" placeholder="6-digit code" aria-label="Sign-in code">' +
+            '</div><div class="actions" style="justify-content:space-between;align-items:center">' +
+            '<button class="btn ghost tiny" type="button" data-x="resend">Resend code</button>' +
+            '<span style="display:flex;gap:10px">' +
+            '<button class="btn ghost" type="button" data-x="restart">Back</button>' +
+            '<button class="btn primary" type="submit">Verify &amp; sign in</button>' +
+            '</span></div></form>';
+        }
         return '<p class="eyebrow">Account</p><h2>Sign in</h2>' +
-          (linkSentTo
-            ? '<p class="quiet small">Check your email—your sign-in link is on its way to <b>' + esc(linkSentTo) + '</b>. You can close this window.</p>' +
-              '<div class="actions"><button class="btn ghost" data-x="close">Close</button></div>'
-            : '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a one-tap sign-in link—no password to remember.</p>' +
-              '<form data-role="signin"><div class="edit-grid">' +
-              '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
-              '</div><div class="actions">' +
-              '<button class="btn ghost" type="button" data-x="close">Cancel</button>' +
-              '<button class="btn primary" type="submit">Email me a sign-in link</button>' +
-              '</div></form>');
+          '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a 6-digit sign-in code—no password to remember.</p>' +
+          '<form data-role="signin"><div class="edit-grid">' +
+          '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
+          '</div><div class="actions">' +
+          '<button class="btn ghost" type="button" data-x="close">Cancel</button>' +
+          '<button class="btn primary" type="submit">Email me a sign-in code</button>' +
+          '</div></form>';
       }
       return '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>' +
         '<p class="quiet small">Signed in—your ladders sync to your account as you change them, and stay on this device to work offline.</p>' +
@@ -1017,8 +1032,8 @@
 
     function renderBody() {
       modal.innerHTML = bodyHTML();
-      var em = $('input[name="email"]', modal);
-      if (em) em.focus();
+      var focusEl = $('input[name="code"]', modal) || $('input[name="email"]', modal);
+      if (focusEl) focusEl.focus();
     }
     renderBody();
 
@@ -1028,23 +1043,19 @@
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
 
-    overlay.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var form = e.target;
-      if (form.getAttribute('data-role') !== 'signin') return;
-      var email = form.email.value.trim();
-      if (!email) return;
-      /* redirect_to brings the magic link back to THIS page, wherever it's
-         served—so it never falls back to the project's default Site URL
-         (which is localhost on a fresh Supabase project). The origin must be
-         in the project's Redirect URLs allowlist. */
+    /* Send a one-time code (supabase.auth.signInWithOtp equivalent). The same
+       email also carries a magic link—see the email template in PRODUCT.md.
+       redirect_to keeps that link pointed at THIS page rather than the
+       project's default Site URL; its origin must be in the Redirect URLs
+       allowlist. */
+    function sendCode(email) {
       var redirectTo = window.location.origin + window.location.pathname;
-      fetch(SYNC.url + '/auth/v1/otp?redirect_to=' + encodeURIComponent(redirectTo), {
+      return fetch(SYNC.url + '/auth/v1/otp?redirect_to=' + encodeURIComponent(redirectTo), {
         method: 'POST',
         headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, create_user: true })
       }).then(function (r) {
-        if (r.ok) { linkSentTo = email; renderBody(); return; }
+        if (r.ok) { codeSentTo = email; renderBody(); return; }
         return r.json().catch(function () { return {}; }).then(function (body) {
           var msg = (body && (body.msg || body.error_description || body.error || body.message)) || '';
           if (r.status === 429 || /rate limit/i.test(msg)) {
@@ -1052,12 +1063,65 @@
           } else if (r.status === 422 || /redirect|url/i.test(msg)) {
             toast('This address isn’t allowed for sign-in yet—add it to Supabase’s Redirect URLs.');
           } else {
-            toast('Couldn’t send the link' + (msg ? '—' + msg : '—please try again in a moment.'));
+            toast('Couldn’t send the code' + (msg ? '—' + msg : '—please try again in a moment.'));
           }
         });
       }).catch(function () {
         toast('Couldn’t reach the sign-in service—check your connection and try again.');
       });
+    }
+
+    /* Verify the typed code (supabase.auth.verifyOtp equivalent) and persist
+       the returned session exactly like the magic-link path does. */
+    function verifyCode(email, code) {
+      if (!email) { codeSentTo = ''; renderBody(); toast('Enter your email again to get a fresh code.'); return; }
+      fetch(SYNC.url + '/auth/v1/verify', {
+        method: 'POST',
+        headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'email', email: email, token: code })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok || !j.access_token) {
+            var msg = (j && (j.msg || j.error_description || j.error || j.message)) || '';
+            if (r.status === 403 || /expired|invalid|token|otp/i.test(msg)) {
+              toast('That code didn’t match or has expired—check it, or resend a fresh one.');
+            } else {
+              toast('Couldn’t verify the code' + (msg ? '—' + msg : '.'));
+            }
+            return;
+          }
+          session = {
+            access_token: j.access_token,
+            refresh_token: j.refresh_token || '',
+            user: j.user ? { id: j.user.id, email: j.user.email } : null
+          };
+          storeSession();
+          codeSentTo = '';
+          updateAccountButton();
+          var ensureUser = session.user ? Promise.resolve() : fetchUser();
+          ensureUser.catch(function () {}).then(function () {
+            updateAccountButton();
+            renderBody();
+            toast('Signed in.');
+            maybeAutoPull();
+          });
+        });
+      }).catch(function () {
+        toast('Couldn’t reach the sign-in service—check your connection and try again.');
+      });
+    }
+
+    overlay.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      var role = form.getAttribute('data-role');
+      if (role === 'signin') {
+        var email = form.email.value.trim();
+        if (email) sendCode(email);
+      } else if (role === 'verify') {
+        var code = form.code.value.trim();
+        if (code) verifyCode(codeSentTo, code);
+      }
     });
 
     overlay.addEventListener('click', function (e) {
@@ -1066,6 +1130,8 @@
       if (!b) return;
       var x = b.getAttribute('data-x');
       if (x === 'close') close();
+      if (x === 'resend' && codeSentTo) { sendCode(codeSentTo); toast('Sent a fresh code.'); }
+      if (x === 'restart') { codeSentTo = ''; renderBody(); }
       if (x === 'signout') {
         signOutLocal();
         renderBody();
