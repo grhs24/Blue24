@@ -1,0 +1,33 @@
+# Foothold Now
+
+> Foothold Now (footholdnow.com) is a quiet website for building practice
+> ladders—also called fear ladders, anxiety ladders, OCD ladders, or exposure
+> hierarchies. You break something you avoid into small steps written in your
+> own words, rate each step 0–100 (a SUDS rating—Subjective Units of Distress),
+> practice on purpose, and log how it felt before, at the peak, and after.
+> Ratings fall with repetition; a step that reaches zero settles. The method is
+> rooted in exposure and response prevention (ERP) and graded exposure, with
+> strong evidence for easing anxiety and the obsessions and compulsions of
+> OCD—and no diagnosis is needed to use it. Data stays in the browser
+> (localStorage) with optional email sign-in for cross-device sync. Free while
+> in beta; a $4.99/month subscription is planned. It is a personal practice
+> companion, not medical care.
+
+## App
+
+- [Foothold Now](https://footholdnow.com/): the practice-ladder website itself.
+
+## Guides
+
+- [Exposure hierarchy (fear ladder): what it is and how to build one](https://footholdnow.com/fear-ladder/): the tool under all its names—fear ladder, anxiety ladder, OCD ladder—with a worked example and honest tips.
+- [ERP therapy, explained gently](https://footholdnow.com/erp/): exposure and response prevention in plain language—the two halves of the name, the evidence, the history from Wolpe to Meyer, and what practice feels like.
+- [The SUDS scale (Subjective Units of Distress), explained](https://footholdnow.com/suds/): the 0–100 distress rating created by Joseph Wolpe—example anchors, why subjectivity is the point, and how it powers exposure practice.
+- [How to stop avoiding things](https://footholdnow.com/stop-avoiding/): the avoidance loop (relief now, interest later) and the graded way out.
+
+## Help
+
+- [Add Foothold Now to your home screen](https://footholdnow.com/add-to-home-screen/): put the site on an iPhone or Android home screen like an app—no app store needed.
+
+## Contact
+
+- Questions or suggestions: footholdnowsupport@gmail.com

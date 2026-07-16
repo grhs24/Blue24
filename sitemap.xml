@@ -20,4 +20,8 @@
     <loc>https://footholdnow.com/suds/</loc>
     <changefreq>monthly</changefreq>
   </url>
+  <url>
+    <loc>https://footholdnow.com/add-to-home-screen/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
