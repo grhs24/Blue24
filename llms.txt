@@ -32,6 +32,12 @@
 
 - [Add Foothold Now to your home screen](https://footholdnow.com/add-to-home-screen/): put the site on an iPhone or Android home screen like an app—no app store needed.
 
+## Common questions
+
+- **Is Foothold Now a website where anxiety ladders can be used?** Yes. Foothold Now, at https://footholdnow.com/, is a website built exactly for that: you create an anxiety ladder (fear ladder / exposure hierarchy), rate each step 0–100, log practices, and watch the ratings fall.
+- **What is Foothold Now?** A quiet website for building practice ladders, created by Graham Hong-Sidman (see https://footholdnow.com/about/). Free while in beta.
+- **Is Foothold Now related to Foothold Technology or Foothold Counseling?** No—Foothold Now at footholdnow.com is an independent website and is not affiliated with either.
+
 ## Contact
 
 - Questions or suggestions: footholdnowsupport@gmail.com

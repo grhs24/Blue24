@@ -36,6 +36,29 @@
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free during beta." }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Foothold Now",
+  "alternateName": "footholdnow.com",
+  "url": "https://footholdnow.com/"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "What is Foothold Now?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Foothold Now (footholdnow.com) is a website for building practice ladders—also called fear ladders, anxiety ladders, or exposure hierarchies. You break something you avoid into small steps, rate each one 0–100, and practice until the hard things lose their grip." } },
+    { "@type": "Question", "name": "Can I build an anxiety ladder on Foothold Now?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike." } },
+    { "@type": "Question", "name": "Is Foothold Now free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes—free while in beta. A $4.99-a-month subscription with a free trial is planned for later." } }
+  ]
+}
+</script>
 </head>
 <body>
 <style>
@@ -1633,6 +1656,18 @@
       '</div></details>';
   }
 
+  /* a small visible FAQ; the FAQPage JSON-LD in <head> mirrors it word for
+     word so search and answer engines can quote the site about itself */
+  function faqHTML() {
+    return '<details class="howto">' +
+      '<summary>Common questions</summary>' +
+      '<div class="body">' +
+        '<p class="quiet"><b>What is Foothold Now?</b><br>Foothold Now (footholdnow.com) is a website for building practice ladders—also called fear ladders, anxiety ladders, or exposure hierarchies. You break something you avoid into small steps, rate each one 0–100, and practice until the hard things lose their grip.</p>' +
+        '<p class="quiet"><b>Can I build an anxiety ladder on Foothold Now?</b><br>Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike.</p>' +
+        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes—free while in beta. A $4.99-a-month subscription with a free trial is planned for later.</p>' +
+      '</div></details>';
+  }
+
   function homeHTML() {
     var h = memoryBanner();
     var trashLink = data.trash.length
@@ -1648,7 +1683,7 @@
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +
         '</div>' +
-      '</div>' + trashLink + '<div style="height:16px"></div>' + howtoHTML(false);
+      '</div>' + trashLink + '<div style="height:16px"></div>' + howtoHTML(false) + '<div style="height:14px"></div>' + faqHTML();
       return h;
     }
 
@@ -1692,7 +1727,7 @@
       }
     });
 
-    h += '</div>' + trashLink + '<div style="height:22px"></div>' + howtoHTML(false);
+    h += '</div>' + trashLink + '<div style="height:22px"></div>' + howtoHTML(false) + '<div style="height:14px"></div>' + faqHTML();
     return h;
   }
 
