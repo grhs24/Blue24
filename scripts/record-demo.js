@@ -113,8 +113,14 @@ const CHROME = `
   const pg = await ctx.newPage();
   await pg.route('**/beacon.min.js', r => r.fulfill({ status: 200, body: '' }));
 
+  const t0 = Date.now();
   const wait = ms => pg.waitForTimeout(ms);
-  const caption = async (t) => { await pg.evaluate(x => window.__caption(x), t); };
+  // shows the on-screen caption AND prints a cue-sheet line, so a narrator
+  // knows when each scene starts (see scripts/demo-narration.md)
+  const caption = async (t) => {
+    if (t) console.log('cue ' + ((Date.now() - t0) / 1000).toFixed(1) + 's  ' + t);
+    await pg.evaluate(x => window.__caption(x), t);
+  };
   async function center(sel) {
     const b = await pg.locator(sel).first().boundingBox();
     return { x: b.x + b.width / 2, y: b.y + b.height / 2, box: b };
@@ -157,7 +163,7 @@ const CHROME = `
   await pg.waitForSelector('.welcome');
   await pg.mouse.move(640, 250, { steps: 5 });
   await caption('This is Foothold Now—a quiet place to practice the hard things.');
-  await wait(2600);
+  await wait(4200);
 
   await caption('Start with something you’ve been avoiding.');
   await click('.welcome [data-action="new-ladder"]');
@@ -206,17 +212,18 @@ const CHROME = `
   await caption('Keep practicing. When a step reaches zero, it settles on its own.');
   await slide('#lg-after-' + sid, 0);
   await click('form[data-form="log"] button[type=submit]');
-  await wait(2400);
+  await wait(3400);
 
   await caption('Every ladder shows your footholds—settled steps, practices, progress.');
   await click('[data-action="go-home"]');
   await pg.waitForSelector('.ladder-card');
   await pg.mouse.move(640, 300, { steps: 20 });
-  await wait(2600);
+  await wait(3400);
 
   await caption('');
+  console.log('cue ' + ((Date.now() - t0) / 1000).toFixed(1) + 's  [outro card]');
   await pg.evaluate(() => window.__outro());
-  await wait(3200);
+  await wait(4600);
 
   await ctx.close();
   const files = fs.readdirSync(TMP).filter(f => f.endsWith('.webm'));
