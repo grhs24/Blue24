@@ -30,7 +30,7 @@
 
 ## Help
 
-- [Add Foothold Now to your home screen](https://footholdnow.com/add-to-home-screen/): put the site on an iPhone or Android home screen like an app—no app store needed.
+- [Add Foothold Now to your phone’s home screen](https://footholdnow.com/add-to-home-screen/): put the site on an iPhone or Android home screen like an app—no app store needed.
 
 ## Common questions
 
@@ -40,4 +40,4 @@
 
 ## Contact
 
-- Questions or suggestions: footholdnowsupport@gmail.com
+- [Contact page](https://footholdnow.com/contact/): questions or suggestions—footholdnowsupport@gmail.com

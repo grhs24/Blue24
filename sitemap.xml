@@ -28,4 +28,8 @@
     <loc>https://footholdnow.com/about/</loc>
     <changefreq>monthly</changefreq>
   </url>
+  <url>
+    <loc>https://footholdnow.com/contact/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
