@@ -33,6 +33,18 @@
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free during beta." }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "Foothold Now demo—build a practice ladder in one minute",
+  "description": "A one-minute walkthrough: build a practice ladder (exposure hierarchy), rate steps 0–100 by how hard they feel, log practices, and watch the hard things settle.",
+  "thumbnailUrl": "https://footholdnow.com/og.png",
+  "contentUrl": "https://footholdnow.com/demo.mp4",
+  "uploadDate": "2026-07-16",
+  "duration": "PT1M1S"
+}
+</script>
 </head>
 <body>
 <style>
@@ -366,6 +378,17 @@
   details.howto .body { padding: 2px 20px 20px; }
   details.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
   details.howto .body > p { margin-top: 14px; font-size: 14.5px; }
+  video.demo-video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface2);
+    object-fit: cover;
+  }
+  .welcome video.demo-video { margin: 20px 0 2px; }
+  details.howto video.demo-video { margin: 2px 0 16px; }
   details.howto li::marker { color: var(--accent); font-weight: 600; }
   details.howto b { font-weight: 600; }
 
@@ -1508,10 +1531,16 @@
       : '';
   }
 
+  /* the one-minute voiced walkthrough; preload="none" so the 12 MB file is
+     only fetched when someone presses play */
+  function demoVideoHTML() {
+    return '<video class="demo-video" src="/demo.mp4" poster="/og.png" controls playsinline preload="none" aria-label="A one-minute demo of Foothold Now"></video>';
+  }
+
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
       '<summary>How Foothold Now works</summary>' +
-      '<div class="body"><ol>' +
+      '<div class="body">' + demoVideoHTML() + '<ol>' +
         '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
@@ -1533,6 +1562,7 @@
         '<p class="eyebrow">Welcome</p>' +
         '<h1>A quiet place to practice the hard things.</h1>' +
         '<p class="quiet">Foothold Now helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time—gently, on repeat—until they lose their grip.</p>' +
+        demoVideoHTML() +
         '<div class="actions">' +
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +
