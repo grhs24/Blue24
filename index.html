@@ -20,6 +20,8 @@
 <meta name="twitter:description" content="Rooted in ERP and graded exposure—and useful for anything you’ve been avoiding. One small step at a time.">
 <meta name="twitter:image" content="https://footholdnow.com/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -29,7 +31,7 @@
   "description": "Practice ladders—exposure hierarchies, fear ladders—for anxiety, OCD, phobias, and avoidance. Rooted in ERP and graded exposure, one small step at a time.",
   "applicationCategory": "LifestyleApplication",
   "operatingSystem": "Any",
-  "keywords": "practice ladder, fear ladder, exposure ladder, exposure hierarchy, ERP, exposure and response prevention, graded exposure, OCD, anxiety, phobia, avoidance, SUDS, subjective units of distress scale",
+  "keywords": "practice ladder, fear ladder, anxiety ladder, OCD ladder, exposure ladder, exposure hierarchy, ERP, ERP therapy, exposure and response prevention, graded exposure, OCD, anxiety, phobia, avoidance, SUDS, subjective units of distress scale",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free during beta." }
 }
 </script>
@@ -281,10 +283,54 @@
   textarea { resize: vertical; min-height: 60px; }
   textarea.autogrow { min-height: 0; resize: none; overflow: hidden; }
 
+  /* sliders are little SUDS scales: the filled track reveals the same
+     calm-green→amber→rust gradient as the /suds/ guide, and the thumb takes
+     the color of the current value (set by wireSlider via --sud-*) */
   input[type="range"] {
-    accent-color: var(--accent);
+    -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     margin: 0;
+    height: 26px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+    background:
+      linear-gradient(to right, transparent var(--sud-fill, 40%), var(--surface2) var(--sud-fill, 40%)),
+      linear-gradient(to right, #6FA28F, #E2BE7F 30%, #CE8B4B 55%, #AC5B33 78%, #883A22);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--sud-color, var(--accent));
+    border: 2px solid var(--surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    margin-top: -6px;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background:
+      linear-gradient(to right, transparent var(--sud-fill, 40%), var(--surface2) var(--sud-fill, 40%)),
+      linear-gradient(to right, #6FA28F, #E2BE7F 30%, #CE8B4B 55%, #AC5B33 78%, #883A22);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--sud-color, var(--accent));
+    border: 2px solid var(--surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  input[type="range"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 8px;
   }
 
   label { font-size: 13px; font-weight: 600; color: var(--ink2); display: block; margin-bottom: 5px; }
@@ -745,7 +791,7 @@
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions? Email <a href="mailto:footholdnowsupport@gmail.com">footholdnowsupport@gmail.com</a></div>
-    <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a></div>
+    <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add to your home screen</a></div>
   </footer>
 </div>
 
@@ -1162,7 +1208,7 @@
       if (!session) {
         if (codeSentTo) {
           return '<p class="eyebrow">Account</p><h2>Enter your code</h2>' +
-            '<p class="quiet small">We emailed a sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right in this app, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
+            '<p class="quiet small">We emailed a sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right here on this page, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
             '<form data-role="verify"><div class="edit-grid">' +
             '<input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" placeholder="Enter the code" aria-label="Sign-in code">' +
             '</div><div class="actions" style="justify-content:space-between;align-items:center">' +
@@ -1833,8 +1879,28 @@
   }
 
   /* ---------- live slider wiring ---------- */
+  /* the SUDS gradient stops (matching the /suds/ guide and the slider track):
+     0 calm green → 30 sand → 55 amber → 78 rust → 100 deep rust */
+  var SUD_STOPS = [[0, 0x6F, 0xA2, 0x8F], [30, 0xE2, 0xBE, 0x7F], [55, 0xCE, 0x8B, 0x4B], [78, 0xAC, 0x5B, 0x33], [100, 0x88, 0x3A, 0x22]];
+  function sudColor(v) {
+    var i = 1;
+    while (i < SUD_STOPS.length - 1 && v > SUD_STOPS[i][0]) i++;
+    var a = SUD_STOPS[i - 1], b2 = SUD_STOPS[i];
+    var t = (v - a[0]) / (b2[0] - a[0] || 1);
+    if (t < 0) t = 0; if (t > 1) t = 1;
+    function mix(x, y) { return Math.round(x + (y - x) * t); }
+    return 'rgb(' + mix(a[1], b2[1]) + ',' + mix(a[2], b2[2]) + ',' + mix(a[3], b2[3]) + ')';
+  }
+
   function wireSlider(rangeEl) {
+    function paint() {
+      var v = parseInt(rangeEl.value, 10) || 0;
+      rangeEl.style.setProperty('--sud-fill', v + '%');
+      rangeEl.style.setProperty('--sud-color', sudColor(v));
+    }
+    paint();
     rangeEl.addEventListener('input', function () {
+      paint();
       var v = parseInt(rangeEl.value, 10);
       var b = bandOf(v);
       var cell = rangeEl.closest('.slider-cell, .slider-line, .edit-grid > div');
