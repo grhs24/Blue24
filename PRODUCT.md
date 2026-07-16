@@ -145,17 +145,37 @@ reward at launch. The beta welcome gate tells users they get **50% off** if they
 sign in with their email now, and the paid wall reminds them to add their coupon
 at checkout.
 
-At launch:
+**Don't use one shared code.** A single `BETA50` is trivial to pass around, so
+non-beta users would ride the discount too. Instead issue **one unique,
+single-use code per beta user**, so a leaked code burns itself out after one
+redemption.
 
-1. Create the discount in your provider — Stripe: a 50%-off **coupon** plus a
-   **promotion code** (e.g. `BETA50`); Lemon Squeezy: a 50% **discount code**.
-   Make it apply to the first N months (or forever) as you prefer.
-2. Pull the beta list: Supabase → Table Editor → `beta_signups` (or
-   `select email from beta_signups order by joined_at`), and email those
-   addresses the code.
-3. Enable promotion codes on the checkout so the code works (Stripe Payment
-   Link → "Allow promotion codes"; Lemon Squeezy → the discount is entered on
-   the checkout automatically or via the code field).
+At launch (Stripe):
+
+1. Create the 50%-off **Coupon** (the discount rule): Stripe Dashboard →
+   Product catalog → Coupons → 50% off, with a **duration** you choose (once /
+   for N months / forever). As a backstop, cap the coupon's total redemptions
+   at your beta headcount.
+2. Generate **one Promotion Code per beta user**, each with
+   **`max_redemptions = 1`** and an **`expires_at`** a few weeks out. Do this
+   with `scripts/generate-beta-coupons.mjs` (see its header) — it reads your
+   beta emails, creates a unique code each (skipping anyone already done), and
+   writes `beta-codes.csv` mapping email → code. Run it locally with your
+   Stripe secret key; never commit that key.
+3. Pull the beta list to feed the script: Supabase → Table Editor →
+   `beta_signups` → export CSV (or `select email from beta_signups order by
+   joined_at`).
+4. Enable the code field on checkout: Stripe Payment Link → **"Allow promotion
+   codes"**. Then email each beta user *their own* code (mail-merge from
+   `beta-codes.csv`).
+
+The airtight alternative (no shareable code at all): require sign-in first and
+create the Checkout Session server-side with the discount attached to that
+account — more build than a static Payment Link, noted under "Billing with
+Stripe" above.
+
+Lemon Squeezy has the same shape: a 50% discount with a per-code usage limit of
+1; generate one code per user via its API or dashboard.
 
 Not every beta user signs in — the one-tap "continue free" bypass doesn't
 require it — so only those who sign in are captured (which is also the only way
