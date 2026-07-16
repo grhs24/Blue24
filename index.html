@@ -29,20 +29,8 @@
   "description": "Practice ladders—exposure hierarchies, fear ladders—for anxiety, OCD, phobias, and avoidance. Rooted in ERP and graded exposure, one small step at a time.",
   "applicationCategory": "LifestyleApplication",
   "operatingSystem": "Any",
-  "keywords": "practice ladder, fear ladder, exposure ladder, exposure hierarchy, ERP, exposure and response prevention, graded exposure, OCD, anxiety, phobia, avoidance",
+  "keywords": "practice ladder, fear ladder, exposure ladder, exposure hierarchy, ERP, exposure and response prevention, graded exposure, OCD, anxiety, phobia, avoidance, SUDS, subjective units of distress scale",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free during beta." }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "VideoObject",
-  "name": "Foothold Now demo—build a practice ladder in one minute",
-  "description": "A one-minute walkthrough: build a practice ladder (exposure hierarchy), rate steps 0–100 by how hard they feel, log practices, and watch the hard things settle.",
-  "thumbnailUrl": "https://footholdnow.com/og.png",
-  "contentUrl": "https://footholdnow.com/demo.mp4",
-  "uploadDate": "2026-07-16",
-  "duration": "PT1M1S"
 }
 </script>
 </head>
@@ -378,17 +366,6 @@
   details.howto .body { padding: 2px 20px 20px; }
   details.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
   details.howto .body > p { margin-top: 14px; font-size: 14.5px; }
-  video.demo-video {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--surface2);
-    object-fit: cover;
-  }
-  .welcome video.demo-video { margin: 20px 0 2px; }
-  details.howto video.demo-video { margin: 2px 0 16px; }
   details.howto li::marker { color: var(--accent); font-weight: 600; }
   details.howto b { font-weight: 600; }
 
@@ -755,9 +732,10 @@
     <p>The method is rooted in exposure and response prevention (ERP) and
     graded exposure—approaches with strong evidence for easing anxiety and the
     obsessions and compulsions of OCD. Each ladder is what practitioners call
-    an exposure hierarchy. You don’t need a diagnosis to climb: the same
-    gentle practice helps with phobias, social worries, procrastination, and
-    anything else you’ve been avoiding.</p>
+    an exposure hierarchy, and the 0–100 ratings are SUDS scores—Subjective
+    Units of Distress. You don’t need a diagnosis to climb: the same gentle
+    practice helps with phobias, social worries, procrastination, and anything
+    else you’ve been avoiding.</p>
     <p>Foothold Now needs JavaScript to run. Please enable it and reload.</p>
   </noscript></main>
 
@@ -767,7 +745,7 @@
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions? Email <a href="mailto:footholdnowsupport@gmail.com">footholdnowsupport@gmail.com</a>.</div>
-    <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a></div>
+    <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a></div>
   </footer>
 </div>
 
@@ -1531,23 +1509,17 @@
       : '';
   }
 
-  /* the one-minute voiced walkthrough; preload="none" so the 12 MB file is
-     only fetched when someone presses play */
-  function demoVideoHTML() {
-    return '<video class="demo-video" src="/demo.mp4" poster="/og.png" controls playsinline preload="none" aria-label="A one-minute demo of Foothold Now"></video>';
-  }
-
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
       '<summary>How Foothold Now works</summary>' +
-      '<div class="body">' + demoVideoHTML() + '<ol>' +
+      '<div class="body"><ol>' +
         '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
         '<li><b>Practice on purpose.</b> Stay with it, without your usual outs—the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, rate how it felt before, at the peak, and after—the after rating becomes the step’s new score on the ladder.</li>' +
         '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
       '</ol>' +
-      '<p class="quiet">Foothold Now is built on the ideas behind <b>exposure and response prevention (ERP)</b> and graded exposure—approaches with strong evidence for easing <b>anxiety</b> and the obsessions and compulsions of <b>OCD</b>. Each ladder you build here is what practitioners call an <b>exposure hierarchy</b>. You don’t need a diagnosis to climb: the same gentle practice helps with phobias, social worries, procrastination, and anything else you’ve been avoiding.</p>' +
+      '<p class="quiet">Foothold Now is built on the ideas behind <b>exposure and response prevention (ERP)</b> and graded exposure—approaches with strong evidence for easing <b>anxiety</b> and the obsessions and compulsions of <b>OCD</b>. Each ladder you build here is what practitioners call an <b>exposure hierarchy</b>, and the 0–100 ratings are <a href="/suds/">SUDS scores—Subjective Units of Distress</a>. You don’t need a diagnosis to climb: the same gentle practice helps with phobias, social worries, procrastination, and anything else you’ve been avoiding.</p>' +
       '</div></details>';
   }
 
@@ -1562,7 +1534,6 @@
         '<p class="eyebrow">Welcome</p>' +
         '<h1>A quiet place to practice the hard things.</h1>' +
         '<p class="quiet">Foothold Now helps you take something you’ve been avoiding, break it into small deliberate steps, and face them one at a time—gently, on repeat—until they lose their grip.</p>' +
-        demoVideoHTML() +
         '<div class="actions">' +
           '<button class="btn primary" data-action="new-ladder">Start a ladder</button>' +
           '<button class="btn" data-action="example">See an example</button>' +

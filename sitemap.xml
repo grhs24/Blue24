@@ -16,4 +16,8 @@
     <loc>https://footholdnow.com/stop-avoiding/</loc>
     <changefreq>monthly</changefreq>
   </url>
+  <url>
+    <loc>https://footholdnow.com/suds/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
