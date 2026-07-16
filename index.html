@@ -242,15 +242,21 @@
     animation: menuDown 0.18s ease;
   }
   @keyframes menuDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-  .site-menu a {
+  .site-menu a, .site-menu button {
     display: block;
+    width: 100%;
+    text-align: left;
     padding: 9px 12px;
     border-radius: 9px;
     color: var(--ink);
+    background: none;
+    border: 0;
+    font: inherit;
     text-decoration: none;
     font-size: 14.5px;
+    cursor: pointer;
   }
-  .site-menu a:hover { background: var(--surface2); }
+  .site-menu a:hover, .site-menu button:hover { background: var(--surface2); }
   .site-menu .menu-label {
     padding: 12px 12px 4px;
     font-size: 11.5px;
@@ -851,7 +857,7 @@
       <a href="/stop-avoiding/">How to stop avoiding things</a>
       <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a>
       <div class="menu-label">Contact</div>
-      <a href="/contact/">Get in touch</a>
+      <button type="button" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button>
     </nav>
   </header>
 
@@ -876,7 +882,7 @@
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
-    <div class="contact">Questions or suggestions? <a href="/contact/">Get in touch</a></div>
+    <div class="contact">Questions or suggestions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
     <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
     <div class="guides">About: <a href="/about/">Why I created Foothold Now</a></div>
   </footer>
@@ -2115,6 +2121,25 @@
 
       case 'open-backup': openBackup(); break;
       case 'open-account': if (syncEnabled) openAccount(); break;
+
+      case 'copy-email': (function () {
+        var EMAIL = 'footholdnowsupport@gmail.com';
+        function done() { toast('Email address copied.'); }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = EMAIL;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (er) {}
+          ta.remove();
+          done();
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(EMAIL).then(done, fallback);
+        else fallback();
+      })(); break;
 
       case 'new-ladder': state.addingLadder = true; render(); break;
       case 'cancel-new-ladder': state.addingLadder = false; render(); break;

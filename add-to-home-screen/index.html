@@ -58,6 +58,7 @@
   .cta p { margin: 0; }
   .cta .btn { display: inline-block; margin-top: 14px; padding: 10px 18px; border-radius: 10px; background: var(--accent); color: #FCFDFB; text-decoration: none; font-weight: 600; }
   footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2); line-height: 1.7; }
+  footer .copy-email { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -110,8 +111,37 @@
   <footer>
     Foothold Now is a personal practice companion, not medical care.
     More guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a>.
-    Questions? <a href="/contact/">Get in touch</a>.
+    Questions? <button class="copy-email" type="button" title="Click to copy">footholdnowsupport@gmail.com</button>.
   </footer>
 </div>
+<script>
+(function () {
+  var b = document.querySelector('.copy-email');
+  if (!b) return;
+  var EMAIL = 'footholdnowsupport@gmail.com';
+  var t;
+  function done() {
+    b.textContent = 'Email address copied';
+    clearTimeout(t);
+    t = setTimeout(function () { b.textContent = EMAIL; }, 2200);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = EMAIL;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    done();
+  }
+  b.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(EMAIL).then(done, fallback);
+    else fallback();
+  });
+})();
+</script>
 </body>
 </html>
