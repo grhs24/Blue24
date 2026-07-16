@@ -55,7 +55,7 @@
     { "@type": "Question", "name": "Can I build an anxiety ladder on Foothold Now?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike." } },
     { "@type": "Question", "name": "Is Foothold Now free?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes—free while in beta. A $4.99-a-month subscription with a free trial is planned for later." } }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes—free while in beta. The site cost money to build and costs money to run, so a $4.99-a-month subscription with a free trial is planned for later to keep it alive." } }
   ]
 }
 </script>
@@ -850,6 +850,7 @@
     <nav id="site-menu" class="site-menu" hidden aria-label="Site menu">
       <div class="menu-label">About</div>
       <a href="/about/">Why I created Foothold Now</a>
+      <a href="/privacy/">Email &amp; privacy</a>
       <div class="menu-label">Guides</div>
       <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a>
       <a href="/erp/">ERP, explained gently</a>
@@ -880,11 +881,12 @@
   <footer class="colophon">
     Foothold Now is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
-    Everything you write stays in this browser—nothing is sent anywhere.
+    Everything you write stays in this browser—nothing is sent anywhere
+    unless you sign in to sync your ladders to your account.
     Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions or suggestions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
     <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
-    <div class="guides">About: <a href="/about/">Why I created Foothold Now</a></div>
+    <div class="guides">About: <a href="/about/">Why I created Foothold Now</a> &middot; <a href="/privacy/">Email &amp; privacy</a></div>
   </footer>
 </div>
 
@@ -1313,6 +1315,7 @@
         }
         return '<p class="eyebrow">Account</p><h2>Sign in</h2>' +
           '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a one-time sign-in code—no password to remember.</p>' +
+          '<p class="quieter small">Your email is used only to sync your ladders and, during beta, to send your discount—nothing else. <a href="/privacy/">Privacy</a></p>' +
           '<form data-role="signin"><div class="edit-grid">' +
           '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
           '</div><div class="actions">' +
@@ -1527,7 +1530,7 @@
         '<div class="section">' +
           '<p class="eyebrow">Your data</p>' +
           '<h2>Backup &amp; restore</h2>' +
-          '<p class="quiet small">Your ladders live only in this browser. Download a backup to keep them safe, or copy it to move them to another device—it pastes in below, under Restore.</p>' +
+          '<p class="quiet small">Your ladders live in this browser—and in your account too, if you sign in to sync. Download a backup to keep them safe, or copy it to move them to another device—it pastes in below, under Restore.</p>' +
           '<textarea class="backup" readonly aria-label="Backup data"></textarea>' +
           '<div class="actions" style="justify-content:flex-start">' +
             '<button class="btn primary" data-x="download">Download backup</button>' +
@@ -1639,7 +1642,7 @@
   function chipHTML(v) {
     var b = bandOf(v);
     return '<span class="chip b' + b + '" title="' + BAND_NAMES[b] + '">' +
-      '<span class="dot b' + b + '"></span><span class="num">' + v + '</span></span>';
+      '<span class="dot b' + b + '" style="background:' + sudColor(v) + '"></span><span class="num">' + v + '</span></span>';
   }
 
   function memoryBanner() {
@@ -1659,6 +1662,7 @@
         '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
       '</ol>' +
       '<p class="quiet">Foothold Now is built on the ideas behind <b>exposure and response prevention (ERP)</b> and graded exposure—approaches with strong evidence for easing <b>anxiety</b> and the obsessions and compulsions of <b>OCD</b>. Each ladder you build here is what practitioners call an <b>exposure hierarchy</b>, and the 0–100 ratings are <a href="/suds/">SUDS scores—Subjective Units of Distress</a>. You don’t need a diagnosis to climb: the same gentle practice helps with phobias, social worries, procrastination, and anything else you’ve been avoiding.</p>' +
+      '<p class="quiet"><b>One rule above all:</b> practice should be uncomfortable, never dangerous. Never build a step that puts you or anyone else in real danger—the goal is to face fear, not risk. And if you’re in crisis, reach out for immediate help rather than practicing alone.</p>' +
       '</div></details>';
   }
 
@@ -1670,7 +1674,7 @@
       '<div class="body">' +
         '<p class="quiet"><b>What is Foothold Now?</b><br>Foothold Now (footholdnow.com) is a website for building practice ladders—also called fear ladders, anxiety ladders, or exposure hierarchies. You break something you avoid into small steps, rate each one 0–100, and practice until the hard things lose their grip.</p>' +
         '<p class="quiet"><b>Can I build an anxiety ladder on Foothold Now?</b><br>Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike.</p>' +
-        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes—free while in beta. A $4.99-a-month subscription with a free trial is planned for later.</p>' +
+        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes—free while in beta. The site cost money to build and costs money to run, so a $4.99-a-month subscription with a free trial is planned for later to keep it alive.</p>' +
       '</div></details>';
   }
 
@@ -1765,7 +1769,7 @@
         '<textarea id="es-title" name="title" class="autogrow" rows="1" data-enter="submit" required autocomplete="off">' + esc(step.title) + '</textarea></div>' +
         '<div><label for="es-rating">How hard does it feel right now?</label>' +
         '<div class="slider-line"><input type="range" id="es-rating" name="rating" min="0" max="100" step="5" value="' + step.rating + '">' +
-        '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '"></span><span class="num" data-role="val">' + step.rating + '</span>&nbsp;&middot; ' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
+        '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '" style="background:' + sudColor(step.rating) + '"></span><span class="num" data-role="val">' + step.rating + '</span>&nbsp;&middot; ' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
         '<div><label for="es-note">Notes <span class="quieter" style="font-weight:400">(optional)</span></label>' +
         '<textarea id="es-note" name="note" placeholder="What counts as doing this step? Any ground rules for yourself?">' + esc(step.note || '') + '</textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
@@ -1890,7 +1894,7 @@
         var open = state.openStepId === step.id;
         var b = bandOf(step.rating);
         h += '<div class="rung' + (step.settled ? ' settled' : '') + (steps.length === 1 ? ' only' : '') + '">' +
-          '<span class="node b' + b + '">' + (step.settled
+          '<span class="node b' + b + '" style="background:' + sudColor(step.rating) + '">' + (step.settled
             ? '<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3.4" fill="none" stroke="var(--on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
             : '') + '</span>' +
           (state.renamingStepId === step.id
@@ -1922,7 +1926,7 @@
       '</div>' +
       '<div class="slider-line">' +
         '<input type="range" name="rating" min="0" max="100" step="5" value="40" aria-label="How hard it feels, 0 to 100">' +
-        '<span class="chip b1" data-role="band"><span class="dot b1"></span><span class="num" data-role="val">40</span>&nbsp;&middot; ' + BAND_NAMES[1] + '</span>' +
+        '<span class="chip b1" data-role="band"><span class="dot b1" style="background:' + sudColor(40) + '"></span><span class="num" data-role="val">40</span>&nbsp;&middot; ' + BAND_NAMES[1] + '</span>' +
       '</div></form>';
 
     if (doneAside.length) {
@@ -2021,7 +2025,7 @@
       if (chip) {
         chip.className = 'chip b' + b;
         var hasVal = chip.querySelector('[data-role="val"]');
-        chip.innerHTML = '<span class="dot b' + b + '"></span>' +
+        chip.innerHTML = '<span class="dot b' + b + '" style="background:' + sudColor(v) + '"></span>' +
           (hasVal ? '<span class="num" data-role="val">' + v + '</span>&nbsp;&middot; ' + BAND_NAMES[b] : BAND_NAMES[b]);
       }
     });
@@ -2468,9 +2472,10 @@
     var body = beta
       ? '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span><span class="beta-badge">Beta</span></div>' +
         '<h1>Free while we’re in beta.</h1>' +
-        '<p class="quiet">Foothold Now is becoming a subscription—$4.99 a month, with a free trial. While we’re testing, it’s free for early users like you. Thank you for helping shape it.</p>' +
+        '<p class="quiet">Foothold Now cost money to build and costs money to run, so it’s planning to become a subscription—$4.99 a month, with a free trial—to keep the site alive. For now, while we’re testing, it’s free for everyone. Thank you for helping shape it.</p>' +
         '<div class="gate-actions"><button class="btn primary" data-gate="beta">Continue free as a beta user</button></div>' +
-        '<p class="quieter small">Beta users who sign in with their email get <b>50% off</b> when the subscription launches. We’ll email your coupon at launch <button class="linklike" data-gate="signin">Sign in with email</button>.</p>'
+        '<p class="quieter small">We plan for beta users who sign in with their email to get <b>50% off</b> when the subscription launches. We’ll email your coupon at launch <button class="linklike" data-gate="signin">Sign in with email</button>.</p>' +
+        '<p class="quieter small">Your ladders stay private in your browser; email—if you sign in—is used only for sync and your beta discount. <a href="/privacy/">Privacy</a></p>'
       : '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span></div>' +
         '<h1>Practice the hard things.</h1>' +
         '<p class="quiet">Foothold Now is $4.99 a month, with a free trial. Start your trial to build your ladders and keep them in sync across your devices.</p>' +
