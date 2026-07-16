@@ -3,17 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Foothold Now—practice ladders for facing hard things</title>
-<meta name="description" content="A quiet place to build practice ladders—also called fear ladders. Rate what’s hard 0–100, practice it one small step at a time, and watch it lose its grip.">
+<title>Foothold Now—practice ladders for anxiety, OCD, and hard things</title>
+<meta name="description" content="Practice ladders (fear ladders) for anxiety, OCD, phobias, and anything you’ve been avoiding—rooted in ERP and graded exposure, one small step at a time.">
 <link rel="canonical" href="https://footholdnow.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Foothold Now">
-<meta property="og:title" content="Foothold Now—practice ladders for facing hard things">
-<meta property="og:description" content="Rate what’s hard 0–100, practice it one small step at a time, and watch it lose its grip.">
+<meta property="og:title" content="Foothold Now—practice ladders for anxiety, OCD, and hard things">
+<meta property="og:description" content="Rooted in ERP and graded exposure—and useful for anything you’ve been avoiding. One small step at a time.">
 <meta property="og:url" content="https://footholdnow.com/">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Foothold Now—practice ladders for facing hard things">
-<meta name="twitter:description" content="Rate what’s hard 0–100, practice it one small step at a time, and watch it lose its grip.">
+<meta property="og:image" content="https://footholdnow.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Foothold Now—practice ladders for facing hard things, one small step at a time">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Foothold Now—practice ladders for anxiety, OCD, and hard things">
+<meta name="twitter:description" content="Rooted in ERP and graded exposure—and useful for anything you’ve been avoiding. One small step at a time.">
+<meta name="twitter:image" content="https://footholdnow.com/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -21,9 +26,10 @@
   "@type": "WebApplication",
   "name": "Foothold Now",
   "url": "https://footholdnow.com/",
-  "description": "A quiet place to build practice ladders. Rate what’s hard 0–100, practice it one small step at a time, and watch it lose its grip.",
+  "description": "Practice ladders (fear ladders) for anxiety, OCD, phobias, and anything you’ve been avoiding—rooted in ERP and graded exposure, one small step at a time.",
   "applicationCategory": "LifestyleApplication",
   "operatingSystem": "Any",
+  "keywords": "practice ladder, fear ladder, exposure ladder, exposure hierarchy, ERP, exposure and response prevention, graded exposure, OCD, anxiety, phobia, avoidance",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free during beta." }
 }
 </script>
@@ -359,6 +365,7 @@
   details.howto[open] summary::after { content: "−"; }
   details.howto .body { padding: 2px 20px 20px; }
   details.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+  details.howto .body > p { margin-top: 14px; font-size: 14.5px; }
   details.howto li::marker { color: var(--accent); font-weight: 600; }
   details.howto b { font-weight: 600; }
 
@@ -687,7 +694,7 @@
     max-width: 58ch;
   }
   footer.colophon a { color: var(--accent); text-decoration: underline; }
-  footer.colophon .contact { margin-top: 10px; }
+  footer.colophon .contact, footer.colophon .guides { margin-top: 10px; }
 
   .fade-in { animation: fadeIn 0.25s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -722,6 +729,11 @@
     toward, break it into steps written in your own words, rate each step
     0–100 by how hard it feels, and practice them one small step at
     a time—gently, on repeat—until each one loses its grip.</p>
+    <p>The method is rooted in exposure and response prevention (ERP) and
+    graded exposure—approaches with strong evidence for easing anxiety and the
+    obsessions and compulsions of OCD. And you don’t need a diagnosis to climb:
+    the same gentle practice helps with phobias, social worries,
+    procrastination, and anything else you’ve been avoiding.</p>
     <p>Foothold Now needs JavaScript to run. Please enable it and reload.</p>
   </noscript></main>
 
@@ -731,6 +743,7 @@
     Everything you write stays in this browser—nothing is sent anywhere.
     Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions? Email <a href="mailto:footholdnowsupport@gmail.com">footholdnowsupport@gmail.com</a>.</div>
+    <div class="guides">Guides: <a href="/fear-ladder/">What is a fear ladder?</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a></div>
   </footer>
 </div>
 
@@ -1503,7 +1516,9 @@
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
         '<li><b>Practice on purpose.</b> Stay with it, without your usual outs—the checking, redoing, avoiding, or asking for reassurance that normally brings relief. Afterward, rate how it felt before, at the peak, and after—the after rating becomes the step’s new score on the ladder.</li>' +
         '<li><b>Repeat until it settles.</b> The peak tends to come down with practice. When a step loses its grip, mark it settled and take the next foothold up.</li>' +
-      '</ol></div></details>';
+      '</ol>' +
+      '<p class="quiet">Foothold Now is built on the ideas behind <b>exposure and response prevention (ERP)</b> and graded exposure—approaches with strong evidence for easing <b>anxiety</b> and the obsessions and compulsions of <b>OCD</b>. And you don’t need a diagnosis to climb: the same gentle practice helps with phobias, social worries, procrastination, and anything else you’ve been avoiding.</p>' +
+      '</div></details>';
   }
 
   function homeHTML() {

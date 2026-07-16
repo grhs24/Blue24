@@ -4,6 +4,13 @@ A single-file web app (`index.html`) for building practice ladders. All markup,
 styles, and script live in that one file; the app stores its data in
 `localStorage` under `foothold.v1`.
 
+Alongside it live three static SEO guide pages—`fear-ladder/`, `erp/`, and
+`stop-avoiding/`—each a self-contained HTML file in the same voice and palette,
+cross-linked from the app's footer. `og.png` is the 1200×630 social share card;
+`robots.txt` and `sitemap.xml` cover the app plus the guides. The site
+deliberately names ERP, OCD, and anxiety for search while emphasizing that no
+diagnosis is needed.
+
 The file also contains an account/sync layer (`var SYNC = ...`). It is now
 configured with a Supabase project: signing in with an email magic link syncs
 the whole app snapshot to the `user_progress` table (keyed by user id, guarded

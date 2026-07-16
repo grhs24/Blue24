@@ -4,4 +4,16 @@
     <loc>https://footholdnow.com/</loc>
     <changefreq>weekly</changefreq>
   </url>
+  <url>
+    <loc>https://footholdnow.com/fear-ladder/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://footholdnow.com/erp/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://footholdnow.com/stop-avoiding/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
