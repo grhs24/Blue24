@@ -46,20 +46,19 @@ add the checkout URL when the paid tier goes live.
 
 ## Winding down (domain sunset)
 
-`sunset/index.html` is a dormant, self-contained goodbye page ("Foothold Now is
-unfortunately no longer available—thank you all greatly for your support"). It
-is not linked from anywhere and does not affect the live app; it is prepped so
-the site can be retired in one step.
+A prepared "goodbye" landing page for retiring the site is kept OFF every
+deployed branch. It lives only on the non-deployed `sunset-prep` branch (at
+`sunset/index.html` there) so nothing about a shutdown is publicly reachable
+while the site is live. To bring it back into a working tree when the time
+comes: `git checkout sunset-prep -- sunset/index.html`.
 
-Important: a lapsed domain cannot serve this—if `footholdnow.com` is not
+Important: a lapsed domain cannot serve any farewell—if `footholdnow.com` is not
 renewed it stops pointing at this repo, so visitors get the registrar's
-"expired/for sale" page or a browser error, not this message (whoever registers
-the name next controls it). To actually show the goodbye page you must either
-(a) keep the domain but replace the app—copy `sunset/index.html` over the root
-`index.html` (`cp sunset/index.html index.html`) and push the deploy branch; or
-(b) drop the domain but keep the free GitHub Pages URL
-(`grhs24.github.io/blue24`) alive with the goodbye page. Preview any time at
-`/sunset/`.
+"expired/for sale" page or a browser error (whoever registers the name next
+controls it). To actually show the prepared page you must either (a) keep the
+domain but replace the app—copy the prepared page over the root `index.html` and
+push the deploy branch; or (b) drop the domain but keep the free GitHub Pages URL
+(`grhs24.github.io/blue24`) alive with the prepared page.
 
 ## Copy style
 
