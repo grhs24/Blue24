@@ -70,7 +70,21 @@
   .cta p { margin: 0; }
   .cta .btn { display: inline-block; margin-top: 14px; padding: 10px 18px; border-radius: 10px; background: var(--accent); color: #FCFDFB; text-decoration: none; font-weight: 600; }
   footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2); line-height: 1.7; }
-  footer .copy-email { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+  footer .copy-email { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; position: relative; }
+  .copy-email.copied::after {
+    content: "Email address copied";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 7px);
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -136,9 +150,9 @@
   var EMAIL = 'footholdnowsupport@gmail.com';
   var t;
   function done() {
-    b.textContent = 'Email address copied';
+    b.classList.add('copied');
     clearTimeout(t);
-    t = setTimeout(function () { b.textContent = EMAIL; }, 2200);
+    t = setTimeout(function () { b.classList.remove('copied'); }, 2200);
   }
   function fallback() {
     var ta = document.createElement('textarea');

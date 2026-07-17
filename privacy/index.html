@@ -42,7 +42,21 @@
   b { font-weight: 600; }
   .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 22px; margin: 18px 0; }
   footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2); line-height: 1.7; }
-  footer .copy-email { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+  footer .copy-email { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; position: relative; }
+  .copy-email.copied::after {
+    content: "Email address copied";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 7px);
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -80,7 +94,7 @@
     <p>No names, no profiles, no advertising trackers, no cookies for tracking, no reading of your ladders for any purpose beyond showing them back to you. The site uses Cloudflare Web Analytics for anonymous, cookie-free page counts (how many visits a page gets)—it cannot see who you are or what you write.</p>
 
     <h2>Surveys, only if you opt in</h2>
-    <p>During beta we may occasionally invite feedback—for example, how using the site felt before and after—through an optional form (such as Qualtrics or Google Forms). Taking part is entirely your choice, and anything you share there is used only to make Foothold Now better.</p>
+    <p>During beta we may occasionally invite feedback—for example, how using the site felt before and after—through an optional form (such as Qualtrics or Google Forms), which may be shared as a link on the website. Taking part is entirely your choice, and anything you share there is used only to make Foothold Now better.</p>
 
     <h2>Deleting your data</h2>
     <p>Your device’s copy is yours to clear anytime (it’s in your browser storage). To delete your synced account data—your email and ladder copy—just ask: <button class="copy-email" type="button" title="Click to copy">footholdnowsupport@gmail.com</button>. We’ll confirm when it’s done.</p>
@@ -101,9 +115,9 @@
   var EMAIL = 'footholdnowsupport@gmail.com';
   var t;
   function done() {
-    b.textContent = 'Email address copied';
+    b.classList.add('copied');
     clearTimeout(t);
-    t = setTimeout(function () { b.textContent = EMAIL; }, 2200);
+    t = setTimeout(function () { b.classList.remove('copied'); }, 2200);
   }
   function fallback() {
     var ta = document.createElement('textarea');
