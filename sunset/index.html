@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foothold Now</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Foothold Now is no longer available. Thank you for your support.">
+<style>
+  :root {
+    --bg: #F2F4EF;
+    --surface: #FCFDFB;
+    --ink: #22302A;
+    --ink2: #59685F;
+    --line: #DBE1D7;
+    --accent: #33685A;
+    --accent-soft: #E0EBE5;
+    --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+    --sans: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --shadow: 0 1px 2px rgba(34, 48, 42, 0.05), 0 8px 24px -12px rgba(34, 48, 42, 0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141B17;
+      --surface: #1C2521;
+      --ink: #E4EAE5;
+      --ink2: #A2B2A8;
+      --line: #303C35;
+      --accent: #7FC0A8;
+      --accent-soft: #24352E;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F4EF; --surface: #FCFDFB; --ink: #22302A; --ink2: #59685F;
+    --line: #DBE1D7; --accent: #33685A; --accent-soft: #E0EBE5;
+    --shadow: 0 1px 2px rgba(34, 48, 42, 0.05), 0 8px 24px -12px rgba(34, 48, 42, 0.12);
+  }
+  :root[data-theme="dark"] {
+    --bg: #141B17; --surface: #1C2521; --ink: #E4EAE5; --ink2: #A2B2A8;
+    --line: #303C35; --accent: #7FC0A8; --accent-soft: #24352E;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 24px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    max-width: 460px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 40px 34px 36px;
+    text-align: center;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+  .brand svg .step { fill: var(--accent); }
+  .brand .name {
+    font-family: var(--serif);
+    font-size: 23px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.2px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.32;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--ink2);
+  }
+  .rule {
+    width: 44px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent-soft);
+    margin: 24px auto 0;
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true">
+        <rect class="step" x="2"  y="18" width="9" height="4" rx="2"></rect>
+        <rect class="step" x="8.5" y="11" width="9" height="4" rx="2" opacity="0.75"></rect>
+        <rect class="step" x="15" y="4"  width="9" height="4" rx="2" opacity="0.5"></rect>
+      </svg>
+      <span class="name">Foothold Now</span>
+    </div>
+    <h1>Foothold Now is unfortunately no longer available.</h1>
+    <p>Thank you all greatly for your support.</p>
+    <div class="rule" aria-hidden="true"></div>
+  </main>
+</body>
+</html>

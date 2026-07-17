@@ -44,6 +44,23 @@ is scaffolded for launch and not yet enforced server-side—the real barrier wil
 be a Supabase RLS policy requiring an active subscription. Flip to `'paid'` and
 add the checkout URL when the paid tier goes live.
 
+## Winding down (domain sunset)
+
+`sunset/index.html` is a dormant, self-contained goodbye page ("Foothold Now is
+unfortunately no longer available—thank you all greatly for your support"). It
+is not linked from anywhere and does not affect the live app; it is prepped so
+the site can be retired in one step.
+
+Important: a lapsed domain cannot serve this—if `footholdnow.com` is not
+renewed it stops pointing at this repo, so visitors get the registrar's
+"expired/for sale" page or a browser error, not this message (whoever registers
+the name next controls it). To actually show the goodbye page you must either
+(a) keep the domain but replace the app—copy `sunset/index.html` over the root
+`index.html` (`cp sunset/index.html index.html`) and push the deploy branch; or
+(b) drop the domain but keep the free GitHub Pages URL
+(`grhs24.github.io/blue24`) alive with the goodbye page. Preview any time at
+`/sunset/`.
+
 ## Copy style
 
 - Em-dashes connect directly to the words on either side, with no spaces:
