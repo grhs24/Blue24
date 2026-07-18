@@ -74,8 +74,9 @@ calls, and behaves exactly as it always has.
    repo. To keep the repo's `SYNC` empty (so the free/artifact build stays
    clean), set the Pages build command to inject the values from
    environment variables:
-   `sed -i "s|url: ''|url: '$SUPABASE_URL'|; s|anonKey: ''|anonKey: '$SUPABASE_ANON_KEY'|; s|checkoutUrl: ''|checkoutUrl: '$CHECKOUT_URL'|" index.html`
-   with build output directory `/`. Add the three env vars in the Pages
+   `sed -i "s|url: ''|url: '$SUPABASE_URL'|; s|anonKey: ''|anonKey: '$SUPABASE_ANON_KEY'|; s|checkoutUrl: ''|checkoutUrl: '$CHECKOUT_URL'|; s|annualCheckoutUrl: ''|annualCheckoutUrl: '$ANNUAL_CHECKOUT_URL'|" index.html`
+   with build output directory `/`. Add the env vars (`SUPABASE_URL`,
+   `SUPABASE_ANON_KEY`, `CHECKOUT_URL`, `ANNUAL_CHECKOUT_URL`) in the Pages
    dashboard. Attach your domain (~$10–12/year, Cloudflare Registrar or
    Porkbun).
 3. **Lemon Squeezy**: create a store (they review it before live payments),
@@ -106,9 +107,14 @@ Everything else (Supabase, Pages, the gate, `is_comped` comps) is identical —
 you swap which webhook you deploy and which checkout link goes in
 `CHECKOUT_URL`. Pick one provider; don't run both.
 
-1. **Product & price**: Stripe Dashboard → Product catalog → add a product with
-   a recurring monthly price ($4.99). Add a free trial on the price if you want
-   one.
+1. **Product & prices**: Stripe Dashboard → Product catalog → add ONE product
+   ("Foothold Now Pro") carrying TWO recurring prices — monthly ($4.99) and
+   yearly ($39.99). Add a free trial if you want one. Keep both on the same
+   product so a single 50%-off coupon applies to either. Checkout opens against
+   these fixed Stripe price IDs; the browser never sends an amount, so price and
+   plan stay authoritative server-side. Put the monthly link in `CHECKOUT_URL`
+   and the yearly link in `ANNUAL_CHECKOUT_URL`, then add a second "Start yearly"
+   button in `renderGate()` pointing at `GATE.annualCheckoutUrl`.
 2. **Column**: if your `profiles` table predates Stripe, run
    `supabase/stripe.sql` once (a fresh `schema.sql` already has the
    `stripe_customer_id` column).
@@ -150,6 +156,18 @@ non-beta users would ride the discount too. Instead issue **one unique,
 single-use code per beta user**, so a leaked code burns itself out after one
 redemption.
 
+**Both plans, one coupon.** Because the coupon isn't tied to a specific price,
+each beta code works whether the user picks the $4.99/mo or the $39.99/yr plan —
+a beta user who chooses yearly still gets their 50% off. Pick the coupon
+**duration** deliberately: `once` gives 50% off the first invoice (about $20 off
+year one on the annual plan, one month on monthly); `repeating` for 12 months
+gives both plans roughly half-off the first year.
+
+**Freeze the beta list at launch.** Once you flip `GATE.mode` off `'beta'`, the
+app stops recording new `beta_signups`, so generate codes from the list as of
+that moment (or filter by `joined_at`) — that way nobody can insert themselves
+into the list after the fact to claim a code.
+
 At launch (Stripe):
 
 1. Create the 50%-off **Coupon** (the discount rule): Stripe Dashboard →
@@ -175,7 +193,21 @@ account — more build than a static Payment Link, noted under "Billing with
 Stripe" above.
 
 Lemon Squeezy has the same shape: a 50% discount with a per-code usage limit of
-1; generate one code per user via its API or dashboard.
+1; generate one code per user via its API or dashboard. Add both a monthly
+($4.99) and a yearly ($39.99) variant, and leave the discount applicable to the
+whole product so it covers either variant.
+
+## Gating sync at launch (optional)
+
+Today cross-device sync is open to every signed-in user — correct for a free
+beta. If at launch you want sync to be a paid feature, run
+`supabase/entitlement_sync.sql` **once, at launch**: it rewrites the
+`user_progress` policies to also require an entitled profile (comped, or an
+active/trialing subscription). Do NOT run it during beta — it would cut sync off
+for free users. To reopen sync later, re-run `supabase/user_progress.sql`.
+Entitlement fields (`sub_status`, `is_comped`) are never writable by the browser
+— only the service-role webhook and you (in the dashboard) set them — so this is
+a true server-side gate, not a client toggle.
 
 Not every beta user signs in — the one-tap "continue free" bypass doesn't
 require it — so only those who sign in are captured (which is also the only way

@@ -1,0 +1,18 @@
+# Never commit secrets or local credential files to this PUBLIC repo.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+
+# Beta coupon exports — contain user emails and one-time codes.
+beta-codes.csv
+beta*.csv
+beta.csv
+
+# Local Supabase CLI state
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor cruft
+.DS_Store

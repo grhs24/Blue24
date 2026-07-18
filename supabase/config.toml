@@ -1,6 +1,16 @@
-# Supabase CLI config. Only the health check runs without JWT verification;
-# every other function keeps the default (verify_jwt = true).
+# Supabase CLI config. The health check and the two payment webhooks run
+# without Supabase JWT verification because their callers (UptimeRobot, Stripe,
+# Lemon Squeezy) do not send a Supabase user token. The webhooks are NOT
+# unprotected: each verifies the payment provider's own HMAC signature against a
+# secret held in Edge Function secrets (never in this repo) before touching any
+# row. Every other function keeps the default (verify_jwt = true).
 project_id = "buqwzfbhqmirqjyqlpey"
 
 [functions.health]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.lemonsqueezy-webhook]
 verify_jwt = false

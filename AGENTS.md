@@ -31,7 +31,21 @@ also binds `profiles.stripe_customer_id` at checkout) and never touch
 
 While `mode: 'beta'`, signed-in users are recorded in the `beta_signups` table
 (`supabase/beta_signups.sql`, insert-only under RLS) so they can be offered a
-50%-off launch coupon—the beta gate and paid wall mention that coupon.
+50%-off launch coupon—the beta gate and paid wall mention that coupon. Two plans
+are planned: **$4.99/mo** and **$39.99/yr** (`GATE.annualCheckoutUrl` is
+reserved for the yearly checkout link). The 50% beta coupon is a plain
+percent-off with no product restriction, so it applies to whichever plan a beta
+user picks—monthly or yearly (see PRODUCT.md → "Beta users and the 50%-off
+launch coupon"). Nothing is live: `mode` stays `'beta'` and both checkout URLs
+are empty.
+
+Entitlement is server-authoritative: `sub_status`/`is_comped` live in `profiles`
+with NO client write policy, so the browser can never grant itself access; only
+the signature-verified webhook (service role) or the dashboard changes them.
+Sync (`user_progress`) is currently open to any signed-in user (right for a free
+beta). To make sync paid at launch, run `supabase/entitlement_sync.sql` once
+(never during beta); `supabase/config.toml` already declares the two webhook
+functions `verify_jwt = false` since they authenticate by provider signature.
 
 There is also an access gate (`var GATE = ...`). `mode: 'off'` disables it
 (free/local build & the published artifact should stay this way). `mode: 'beta'`

@@ -147,7 +147,13 @@ async function main() {
   const expiresAt = Math.floor(Date.now() / 1000) + expiresDays * 86400;
   const outFile = args.out || 'beta-codes.csv';
 
-  // Resolve the coupon (reuse or create).
+  // Resolve the coupon (reuse or create). No `applies_to[products]` restriction
+  // is set, so the coupon is valid on ANY price the customer selects at
+  // checkout — the $4.99/mo plan AND the $39.99/yr plan. A beta user therefore
+  // gets 50% off whichever plan they choose. (With duration=once that's 50% off
+  // their first invoice: ~$20 off year one for annual, one month for monthly;
+  // use --duration repeating --months 12 if you want both plans ~half-off for
+  // the first year.)
   let couponId = args.coupon;
   if (!couponId) {
     const percentOff = parseInt(args['percent-off'] || '50', 10);
