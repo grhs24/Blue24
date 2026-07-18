@@ -8,7 +8,7 @@
 > Ratings fall with repetition; a step that reaches zero settles. The method is
 > rooted in exposure and response prevention (ERP) and graded exposure, with
 > strong evidence for easing anxiety and the obsessions and compulsions of
-> OCD—and no diagnosis is needed to use it. Data stays in the browser
+> OCD—no diagnosis is needed to use it. Data stays in the browser
 > (localStorage) with optional email sign-in for cross-device sync. Free while
 > in beta; a $4.99/month subscription is planned. It is a personal practice
 > companion, not medical care.

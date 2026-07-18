@@ -14,7 +14,7 @@ cue; the gaps are intentional breathing room—silence over the b-roll is fine.
 | Start | Say | What's on screen |
 | ----- | --- | ---------------- |
 | 0:00 | This is Foothold Now—a quiet place to practice the hard things. | Welcome screen |
-| 0:05 | Start with something you've been avoiding—and write down why it matters. | Typing the ladder name and why |
+| 0:05 | Start with something you've been avoiding, and write down why it matters. | Typing the ladder name and why |
 | 0:13 | Break it into small steps, in your own words… | Typing the first step |
 | 0:16 | …and rate each one, zero to a hundred, by how hard it feels right now. | Dragging the rating slider |
 | 0:24 | The ladder puts them in order for you—gentlest first. | Steps re-sorting as they're added |

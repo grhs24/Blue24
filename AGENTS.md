@@ -65,6 +65,9 @@ push the deploy branch; or (b) drop the domain but keep the free GitHub Pages UR
 - Em-dashes connect directly to the words on either side, with no spaces:
   `one at a time—gently, on repeat—until`. (En-dashes in ranges like `0–100`
   also stay closed up.)
+- Never place an em-dash directly before "and" (no `—and`). Recast instead:
+  drop the "and" and keep the dash (`peaks—then comes down`), use a comma
+  (`relief, and the relief teaches`), or split into two sentences.
 - Full sentences end with a period, including placeholder text that reads as a
   sentence (e.g. "A word about how it went (optional).").
 - Short phrases and labels—buttons, headings, chips, field labels, tags—take
