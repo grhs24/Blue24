@@ -5,7 +5,7 @@ styles, and script live in that one file; the app stores its data in
 `localStorage` under `foothold.v1`.
 
 Alongside it live static pages in the same voice and palette, each a
-self-contained HTML file: four SEO guides (`fear-ladder/`, `erp/`, `suds/`,
+self-contained HTML file: five SEO guides (`fear-ladder/`, `erp/`, `ocd-notes/`, `suds/`,
 `stop-avoiding/`), a help page (`add-to-home-screen/`), the founder's
 story (`about/`), and the email/privacy policy (`privacy/`). All are cross-linked from the app's footer and from the
 hamburger site menu next to the logo. `og.png` is the 1200×630 social share card;
