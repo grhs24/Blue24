@@ -149,9 +149,9 @@ async function main() {
 
   // Resolve the coupon (reuse or create). No `applies_to[products]` restriction
   // is set, so the coupon is valid on ANY price the customer selects at
-  // checkout — the $1.99/mo plan AND the $19.99/yr plan. A beta user therefore
+  // checkout — the $1.99/mo plan AND the $14.99/yr plan. A beta user therefore
   // gets 50% off whichever plan they choose. (With duration=once that's 50% off
-  // their first invoice: ~$10 off year one for annual, one month for monthly;
+  // their first invoice: ~$7.50 off year one for annual, one month for monthly;
   // use --duration repeating --months 12 if you want both plans ~half-off for
   // the first year.)
   let couponId = args.coupon;

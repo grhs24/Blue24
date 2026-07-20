@@ -32,7 +32,7 @@ also binds `profiles.stripe_customer_id` at checkout) and never touch
 While `mode: 'beta'`, signed-in users are recorded in the `beta_signups` table
 (`supabase/beta_signups.sql`, insert-only under RLS) so they can be offered a
 50%-off launch coupon—the beta gate and paid wall mention that coupon. Two plans
-are planned: **$1.99/mo** and **$19.99/yr** (`GATE.annualCheckoutUrl` is
+are planned: **$1.99/mo** and **$14.99/yr** (`GATE.annualCheckoutUrl` is
 reserved for the yearly checkout link). The 50% beta coupon is a plain
 percent-off with no product restriction, so it applies to whichever plan a beta
 user picks—monthly or yearly (see PRODUCT.md → "Beta users and the 50%-off
