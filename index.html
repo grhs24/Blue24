@@ -1107,8 +1107,7 @@
     + 'Prediction: What am I afraid could happen?\n'
     + 'Usual response: What compulsion or avoidance do I use?\n'
     + 'Response prevention: What will I refrain from doing?\n'
-    + 'Learning afterward: What did I learn about tolerating uncertainty?\n'
-    + 'Therapist guidance: Was this reviewed with a clinician?';
+    + 'Learning afterward: What did I learn about tolerating uncertainty?';
 
   function betaGatePassed() {
     try { return localStorage.getItem(GATE_PASS_KEY) === 'yes'; } catch (e) { return true; }
@@ -1797,7 +1796,7 @@
         '<div class="slider-line"><input type="range" id="es-rating" name="rating" min="0" max="100" step="5" value="' + step.rating + '">' +
         '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '" style="background:' + sudColor(step.rating) + '"></span><span class="num" data-role="val">' + step.rating + '</span>&nbsp;&middot; ' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
         '<div><label for="es-note">Notes <span class="quieter" style="font-weight:400">(optional)</span></label>' +
-        '<textarea id="es-note" name="note" rows="7" placeholder="' + NOTE_PROMPT + '">' + esc(step.note || '') + '</textarea></div>' +
+        '<textarea id="es-note" name="note" rows="7">' + esc(step.note || NOTE_PROMPT) + '</textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
           '<button class="btn ghost" type="button" data-action="cancel-edit-step">Cancel</button>' +
           '<button class="btn primary" type="submit">Save</button>' +
@@ -1808,7 +1807,7 @@
     if (state.editingNoteId === step.id) {
       h += '<form class="note" data-form="edit-note" data-id="' + step.id + '">' +
         '<p class="eyebrow">Note</p>' +
-        '<textarea id="en-note" name="note" class="note-tall" rows="7" autocomplete="off" aria-label="Step note" placeholder="' + NOTE_PROMPT + '">' + esc(step.note || '') + '</textarea>' +
+        '<textarea id="en-note" name="note" class="note-tall" rows="7" autocomplete="off" aria-label="Step note">' + esc(step.note || NOTE_PROMPT) + '</textarea>' +
         '<div class="note-actions"><button class="btn primary tiny" type="submit">Save note</button></div>' +
         '</form>';
     } else if (step.note) {
@@ -2398,6 +2397,7 @@
       var nst = getStep(ladder, form.getAttribute('data-id'));
       if (!nst) return;
       var newNote = form.note.value.trim();
+      if (newNote === NOTE_PROMPT) newNote = ''; /* untouched scaffold is not a note */
       state.editingNoteId = null;
       if (newNote !== nst.note) {
         var noteRemoved = !newNote;
@@ -2439,7 +2439,9 @@
       if (!ti) return;
       st.title = ti;
       st.rating = parseInt(form.rating.value, 10);
-      st.note = form.note.value.trim();
+      var stNote = form.note.value.trim();
+      if (stNote === NOTE_PROMPT) stNote = ''; /* untouched scaffold is not a note */
+      st.note = stNote;
       save();
       state.editingStepId = null;
       render();
