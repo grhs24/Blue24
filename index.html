@@ -663,6 +663,14 @@
     width: calc(100% + 14px);
     overflow-wrap: anywhere;
   }
+  textarea.note-tall {
+    display: block; width: 100%; margin: 0; padding: 9px 11px;
+    font-family: inherit; font-size: 14px; line-height: 1.6; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    resize: vertical; min-height: 8em;
+  }
+  textarea.note-tall::placeholder { color: var(--ink3); }
+  .rung-body .note .note-actions { display: flex; justify-content: flex-end; margin-top: 9px; }
   .rung-body hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
 
   .practice-form .sliders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 10px 0 12px; }
@@ -1092,6 +1100,15 @@
     annualCheckoutUrl: '' /* $14.99/yr plan checkout link; wire a second "Start yearly" button at launch (see PRODUCT.md). Empty + mode 'beta' = inert */
   };
   var GATE_PASS_KEY = 'foothold.betapass.v1';
+
+  /* Prompts shown in an empty step-note field, to help unpack an exposure/OCD step.
+     Each line is a question to answer in your own words. */
+  var NOTE_PROMPT = 'Exposure: What will I approach?\n'
+    + 'Prediction: What am I afraid could happen?\n'
+    + 'Usual response: What compulsion or avoidance do I use?\n'
+    + 'Response prevention: What will I refrain from doing?\n'
+    + 'Learning afterward: What did I learn about tolerating uncertainty?\n'
+    + 'Therapist guidance: Was this reviewed with a clinician?';
 
   function betaGatePassed() {
     try { return localStorage.getItem(GATE_PASS_KEY) === 'yes'; } catch (e) { return true; }
@@ -1780,7 +1797,7 @@
         '<div class="slider-line"><input type="range" id="es-rating" name="rating" min="0" max="100" step="5" value="' + step.rating + '">' +
         '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '" style="background:' + sudColor(step.rating) + '"></span><span class="num" data-role="val">' + step.rating + '</span>&nbsp;&middot; ' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
         '<div><label for="es-note">Notes <span class="quieter" style="font-weight:400">(optional)</span></label>' +
-        '<textarea id="es-note" name="note" placeholder="What counts as doing this step? Any ground rules for yourself?">' + esc(step.note || '') + '</textarea></div>' +
+        '<textarea id="es-note" name="note" rows="7" placeholder="' + NOTE_PROMPT + '">' + esc(step.note || '') + '</textarea></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
           '<button class="btn ghost" type="button" data-action="cancel-edit-step">Cancel</button>' +
           '<button class="btn primary" type="submit">Save</button>' +
@@ -1791,7 +1808,8 @@
     if (state.editingNoteId === step.id) {
       h += '<form class="note" data-form="edit-note" data-id="' + step.id + '">' +
         '<p class="eyebrow">Note</p>' +
-        '<textarea id="en-note" name="note" class="autogrow note-edit" rows="1" data-enter="submit" autocomplete="off" aria-label="Step note" placeholder="What counts as doing this step? Any ground rules for yourself?">' + esc(step.note || '') + '</textarea>' +
+        '<textarea id="en-note" name="note" class="note-tall" rows="7" autocomplete="off" aria-label="Step note" placeholder="' + NOTE_PROMPT + '">' + esc(step.note || '') + '</textarea>' +
+        '<div class="note-actions"><button class="btn primary tiny" type="submit">Save note</button></div>' +
         '</form>';
     } else if (step.note) {
       h += '<div class="note">' +
