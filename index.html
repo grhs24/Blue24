@@ -55,7 +55,7 @@
     { "@type": "Question", "name": "Can I build an exposure hierarchy ladder on Foothold Now?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike." } },
     { "@type": "Question", "name": "Is Foothold Now free?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes—free while in beta. The site cost money to build and costs money to run, so a subscription with a free trial is planned for later to keep it alive—most likely $1.99 a month or $20.00 a year (~$1.67/month, exactly $1.66⅔/month). We plan for beta users who sign in with their email to get a 50%-off coupon (good on any plan, monthly or yearly) emailed to them at launch." } }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes—free while in beta. The site cost money to build and costs money to run, so a subscription with a free trial is planned for later to keep it alive—most likely $1.99 a month or $19.99 a year (~$1.67/month). We plan for beta users who sign in with their email to get a 50%-off coupon (good on any plan, monthly or yearly) emailed to them at launch." } }
   ]
 }
 </script>
@@ -1083,7 +1083,7 @@
   var GATE = {
     mode: 'beta',
     checkoutUrl: '', /* monthly plan checkout link (Lemon Squeezy Buy link or Stripe Payment Link), used in 'paid' mode */
-    annualCheckoutUrl: '' /* $20.00/yr plan checkout link; wire a second "Start yearly" button at launch (see PRODUCT.md). Empty + mode 'beta' = inert */
+    annualCheckoutUrl: '' /* $19.99/yr plan checkout link; wire a second "Start yearly" button at launch (see PRODUCT.md). Empty + mode 'beta' = inert */
   };
   var GATE_PASS_KEY = 'foothold.betapass.v1';
 
@@ -1677,7 +1677,7 @@
       '<div class="body">' +
         '<p class="quiet"><b>What is Foothold Now?</b><br>Foothold Now (footholdnow.com) is a website for building practice ladders—also called fear ladders, anxiety ladders, or exposure hierarchies. You break something you avoid into small steps, rate each one 0–100, and practice until the hard things lose their grip.</p>' +
         '<p class="quiet"><b>Can I build an exposure hierarchy ladder on Foothold Now?</b><br>Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike.</p>' +
-        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes—free while in beta. The site cost money to build and costs money to run, so a subscription with a free trial is planned for later to keep it alive—most likely $1.99 a month or $20.00 a year (~$1.67/month, exactly $1.66⅔/month). We plan for beta users who sign in with their email to get a 50%-off coupon (good on any plan, monthly or yearly) emailed to them at launch.</p>' +
+        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes—free while in beta. The site cost money to build and costs money to run, so a subscription with a free trial is planned for later to keep it alive—most likely $1.99 a month or $19.99 a year (~$1.67/month). We plan for beta users who sign in with their email to get a 50%-off coupon (good on any plan, monthly or yearly) emailed to them at launch.</p>' +
       '</div></details>';
   }
 
@@ -2475,14 +2475,14 @@
     var body = beta
       ? '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span><span class="beta-badge">Beta</span></div>' +
         '<h1>Free while we’re in beta.</h1>' +
-        '<p class="quiet">Foothold Now cost money to build and costs money to run, so it’s planning to become a subscription—most likely $1.99 a month or $20.00 a year (~$1.67/month, exactly $1.66⅔/month), with a free trial—to keep the site alive. For now, while we’re testing, it’s free for everyone. Thank you for helping shape it.</p>' +
+        '<p class="quiet">Foothold Now cost money to build and costs money to run, so it’s planning to become a subscription—most likely $1.99 a month or $19.99 a year (~$1.67/month), with a free trial—to keep the site alive. For now, while we’re testing, it’s free for everyone. Thank you for helping shape it.</p>' +
         '<div class="gate-actions"><button class="btn primary" data-gate="beta">Continue free as a beta user</button></div>' +
         '<p class="quieter small">We plan for beta users who sign in with their email to get <b>50% off</b> any plan—monthly or yearly—when the subscription launches. We’ll email your coupon at launch. <button class="linklike" data-gate="signin">Sign in with email</button></p>' +
         '<p class="quieter small">If you don’t want to sign in with your email, just click “Continue free as a beta user” above. Your ladders stay private in your browser; email—if you sign in—is used only for sync and your beta discount. <a href="/privacy/">Privacy</a></p>' +
         '<p class="quieter small">Questions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></p>'
       : '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span></div>' +
         '<h1>Practice the hard things.</h1>' +
-        '<p class="quiet">Foothold Now is $1.99 a month or $20.00 a year (~$1.67/month, exactly $1.66⅔/month), with a free trial. Start your trial to build your ladders and keep them in sync across your devices.</p>' +
+        '<p class="quiet">Foothold Now is $1.99 a month or $19.99 a year (~$1.67/month), with a free trial. Start your trial to build your ladders and keep them in sync across your devices.</p>' +
         '<div class="gate-actions">' +
           (GATE.checkoutUrl
             ? '<a class="btn primary" href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Start your free trial</a>'

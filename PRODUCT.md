@@ -109,7 +109,7 @@ you swap which webhook you deploy and which checkout link goes in
 
 1. **Product & prices**: Stripe Dashboard → Product catalog → add ONE product
    ("Foothold Now Pro") carrying TWO recurring prices — monthly ($1.99) and
-   yearly ($20.00). Add a free trial if you want one. Keep both on the same
+   yearly ($19.99). Add a free trial if you want one. Keep both on the same
    product so a single 50%-off coupon applies to either. Checkout opens against
    these fixed Stripe price IDs; the browser never sends an amount, so price and
    plan stay authoritative server-side. Put the monthly link in `CHECKOUT_URL`
@@ -157,7 +157,7 @@ single-use code per beta user**, so a leaked code burns itself out after one
 redemption.
 
 **Both plans, one coupon.** Because the coupon isn't tied to a specific price,
-each beta code works whether the user picks the $1.99/mo or the $20.00/yr plan —
+each beta code works whether the user picks the $1.99/mo or the $19.99/yr plan —
 a beta user who chooses yearly still gets their 50% off. Pick the coupon
 **duration** deliberately: `once` gives 50% off the first invoice (about $10 off
 year one on the annual plan, one month on monthly); `repeating` for 12 months
@@ -194,7 +194,7 @@ Stripe" above.
 
 Lemon Squeezy has the same shape: a 50% discount with a per-code usage limit of
 1; generate one code per user via its API or dashboard. Add both a monthly
-($1.99) and a yearly ($20.00) variant, and leave the discount applicable to the
+($1.99) and a yearly ($19.99) variant, and leave the discount applicable to the
 whole product so it covers either variant.
 
 ## Gating sync at launch (optional)
