@@ -10,7 +10,7 @@
 > strong evidence for easing anxiety and the obsessions and compulsions of
 > OCD—no diagnosis is needed to use it. Data stays in the browser
 > (localStorage) with optional email sign-in for cross-device sync. Free while
-> in beta; a subscription is planned—likely $1.99/month, or $19.99/year (~$1.67/month). It is a personal practice
+> in beta; a subscription is planned—likely $1.99/month, or $19.99/year (~$1.67/month, more precisely $1.6658/month). It is a personal practice
 > companion, not medical care.
 
 ## App
