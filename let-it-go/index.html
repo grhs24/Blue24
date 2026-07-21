@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Let it drift—a cognitive defusion practice—Foothold Now</title>
+<meta name="description" content="A small ACT (Acceptance and Commitment Therapy) practice: write out a hooking thought, then let it drift away. Cognitive defusion for loosening your grip on a sticky thought.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='2' y='18' width='9' height='4' rx='2' fill='%2333685A'/%3E%3Crect x='8.5' y='11' width='9' height='4' rx='2' fill='%2333685A' opacity='0.75'/%3E%3Crect x='15' y='4' width='9' height='4' rx='2' fill='%2333685A' opacity='0.5'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #F2F4EF; --surface: #FCFDFB; --surface2: #E9EDE5;
+    --ink: #22302A; --ink2: #59685F; --ink3: #6F7F77;
+    --line: #DBE1D7; --accent: #33685A; --accent-strong: #2A574B; --accent-soft: #E0EBE5;
+    --on-accent: #F4FAF7;
+    --shadow: 0 1px 2px rgba(34, 48, 42, 0.05), 0 8px 24px -12px rgba(34, 48, 42, 0.12);
+    --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+    --sans: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141B17; --surface: #1C2521; --surface2: #26312B;
+      --ink: #E4EAE5; --ink2: #A2B2A8; --ink3: #7E8E7C;
+      --line: #303C35; --accent: #7FC0A8; --accent-strong: #95D0BA; --accent-soft: #24352E;
+      --on-accent: #0F211B;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F4EF; --surface: #FCFDFB; --surface2: #E9EDE5;
+    --ink: #22302A; --ink2: #59685F; --ink3: #6F7F77;
+    --line: #DBE1D7; --accent: #33685A; --accent-strong: #2A574B; --accent-soft: #E0EBE5;
+    --on-accent: #F4FAF7;
+    --shadow: 0 1px 2px rgba(34, 48, 42, 0.05), 0 8px 24px -12px rgba(34, 48, 42, 0.12);
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #141B17; --surface: #1C2521; --surface2: #26312B;
+    --ink: #E4EAE5; --ink2: #A2B2A8; --ink3: #7E8E7C;
+    --line: #303C35; --accent: #7FC0A8; --accent-strong: #95D0BA; --accent-soft: #24352E;
+    --on-accent: #0F211B;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15.5px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell { max-width: 640px; margin: 0 auto; padding: 28px 20px 72px; }
+
+  /* ---------- header ---------- */
+  header.top { margin-bottom: 40px; }
+  .wordmark {
+    display: inline-flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--ink);
+    font-family: var(--serif); font-size: 21px; font-weight: 500; letter-spacing: 0.01em;
+  }
+  .wordmark svg { display: block; }
+  .wordmark .step { fill: var(--accent); }
+
+  /* ---------- type ---------- */
+  h1, h2 { margin: 0; font-family: var(--serif); font-weight: 500; text-wrap: balance; }
+  h1 { font-size: 33px; line-height: 1.15; }
+  h2 { font-size: 24px; line-height: 1.25; }
+  p { margin: 0; }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--ink3); margin: 0 0 12px;
+  }
+  .lede { color: var(--ink2); font-size: 18px; line-height: 1.55; margin-top: 12px; }
+  .quiet { color: var(--ink2); }
+
+  /* ---------- the tool ---------- */
+  .tool { margin-top: 30px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+  .field-label {
+    display: block;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--ink3); margin-bottom: 10px;
+  }
+  textarea {
+    font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; width: 100%; min-height: 108px; resize: vertical;
+  }
+  textarea::placeholder { color: var(--ink3); }
+  textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+  .hint { color: var(--ink3); font-size: 13.5px; margin-top: 10px; }
+
+  .actions { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--sans); font-size: 14.5px; font-weight: 500;
+    border: none; border-radius: 10px; padding: 10px 18px; cursor: pointer;
+    background: var(--surface2); color: var(--ink);
+    transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  }
+  .btn:hover { background: var(--line); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .btn.primary:hover { background: var(--accent-strong); }
+  .btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+  .btn.primary:disabled:hover { background: var(--accent); }
+  .kbd { color: var(--ink3); font-size: 12.5px; }
+  :is(.btn, textarea, summary, input[type="range"]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* drift-speed control */
+  .speed { margin-top: 18px; }
+  .speed-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .speed-row input[type="range"] {
+    flex: 1; min-width: 0; height: 22px; cursor: pointer;
+    accent-color: var(--accent); background: transparent;
+  }
+  .speed .edge { flex: none; font-size: 12px; color: var(--ink3); }
+
+  /* ---------- phases ---------- */
+  .phase[hidden] { display: none; }
+  .phase-write { animation: fadeIn 0.25s ease; }
+
+  /* release stage: the written thought lifts off and drifts away */
+  .stage {
+    min-height: 220px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px 10px;
+    overflow: visible;
+  }
+  .drift {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 0.12em 0.36em;
+    font-family: var(--serif); font-style: italic; font-size: 24px; line-height: 1.4;
+    color: var(--ink); text-align: center; max-width: 30ch;
+  }
+  .drift .w {
+    display: inline-block;
+    transition:
+      transform var(--dur, 1.9s) cubic-bezier(0.33, 0, 0.15, 1) var(--d, 0ms),
+      opacity var(--dur, 1.9s) ease var(--d, 0ms),
+      filter var(--dur, 1.9s) ease var(--d, 0ms);
+    will-change: transform, opacity, filter;
+  }
+  .drift.go .w {
+    transform: translate(var(--dx, 0), var(--dy, -180px)) rotate(var(--rot, 0deg)) scale(0.92);
+    opacity: 0;
+    filter: blur(9px);
+  }
+
+  /* done */
+  .phase-done { text-align: center; animation: rise 0.5s ease; }
+  .phase-done .mark {
+    width: 46px; height: 46px; margin: 0 auto 16px;
+    display: grid; place-items: center;
+    border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong);
+  }
+  .phase-done h2 { color: var(--ink); }
+  .phase-done p { color: var(--ink2); max-width: 46ch; margin: 12px auto 0; }
+  .phase-done .actions { justify-content: center; margin-top: 22px; }
+
+  /* ---------- explainer ---------- */
+  details.how {
+    margin-top: 26px; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--surface); padding: 4px 18px;
+  }
+  details.how summary {
+    cursor: pointer; list-style: none; padding: 14px 0;
+    font-family: var(--serif); font-size: 17px; color: var(--ink);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  details.how summary::-webkit-details-marker { display: none; }
+  details.how summary .chev { color: var(--ink3); transition: transform 0.2s ease; flex: none; }
+  details.how[open] summary .chev { transform: rotate(180deg); }
+  details.how .body { padding: 0 0 18px; color: var(--ink2); }
+  details.how .body p { margin: 12px 0; }
+  details.how .body p:first-child { margin-top: 4px; }
+  details.how .body b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- footer ---------- */
+  footer.colophon {
+    margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink2); line-height: 1.7; max-width: 58ch;
+  }
+  footer.colophon a { color: var(--accent); text-decoration: underline; }
+  footer.colophon .contact { margin-top: 10px; }
+  .copy-email {
+    background: none; border: 0; padding: 0; font: inherit; color: var(--accent);
+    text-decoration: underline; cursor: pointer; position: relative;
+  }
+  .copy-email.copied { background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 5px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+  .copy-email.copied::after {
+    content: "Email address copied"; position: absolute; left: 0; bottom: calc(100% + 7px);
+    background: var(--ink); color: var(--bg); padding: 5px 11px; border-radius: 999px;
+    font-size: 12.5px; white-space: nowrap; pointer-events: none;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <a class="wordmark" href="/" aria-label="Foothold Now—home">
+      <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true">
+        <rect class="step" x="2" y="18" width="9" height="4" rx="2"></rect>
+        <rect class="step" x="8.5" y="11" width="9" height="4" rx="2" opacity="0.75"></rect>
+        <rect class="step" x="15" y="4" width="9" height="4" rx="2" opacity="0.5"></rect>
+      </svg>
+      Foothold Now
+    </a>
+  </header>
+
+  <main>
+    <p class="eyebrow">ACT · Cognitive defusion</p>
+    <h1>Let it drift</h1>
+    <p class="lede">When a thought hooks in, you don't have to argue with it or shove it away. Write it out below, then let it drift—a small practice from ACT for loosening your grip and letting a thought pass, the way thoughts do.</p>
+
+    <section class="tool" aria-label="Write a thought and let it drift">
+      <!-- write -->
+      <div class="phase phase-write card" id="phaseWrite">
+        <label class="field-label" for="thought">The thought that's hooking you</label>
+        <textarea id="thought" placeholder="Write the thought, in its own words." rows="4" autocomplete="off"></textarea>
+        <p class="hint">If it helps, begin with “I'm having the thought that…”—naming it as a thought is already part of the unhooking.</p>
+        <div class="speed">
+          <label class="field-label" for="speed" style="margin-bottom:0">Drift speed</label>
+          <div class="speed-row">
+            <span class="edge">Slower</span>
+            <input type="range" id="speed" min="0" max="100" value="50" step="1" aria-label="Drift speed">
+            <span class="edge">Faster</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="letGo" type="button" disabled>Let it drift</button>
+          <span class="kbd" aria-hidden="true">or press ⌘/Ctrl + Enter</span>
+        </div>
+      </div>
+
+      <!-- release -->
+      <div class="phase phase-release" id="phaseRelease" hidden>
+        <div class="stage"><div class="drift" id="drift"></div></div>
+      </div>
+
+      <!-- done -->
+      <div class="phase phase-done" id="phaseDone" hidden>
+        <div class="mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13.5l4 4 10-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h2 tabindex="-1" id="doneHeading">Gone—for now.</h2>
+        <p>It may come back; thoughts do. Each time, you can notice it, name it, and let it drift again. The letting-go is the practice, not a one-time fix.</p>
+        <div class="actions">
+          <button class="btn primary" id="again" type="button">Let go of another</button>
+        </div>
+      </div>
+    </section>
+
+    <details class="how">
+      <summary>What am I actually doing here?
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </summary>
+      <div class="body">
+        <p><b>Cognitive defusion</b> is a core skill in Acceptance and Commitment Therapy (ACT). Fusion is when a thought and reality feel like the same thing—when “I'm going to mess this up” lands as a fact to obey rather than a string of words passing through. Defusion is the unhooking: seeing a thought <i>as</i> a thought, and letting it be there without letting it drive.</p>
+        <p>This is not about deciding the thought is false, or forcing it to leave. You're not deleting anything. Writing it out puts a little space between you and the words; watching it drift away rehearses something true—that a thought can come and go on its own, without you gripping it or acting on it.</p>
+        <p>It borrows the spirit of ACT's <i>leaves on a stream</i> exercise: you set each thought on a leaf and let the current carry it, again and again. Defusion and the leaves exercise come from ACT, developed by Steven C. Hayes and colleagues.</p>
+      </div>
+    </details>
+  </main>
+
+  <footer class="colophon">
+    Foothold Now is a personal practice companion, not medical care. If a thought is about harming yourself or someone else, please reach out to a crisis line or someone you trust.
+    <div class="contact">Questions? <button class="copy-email" type="button" title="Click to copy">footholdnowsupport@gmail.com</button>.</div>
+    © 2026 Graham Hong-Sidman. All rights reserved.
+  </footer>
+</div>
+
+<div class="sr-only" role="status" aria-live="polite" id="live"></div>
+
+<script>
+(function () {
+  var ta = document.getElementById('thought');
+  var letGo = document.getElementById('letGo');
+  var again = document.getElementById('again');
+  var speed = document.getElementById('speed');
+  var phaseWrite = document.getElementById('phaseWrite');
+  var phaseRelease = document.getElementById('phaseRelease');
+  var phaseDone = document.getElementById('phaseDone');
+  var drift = document.getElementById('drift');
+  var doneHeading = document.getElementById('doneHeading');
+  var live = document.getElementById('live');
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function rnd(min, max) { return min + Math.random() * (max - min); }
+
+  function syncButton() { letGo.disabled = ta.value.trim().length === 0; }
+  ta.addEventListener('input', syncButton);
+
+  // drift speed: higher slider value = faster (shorter durations).
+  // 50 keeps the default; the ends reach ~2.6x slower and ~0.38x faster.
+  function speedFactor() { return Math.pow(2.6, (50 - parseInt(speed.value, 10)) / 50); }
+  var SPEED_KEY = 'foothold.drift.speed';
+  function describeSpeed(v) {
+    return v < 20 ? 'very slow' : v < 40 ? 'slow' : v < 61 ? 'medium' : v < 81 ? 'fast' : 'very fast';
+  }
+  function syncSpeed() { speed.setAttribute('aria-valuetext', describeSpeed(parseInt(speed.value, 10))); }
+  try { var savedSpeed = localStorage.getItem(SPEED_KEY); if (savedSpeed !== null) speed.value = savedSpeed; } catch (e) {}
+  speed.addEventListener('input', function () {
+    syncSpeed();
+    try { localStorage.setItem(SPEED_KEY, speed.value); } catch (e) {}
+  });
+  syncSpeed();
+
+  function show(phase) {
+    phaseWrite.hidden = phase !== 'write';
+    phaseRelease.hidden = phase !== 'release';
+    phaseDone.hidden = phase !== 'done';
+  }
+
+  function finish() {
+    show('done');
+    live.textContent = 'The thought drifted away.';
+    // move focus to the closing message without scrolling the page
+    try { doneHeading.focus({ preventScroll: true }); } catch (e) { doneHeading.focus(); }
+  }
+
+  function release() {
+    var text = ta.value.trim();
+    if (!text) return;
+
+    var m = speedFactor();
+    var words = text.split(/\s+/);
+    drift.className = 'drift';
+    drift.innerHTML = '';
+    for (var i = 0; i < words.length; i++) {
+      var span = document.createElement('span');
+      span.className = 'w';
+      span.textContent = words[i];
+      var delay = Math.min(i * 60, 900) * m;
+      span.style.setProperty('--d', delay.toFixed(0) + 'ms');
+      span.style.setProperty('--dx', rnd(-46, 46).toFixed(1) + 'px');
+      span.style.setProperty('--dy', (-(120 + rnd(0, 130))).toFixed(1) + 'px');
+      span.style.setProperty('--rot', rnd(-14, 14).toFixed(1) + 'deg');
+      span.style.setProperty('--dur', ((1500 + rnd(0, 800)) * m).toFixed(0) + 'ms');
+      drift.appendChild(span);
+    }
+
+    show('release');
+
+    if (reduce) {
+      // no travel; hold the words a beat (scaled by speed), then close
+      window.setTimeout(finish, Math.round(700 * m));
+      return;
+    }
+
+    var maxDelay = Math.min((words.length - 1) * 60, 900) * m;
+    var total = maxDelay + 2300 * m + 150;
+    // next frame so the transition has a start state to animate from
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { drift.classList.add('go'); });
+    });
+    window.setTimeout(finish, total);
+  }
+
+  function reset() {
+    ta.value = '';
+    syncButton();
+    show('write');
+    ta.focus();
+  }
+
+  letGo.addEventListener('click', release);
+  again.addEventListener('click', reset);
+  ta.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && ta.value.trim()) { e.preventDefault(); release(); }
+  });
+
+  // footer email copy (matches the rest of the site)
+  (function () {
+    var b = document.querySelector('.copy-email');
+    if (!b) return;
+    var EMAIL = 'footholdnowsupport@gmail.com';
+    var t;
+    function done() { b.classList.add('copied'); clearTimeout(t); t = setTimeout(function () { b.classList.remove('copied'); }, 2200); }
+    function fallback() {
+      var el = document.createElement('textarea');
+      el.value = EMAIL; el.setAttribute('readonly', ''); el.style.position = 'fixed'; el.style.opacity = '0';
+      document.body.appendChild(el); el.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      el.remove(); done();
+    }
+    b.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(EMAIL).then(done, fallback);
+      else fallback();
+    });
+  })();
+
+  syncButton();
+})();
+</script>
+</body>
+</html>
