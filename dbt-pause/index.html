@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pause—a DBT step-through for the moment before you react</title>
+<meta name="description" content="A gentle, button-by-button pause for the heat of a moment. Stop, name what you feel, rate it, slow your breathing, and remember: your feelings are real, but your interpretation hasn't been confirmed yet. A DBT distress-tolerance prototype.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='7' y='5' width='4' height='16' rx='2' fill='%2333685A'/%3E%3Crect x='15' y='5' width='4' height='16' rx='2' fill='%2333685A' opacity='0.55'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #F2F4EF; --surface: #FCFDFB; --ink: #22302A; --ink2: #59685F;
+    --line: #DBE1D7; --accent: #33685A; --accent-ink: #FCFDFB;
+    --warn-bg: #F7EDE6; --warn-line: #E4CBB8; --warn-ink: #8A5A3C;
+    --serif: 'Iowan Old Style', 'Newsreader', Georgia, serif;
+    --sans: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141B17; --surface: #1C2521; --ink: #E4EAE5; --ink2: #A2B2A8;
+      --line: #303C35; --accent: #7FC0A8; --accent-ink: #10201A;
+      --warn-bg: #2A211B; --warn-line: #4A3A2C; --warn-ink: #D9B08E;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 16.5px; line-height: 1.65;
+    min-height: 100dvh;
+  }
+  .shell { max-width: 620px; margin: 0 auto; padding: 26px 20px 60px; }
+
+  header.top { margin-bottom: 30px; }
+  header.top .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+
+  /* Progress dots */
+  .dots { display: flex; gap: 7px; margin: 14px 0 4px; }
+  .dots i { width: 26px; height: 4px; border-radius: 2px; background: var(--line); transition: background .3s; }
+  .dots i.on { background: var(--accent); }
+
+  /* Steps */
+  .step { display: none; animation: rise .45s ease both; }
+  .step.active { display: block; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 8px 0 6px; }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: 33px; line-height: 1.18; margin: 0 0 12px; text-wrap: balance; }
+  h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; line-height: 1.2; margin: 6px 0 12px; text-wrap: balance; }
+  p { margin: 12px 0; }
+  .lede { color: var(--ink2); font-size: 18px; }
+  .muted { color: var(--ink2); }
+  .fine { font-size: 13.5px; color: var(--ink2); }
+
+  /* Buttons */
+  .btn {
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    font: inherit; font-weight: 600;
+    background: var(--accent); color: var(--accent-ink);
+    border: 1px solid var(--accent); border-radius: 12px;
+    padding: 13px 22px; transition: transform .08s, filter .15s, opacity .15s;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .btn.wide { width: 100%; }
+  .btn:disabled { opacity: .4; cursor: default; filter: none; }
+  .btnrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 24px; }
+  .linkbtn { background: none; border: 0; padding: 6px 0; font: inherit; color: var(--ink2); cursor: pointer; text-decoration: underline; }
+
+  /* "Not yet" struck actions */
+  .notyet { list-style: none; padding: 0; margin: 18px 0; display: flex; flex-wrap: wrap; gap: 9px; }
+  .notyet li {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 8px 15px; color: var(--ink2); text-decoration: line-through;
+    text-decoration-color: var(--accent); text-decoration-thickness: 2px;
+  }
+
+  /* Emotion chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 9px; margin: 16px 0 4px; }
+  .chip {
+    -webkit-appearance: none; appearance: none; cursor: pointer; font: inherit;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .chip.add { border-style: dashed; color: var(--ink2); }
+  .naming {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin: 20px 0 4px; font-family: var(--serif); font-size: 20px; line-height: 1.4;
+    min-height: 62px;
+  }
+  .naming .empty { color: var(--ink2); font-style: italic; }
+  .customwrap { display: none; gap: 8px; margin-top: 12px; }
+  .customwrap.show { display: flex; }
+  .customwrap input {
+    flex: 1; font: inherit; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  }
+  .customwrap input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* 0-10 scale */
+  .scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 6px; margin: 20px 0 6px; }
+  @media (max-width: 460px) { .scale { grid-template-columns: repeat(6, 1fr); } }
+  .scale button {
+    -webkit-appearance: none; appearance: none; cursor: pointer; font: inherit; font-weight: 600;
+    aspect-ratio: 1; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 12px; font-variant-numeric: tabular-nums; transition: background .12s, border-color .12s, transform .08s;
+  }
+  .scale button:hover { border-color: var(--accent); }
+  .scale button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); transform: translateY(-1px); }
+  .scale-ends { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink2); margin-top: 2px; }
+
+  /* Breathing */
+  .breath-stage { display: flex; flex-direction: column; align-items: center; margin: 26px 0 8px; }
+  .ring {
+    width: 190px; height: 190px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+    border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    transform: scale(.72);
+  }
+  .ring.run { animation: breathe 10s ease-in-out infinite; }
+  @keyframes breathe {
+    0%   { transform: scale(.72); }
+    40%  { transform: scale(1);   }   /* 4s inhale */
+    55%  { transform: scale(1);   }   /* ~1.5s hold */
+    100% { transform: scale(.72); }   /* ~4.5s exhale */
+  }
+  .ring span { font-family: var(--serif); font-size: 21px; color: var(--ink); }
+  .breath-cue { font-family: var(--serif); font-size: 22px; margin: 18px 0 2px; min-height: 30px; text-align: center; }
+  .breath-body { text-align: center; color: var(--ink2); margin: 4px auto 8px; max-width: 400px; }
+  .countdown { text-align: center; color: var(--ink2); font-variant-numeric: tabular-nums; font-size: 14px; margin-top: 4px; }
+
+  /* Reminder / recap */
+  .reminder {
+    font-family: var(--serif); font-size: 26px; line-height: 1.35; text-wrap: balance;
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 14px; padding: 22px 24px; margin: 18px 0;
+  }
+  .recap { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 20px; margin: 18px 0; }
+  .recap .row { display: flex; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .recap .row:last-child { border-bottom: 0; }
+  .recap .k { color: var(--ink2); }
+  .recap .v { font-weight: 600; text-align: right; }
+  .recap .v .arrow { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .delta { font-size: 14px; color: var(--ink2); }
+
+  .note {
+    background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink);
+    border-radius: 12px; padding: 12px 16px; font-size: 14px; margin: 18px 0;
+  }
+
+  footer { margin-top: 46px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <span class="brand">
+      <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true">
+        <rect x="7" y="5" width="4" height="16" rx="2" fill="var(--accent)"></rect>
+        <rect x="15" y="5" width="4" height="16" rx="2" fill="var(--accent)" opacity="0.55"></rect>
+      </svg>
+      Pause
+    </span>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+  </header>
+
+  <!-- 0 · Intro -->
+  <section class="step active" data-step="0">
+    <p class="eyebrow">The moment before you react</p>
+    <h1>Something just landed hard.</h1>
+    <p class="lede">A message, a look, a silence—and now there's heat in your chest and a story forming fast. This is a short, guided pause built on DBT distress-tolerance skills. Five steps, one at a time, before you do anything you can't take back.</p>
+    <div class="btnrow">
+      <button class="btn" data-go="1">Begin</button>
+    </div>
+    <p class="fine" style="margin-top:22px">Nothing you type or tap is saved, sent, or seen by anyone. It clears the moment you close the page.</p>
+  </section>
+
+  <!-- 1 · Stop -->
+  <section class="step" data-step="1">
+    <p class="eyebrow">Step 1 · Stop</p>
+    <h2>Stop—just for a moment.</h2>
+    <p>You don't have to figure anything out right now. You only have to <b>not act yet</b>. The moment can wait for you. For the length of this pause, hold off on:</p>
+    <ul class="notyet">
+      <li>sending another message</li>
+      <li>apologizing</li>
+      <li>withdrawing</li>
+      <li>confronting them</li>
+    </ul>
+    <p class="muted">None of these are off the table forever. They're just not for right now—not until the wave has had a chance to pass.</p>
+    <div class="btnrow">
+      <button class="btn" data-go="2">I've paused.</button>
+      <button class="btn ghost" data-back="0">Back</button>
+    </div>
+  </section>
+
+  <!-- 2 · Name it -->
+  <section class="step" data-step="2">
+    <p class="eyebrow">Step 2 · Name it</p>
+    <h2>Name what's here.</h2>
+    <p>Naming a feeling loosens its grip a little. Tap whatever fits—feelings and urges both. You can pick more than one.</p>
+    <div class="naming" id="naming"><span class="empty">I'm noticing…</span></div>
+    <div class="chips" id="chips"></div>
+    <div class="customwrap" id="customwrap">
+      <input id="custominput" type="text" maxlength="40" placeholder="Name it in your own word" autocomplete="off">
+      <button class="btn" id="customadd" type="button">Add</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn" data-go="3" id="nameNext" disabled>That's what's here.</button>
+      <button class="btn ghost" data-back="1">Back</button>
+    </div>
+  </section>
+
+  <!-- 3 · Rate (before) -->
+  <section class="step" data-step="3">
+    <p class="eyebrow">Step 3 · Rate it</p>
+    <h2>How intense is it, right now?</h2>
+    <p class="muted">No wrong answer—just a reading off the dial this second.</p>
+    <div class="scale" id="scaleBefore" role="group" aria-label="Intensity from 0 to 10"></div>
+    <div class="scale-ends"><span>0 · barely there</span><span>10 · overwhelming</span></div>
+    <div class="btnrow">
+      <button class="btn" data-go="4" id="beforeNext" disabled>Next</button>
+      <button class="btn ghost" data-back="2">Back</button>
+    </div>
+  </section>
+
+  <!-- 4 · Slow down -->
+  <section class="step" data-step="4">
+    <p class="eyebrow">Step 4 · Slow down</p>
+    <h2>Let the wave come down.</h2>
+    <p class="breath-body">Follow the circle. Breathe in as it grows, out as it shrinks. Let your jaw unclench, your shoulders drop, your hands go soft. Feelings peak—then they fall. Give this one the time to fall.</p>
+    <div class="breath-stage">
+      <div class="ring" id="ring"><span id="ringText">Ready</span></div>
+      <div class="breath-cue" id="breathCue"></div>
+      <div class="countdown" id="countdown"></div>
+    </div>
+    <div class="btnrow" style="justify-content:center">
+      <button class="btn" id="breathStart" type="button">Start breathing</button>
+      <button class="btn" id="breathNext" data-go="5" style="display:none">I'm steadier.</button>
+    </div>
+    <div class="btnrow" style="justify-content:center; margin-top:8px">
+      <button class="linkbtn" data-back="3">Back</button>
+    </div>
+  </section>
+
+  <!-- 5 · Reminder + recap -->
+  <section class="step" data-step="5">
+    <p class="eyebrow">Step 5 · Remember</p>
+    <div class="reminder">My feelings are real, but my interpretation hasn't been confirmed yet.</div>
+    <p>The fear is real. The shame is real. The urge is real. What isn't confirmed is <i>the story</i>—what it meant, what they intended, what happens next. That part is still a guess, and you don't have to act on a guess.</p>
+
+    <h2 style="font-size:22px; margin-top:26px">Where you landed</h2>
+    <div class="recap" id="recap"></div>
+
+    <p class="muted">From here you get to <b>choose</b>—wait, check the facts, or respond from steadier ground. Whatever you pick now, you're picking it, not being swept into it.</p>
+
+    <div class="btnrow">
+      <button class="btn" id="restart" type="button">Start over</button>
+    </div>
+    <div class="note">This is a self-guided prototype for exploring what a DBT tool might feel like—not therapy, and not a crisis service. If you might be in danger or thinking of harming yourself, please reach out to a crisis line or someone you trust right now. In the US you can call or text <b>988</b>.</div>
+  </section>
+
+  <footer>
+    A DBT distress-tolerance prototype—built to explore, not to diagnose or treat.
+    Grounded in the skills of stopping, observing, and checking the facts.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var TOTAL = 6; // steps 0..5
+  var state = { emotions: [], before: null, after: null };
+
+  var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+  var dots = document.getElementById('dots');
+  for (var i = 1; i < TOTAL; i++) { var d = document.createElement('i'); dots.appendChild(d); }
+  var dotEls = Array.prototype.slice.call(dots.children);
+
+  function show(n) {
+    steps.forEach(function (s) { s.classList.toggle('active', +s.dataset.step === n); });
+    dotEls.forEach(function (el, idx) { el.classList.toggle('on', idx < n); });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (n === 4) resetBreath();
+    if (n === 5) renderRecap();
+  }
+
+  document.addEventListener('click', function (e) {
+    var go = e.target.closest('[data-go]');
+    if (go) { show(+go.dataset.go); return; }
+    var back = e.target.closest('[data-back]');
+    if (back) { show(+back.dataset.back); return; }
+  });
+
+  /* ---- Step 2: emotions ---- */
+  var EMOTIONS = [
+    'fear', 'shame', 'anger', 'hurt', 'guilt', 'sadness', 'rejection', 'jealousy',
+    'an urge to fix this', 'an urge to withdraw', 'an urge to lash out', 'an urge to explain myself'
+  ];
+  var chips = document.getElementById('chips');
+  var naming = document.getElementById('naming');
+  var nameNext = document.getElementById('nameNext');
+  var customwrap = document.getElementById('customwrap');
+  var custominput = document.getElementById('custominput');
+
+  EMOTIONS.forEach(function (label) {
+    var b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.textContent = label;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () { toggleEmotion(label, b); });
+    chips.appendChild(b);
+  });
+  var addChip = document.createElement('button');
+  addChip.className = 'chip add'; addChip.type = 'button'; addChip.textContent = '+ something else';
+  addChip.addEventListener('click', function () {
+    customwrap.classList.toggle('show');
+    if (customwrap.classList.contains('show')) custominput.focus();
+  });
+  chips.appendChild(addChip);
+
+  function toggleEmotion(label, btn) {
+    var idx = state.emotions.indexOf(label);
+    if (idx > -1) { state.emotions.splice(idx, 1); if (btn) btn.setAttribute('aria-pressed', 'false'); }
+    else { state.emotions.push(label); if (btn) btn.setAttribute('aria-pressed', 'true'); }
+    renderNaming();
+  }
+  document.getElementById('customadd').addEventListener('click', addCustom);
+  custominput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } });
+  function addCustom() {
+    var v = custominput.value.trim().toLowerCase();
+    if (!v || state.emotions.indexOf(v) > -1) { custominput.value = ''; return; }
+    state.emotions.push(v);
+    var b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.textContent = v; b.setAttribute('aria-pressed', 'true');
+    b.addEventListener('click', function () { toggleEmotion(v, b); });
+    chips.insertBefore(b, addChip);
+    custominput.value = '';
+    renderNaming();
+  }
+  function joinList(arr) {
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) return arr[0] + ' and ' + arr[1];
+    return arr.slice(0, -1).join(', ') + ', and ' + arr[arr.length - 1];
+  }
+  function renderNaming() {
+    if (!state.emotions.length) {
+      naming.innerHTML = '<span class="empty">I’m noticing…</span>';
+      nameNext.disabled = true;
+    } else {
+      naming.textContent = 'I’m noticing ' + joinList(state.emotions) + '.';
+      nameNext.disabled = false;
+    }
+  }
+
+  /* ---- Step 3 & re-rate: scales ---- */
+  function buildScale(container, onPick) {
+    for (var v = 0; v <= 10; v++) {
+      (function (val) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = val; b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('click', function () {
+          Array.prototype.forEach.call(container.children, function (c) { c.setAttribute('aria-pressed', 'false'); });
+          b.setAttribute('aria-pressed', 'true');
+          onPick(val);
+        });
+        container.appendChild(b);
+      })(v);
+    }
+  }
+  var beforeNext = document.getElementById('beforeNext');
+  buildScale(document.getElementById('scaleBefore'), function (v) { state.before = v; beforeNext.disabled = false; });
+
+  /* ---- Step 4: breathing ---- */
+  var ring = document.getElementById('ring');
+  var ringText = document.getElementById('ringText');
+  var breathCue = document.getElementById('breathCue');
+  var countdown = document.getElementById('countdown');
+  var breathStart = document.getElementById('breathStart');
+  var breathNext = document.getElementById('breathNext');
+  var GOAL = 60; // seconds of encouraged slowing
+  var cueTimer = null, tickTimer = null, elapsed = 0;
+
+  function resetBreath() {
+    stopBreath();
+    ring.classList.remove('run');
+    ringText.textContent = 'Ready';
+    breathCue.textContent = '';
+    countdown.textContent = '';
+    breathStart.style.display = '';
+    breathNext.style.display = 'none';
+    elapsed = 0;
+  }
+  function stopBreath() {
+    if (cueTimer) { clearInterval(cueTimer); cueTimer = null; }
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+  }
+  breathStart.addEventListener('click', function () {
+    breathStart.style.display = 'none';
+    ring.classList.add('run');
+    breathNext.style.display = ''; // available throughout—no one is trapped
+    var phases = [
+      { t: 'Breathe in', ms: 4000 },
+      { t: 'Hold', ms: 1500 },
+      { t: 'Breathe out', ms: 4500 }
+    ];
+    var pi = 0;
+    function cue() {
+      var p = phases[pi % phases.length];
+      breathCue.textContent = p.t;
+      ringText.textContent = p.t === 'Hold' ? '' : p.t.replace('Breathe ', '');
+      pi++;
+      cueTimer = setTimeout(cue, p.ms);
+    }
+    cue();
+    tickTimer = setInterval(function () {
+      elapsed++;
+      var left = Math.max(0, GOAL - elapsed);
+      if (left > 0) {
+        countdown.textContent = 'Stay a little longer—about ' + left + 's.';
+      } else {
+        countdown.textContent = 'Whenever you’re ready. No rush.';
+        breathNext.textContent = 'I’m steadier.';
+      }
+    }, 1000);
+  });
+  breathNext.addEventListener('click', function () { stopBreath(); });
+
+  /* ---- Step 5: recap ---- */
+  function renderRecap() {
+    var recap = document.getElementById('recap');
+    // If a re-rate scale hasn't been added yet, add it inline here.
+    var named = state.emotions.length ? joinList(state.emotions) : 'something hard to name';
+    var beforeTxt = state.before === null ? '—' : state.before + '/10';
+
+    recap.innerHTML = '';
+    addRow(recap, 'What you named', named);
+    addRow(recap, 'Intensity, at the start', beforeTxt);
+
+    // inline re-rate
+    var wrap = document.createElement('div');
+    wrap.className = 'row';
+    wrap.style.flexDirection = 'column';
+    wrap.style.alignItems = 'stretch';
+    var k = document.createElement('div'); k.className = 'k'; k.textContent = 'Intensity now'; k.style.marginBottom = '6px';
+    var sc = document.createElement('div'); sc.className = 'scale'; sc.style.margin = '4px 0 2px';
+    var delta = document.createElement('div'); delta.className = 'delta';
+    wrap.appendChild(k); wrap.appendChild(sc); wrap.appendChild(delta);
+    recap.appendChild(wrap);
+
+    buildScale(sc, function (v) {
+      state.after = v;
+      if (state.before === null) { delta.textContent = 'Noted: ' + v + '/10.'; return; }
+      var d = state.before - v;
+      if (d > 0) delta.textContent = 'Down ' + d + ' point' + (d === 1 ? '' : 's') + ' from ' + state.before + '. The wave is already moving.';
+      else if (d === 0) delta.textContent = 'Holding at ' + v + '. That’s okay—sometimes it takes longer. You still paused.';
+      else delta.textContent = 'Up a little. Feelings don’t follow rules. The pause still counts—nothing was done in the heat.';
+    });
+    // pre-select "after" if already chosen
+    if (state.after !== null && sc.children[state.after]) sc.children[state.after].click();
+  }
+  function addRow(parent, k, v) {
+    var row = document.createElement('div'); row.className = 'row';
+    var ke = document.createElement('div'); ke.className = 'k'; ke.textContent = k;
+    var ve = document.createElement('div'); ve.className = 'v'; ve.textContent = v;
+    row.appendChild(ke); row.appendChild(ve); parent.appendChild(row);
+  }
+
+  document.getElementById('restart').addEventListener('click', function () {
+    state = { emotions: [], before: null, after: null };
+    // reset UI
+    Array.prototype.forEach.call(chips.querySelectorAll('.chip'), function (c) {
+      if (c === addChip) return;
+      if (EMOTIONS.indexOf(c.textContent) === -1) c.remove(); // remove customs
+      else c.setAttribute('aria-pressed', 'false');
+    });
+    customwrap.classList.remove('show');
+    renderNaming();
+    Array.prototype.forEach.call(document.getElementById('scaleBefore').children, function (c) { c.setAttribute('aria-pressed', 'false'); });
+    beforeNext.disabled = true;
+    show(0);
+  });
+
+  renderNaming();
+})();
+</script>
+</body>
+</html>
