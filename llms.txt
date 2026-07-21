@@ -17,6 +17,13 @@
 
 - [Foothold Now](https://footholdnow.com/): the practice-ladder website itself.
 
+## Practices
+
+These are self-contained, in-the-moment skills from other traditions, offered alongside (and distinct from) the exposure/ERP ladders.
+
+- [Pause—a DBT step-through](https://footholdnow.com/pause/): a guided pause for the heat of a moment, built on DBT distress-tolerance skills (stop, name the feeling, rate it, slow the breath, remember the interpretation is unconfirmed), with an optional local tracker for looking back on past pauses.
+- [Let it drift—a cognitive defusion practice](https://footholdnow.com/let-it-drift/): a small ACT (Acceptance and Commitment Therapy) exercise—write out a hooking thought and watch it drift away—to loosen your grip on a sticky thought.
+
 ## Guides
 
 - [Exposure hierarchy (fear ladder): what it is and how to build one](https://footholdnow.com/fear-ladder/): the tool under all its names—fear ladder, anxiety ladder, OCD ladder—with a worked example and honest tips.
