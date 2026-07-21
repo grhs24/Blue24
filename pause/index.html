@@ -217,6 +217,27 @@
   .log .move { font-size: 14px; color: var(--ink2); font-variant-numeric: tabular-nums; margin-top: 3px; }
   .log .del { background: none; border: 0; color: var(--ink2); cursor: pointer; font: inherit; font-size: 13px; text-decoration: underline; padding: 2px 0; white-space: nowrap; }
   .log-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .log .situation { font-family: var(--serif); font-style: italic; color: var(--ink); margin: 0 0 3px; }
+  .log .rowbtns { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .log .edit { background: none; border: 0; color: var(--accent); cursor: pointer; font: inherit; font-size: 13px; text-decoration: underline; padding: 2px 0; white-space: nowrap; }
+  .editform { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .editform label { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink2); font-weight: 600; }
+  .editform textarea, .editform input {
+    font: inherit; font-size: 15px; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; width: 100%; resize: vertical;
+  }
+  .editform textarea:focus, .editform input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .editform .ebtns { display: flex; gap: 8px; margin-top: 2px; }
+
+  /* Situation field (Name it step) */
+  .field-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink2); margin: 20px 0 8px; }
+  textarea.situation-input {
+    font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 11px 14px; width: 100%; resize: vertical;
+  }
+  textarea.situation-input::placeholder { color: var(--ink2); }
+  textarea.situation-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   footer { margin-top: 46px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2); line-height: 1.7; }
   footer a { color: var(--accent); }
@@ -277,7 +298,9 @@
     <p class="eyebrow">Step 2 · Name it</p>
     <h2>Name what's here.</h2>
     <p>Naming a feeling loosens its grip a little. Tap whatever fits—feelings and urges both. You can pick more than one.</p>
-    <div class="naming" id="naming"><span class="empty">I'm noticing…</span></div>
+    <label class="field-label" for="situation">What are you pausing from? (optional)</label>
+    <textarea id="situation" class="situation-input" rows="2" placeholder="A line about the situation—what just happened." autocomplete="off"></textarea>
+    <div class="naming" id="naming" style="margin-top:20px"><span class="empty">I'm noticing…</span></div>
     <div class="chips" id="chips"></div>
     <div class="customwrap" id="customwrap">
       <input id="custominput" type="text" maxlength="40" placeholder="Name it in your own word" autocomplete="off">
@@ -378,7 +401,7 @@
 (function () {
   "use strict";
   var TOTAL = 6; // steps 0..5
-  var state = { emotions: [], before: null, after: null };
+  var state = { emotions: [], situation: '', before: null, after: null };
   var savedThisRound = false;
 
   var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
@@ -411,6 +434,8 @@
   var nameNext = document.getElementById('nameNext');
   var customwrap = document.getElementById('customwrap');
   var custominput = document.getElementById('custominput');
+  var situationEl = document.getElementById('situation');
+  situationEl.addEventListener('input', function () { state.situation = situationEl.value; });
 
   EMOTIONS.forEach(function (label) {
     var b = document.createElement('button');
@@ -548,6 +573,7 @@
     var beforeTxt = state.before === null ? '—' : state.before + '/10';
 
     recap.innerHTML = '';
+    if (state.situation && state.situation.trim()) addRow(recap, 'The situation', state.situation.trim());
     addRow(recap, 'What you named', named);
     addRow(recap, 'Intensity, at the start', beforeTxt);
 
@@ -619,24 +645,74 @@
     if (!list.length) { pastWrap.hidden = true; log.innerHTML = ''; return; }
     pastWrap.hidden = false;
     var ul = document.createElement('ul');
-    list.forEach(function (rec) {
-      var li = document.createElement('li');
-      var left = document.createElement('div');
-      var when = document.createElement('div'); when.className = 'when'; when.textContent = fmtWhen(rec.at);
-      var named = document.createElement('div'); named.className = 'named';
-      named.textContent = 'Noticed ' + (rec.named || 'something hard to name') + '.';
-      var move = document.createElement('div'); move.className = 'move'; move.textContent = moveText(rec);
-      left.appendChild(when); left.appendChild(named); if (move.textContent) left.appendChild(move);
-      var del = document.createElement('button'); del.className = 'del'; del.type = 'button'; del.textContent = 'Delete';
-      del.addEventListener('click', function () {
-        var cur = loadPauses().filter(function (r) { return r.id !== rec.id; });
-        storePauses(cur); renderLog();
-      });
-      li.appendChild(left); li.appendChild(del);
-      ul.appendChild(li);
-    });
+    list.forEach(function (rec) { ul.appendChild(buildLogItem(rec)); });
     log.innerHTML = '';
     log.appendChild(ul);
+  }
+  function buildLogItem(rec) {
+    var li = document.createElement('li');
+    var left = document.createElement('div');
+    left.style.flex = '1';
+    left.style.minWidth = '0';
+    var when = document.createElement('div'); when.className = 'when'; when.textContent = fmtWhen(rec.at);
+    left.appendChild(when);
+    if (rec.situation && rec.situation.trim()) {
+      var sit = document.createElement('div'); sit.className = 'situation'; sit.textContent = '“' + rec.situation.trim() + '”';
+      left.appendChild(sit);
+    }
+    var named = document.createElement('div'); named.className = 'named';
+    named.textContent = 'Noticed ' + (rec.named || 'something hard to name') + '.';
+    left.appendChild(named);
+    var move = document.createElement('div'); move.className = 'move'; move.textContent = moveText(rec);
+    if (move.textContent) left.appendChild(move);
+
+    var btns = document.createElement('div'); btns.className = 'rowbtns';
+    var edit = document.createElement('button'); edit.className = 'edit'; edit.type = 'button'; edit.textContent = 'Edit';
+    edit.addEventListener('click', function () { openEdit(li, rec); });
+    var del = document.createElement('button'); del.className = 'del'; del.type = 'button'; del.textContent = 'Delete';
+    del.addEventListener('click', function () {
+      var cur = loadPauses().filter(function (r) { return r.id !== rec.id; });
+      storePauses(cur); renderLog();
+    });
+    btns.appendChild(edit); btns.appendChild(del);
+
+    li.appendChild(left); li.appendChild(btns);
+    return li;
+  }
+  function openEdit(li, rec) {
+    var form = document.createElement('div'); form.className = 'editform';
+
+    var sitLabel = document.createElement('label'); sitLabel.textContent = 'What you were pausing from';
+    var sitInput = document.createElement('textarea'); sitInput.rows = 2; sitInput.value = rec.situation || '';
+    sitInput.placeholder = 'A line about the situation.';
+
+    var nameLabel = document.createElement('label'); nameLabel.textContent = 'What you noticed';
+    var nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.value = rec.named || '';
+
+    var ebtns = document.createElement('div'); ebtns.className = 'ebtns';
+    var save = document.createElement('button'); save.className = 'btn small'; save.type = 'button'; save.textContent = 'Save';
+    var cancel = document.createElement('button'); cancel.className = 'btn ghost small'; cancel.type = 'button'; cancel.textContent = 'Cancel';
+    ebtns.appendChild(save); ebtns.appendChild(cancel);
+
+    form.appendChild(sitLabel); form.appendChild(sitInput);
+    form.appendChild(nameLabel); form.appendChild(nameInput);
+    form.appendChild(ebtns);
+    li.innerHTML = '';
+    li.appendChild(form);
+    try { sitInput.focus(); } catch (e) {}
+
+    save.addEventListener('click', function () {
+      var cur = loadPauses();
+      for (var i = 0; i < cur.length; i++) {
+        if (cur[i].id === rec.id) {
+          cur[i].situation = sitInput.value.trim();
+          cur[i].named = nameInput.value.trim() || 'something hard to name';
+          break;
+        }
+      }
+      storePauses(cur); renderLog();
+    });
+    cancel.addEventListener('click', function () { renderLog(); });
   }
   function uid() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
@@ -645,6 +721,7 @@
     var rec = {
       id: uid(),
       at: new Date().toISOString(),
+      situation: (state.situation || '').trim(),
       named: state.emotions.length ? joinList(state.emotions) : 'something hard to name',
       before: state.before,
       after: state.after
@@ -665,7 +742,8 @@
   });
 
   document.getElementById('restart').addEventListener('click', function () {
-    state = { emotions: [], before: null, after: null };
+    state = { emotions: [], situation: '', before: null, after: null };
+    situationEl.value = '';
     Array.prototype.forEach.call(chips.querySelectorAll('.chip'), function (c) {
       if (c === addChip) return;
       if (EMOTIONS.indexOf(c.textContent) === -1) c.remove();
