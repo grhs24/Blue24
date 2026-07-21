@@ -1109,29 +1109,35 @@
   var GATE_PASS_KEY = 'foothold.betapass.v1';
 
   /* Step-note template. Labels are real (pre-filled) text; the question after
-     each label shows as a per-line ghost that clears once that line is answered. */
+     each label shows as a per-line ghost that clears once that line is answered.
+     A blank line above the template leaves room to write freely, and label lines
+     are matched by CONTENT (not line number) so the prompts keep working when
+     text is added above them or an answer runs onto its own line. */
   var NOTE_LABELS = ['Exposure', 'Prediction', 'Usual response', 'Response prevention', 'Learning afterward'];
   var NOTE_QS = ['What will I approach?', 'What am I afraid could happen?', 'What compulsion or avoidance do I use?', 'What will I refrain from doing?', 'What did I learn about tolerating uncertainty?'];
-  var NOTE_SCAFFOLD = NOTE_LABELS.map(function (l) { return l + ': '; }).join('\n');
-  /* true when no line has an answer beyond its label (so the scaffold isn't saved as a note) */
+  /* Two leading newlines: a <textarea> swallows the first, leaving one real blank line of room above. */
+  var NOTE_SCAFFOLD = '\n\n' + NOTE_LABELS.map(function (l) { return l + ': '; }).join('\n');
+  /* which template label a line begins with, or -1 for free text */
+  function noteLabelIndex(line) {
+    for (var j = 0; j < NOTE_LABELS.length; j++) {
+      if (line.indexOf(NOTE_LABELS[j] + ':') === 0) return j;
+    }
+    return -1;
+  }
+  /* the answer a line carries: text after its label, or the whole line if free text */
+  function noteAnswer(line) {
+    var j = noteLabelIndex(line);
+    return j >= 0 ? line.slice((NOTE_LABELS[j] + ':').length).trim() : line.trim();
+  }
+  /* true when no line has an answer (so the untouched scaffold isn't saved as a note) */
   function noteIsBlank(v) {
     var lines = (v || '').split('\n');
-    for (var i = 0; i < lines.length; i++) {
-      var pre = i < NOTE_LABELS.length ? NOTE_LABELS[i] + ':' : null;
-      var ans = (pre && lines[i].indexOf(pre) === 0) ? lines[i].slice(pre.length).trim() : lines[i].trim();
-      if (ans !== '') return false;
-    }
+    for (var i = 0; i < lines.length; i++) { if (noteAnswer(lines[i]) !== '') return false; }
     return true;
   }
   /* For the read-only note display: drop label lines that were never answered. */
   function noteForDisplay(v) {
-    var lines = (v || '').split('\n'), out = [];
-    for (var i = 0; i < lines.length; i++) {
-      var pre = i < NOTE_LABELS.length ? NOTE_LABELS[i] + ':' : null;
-      var ans = (pre && lines[i].indexOf(pre) === 0) ? lines[i].slice(pre.length).trim() : lines[i].trim();
-      if (ans !== '') out.push(lines[i]);
-    }
-    return out.join('\n');
+    return (v || '').split('\n').filter(function (l) { return noteAnswer(l) !== ''; }).join('\n');
   }
   /* Mirror the textarea behind it; add a gray question only on label lines with no answer yet. */
   function buildNoteBackdrop(ta) {
@@ -1140,9 +1146,9 @@
     var lines = ta.value.split('\n'), html = '';
     for (var i = 0; i < lines.length; i++) {
       html += '<span>' + esc(lines[i]) + '</span>';
-      var pre = i < NOTE_LABELS.length ? NOTE_LABELS[i] + ':' : null;
-      if (pre && lines[i].indexOf(pre) === 0 && lines[i].slice(pre.length).trim() === '') {
-        html += '<span class="ghost">' + esc(NOTE_QS[i]) + '</span>';
+      var j = noteLabelIndex(lines[i]);
+      if (j >= 0 && lines[i].slice((NOTE_LABELS[j] + ':').length).trim() === '') {
+        html += '<span class="ghost">' + esc(NOTE_QS[j]) + '</span>';
       }
       html += '\n';
     }
@@ -2161,7 +2167,13 @@
     var first = $('#en-note') || $('#rs-title') || $('#rn-name') || $('#hn-name') || $('#nl-name') || $('#el-name') || $('#es-title');
     if (first) {
       first.focus();
-      if (INLINE_EDITORS[first.id]) first.setSelectionRange(first.value.length, first.value.length);
+      if (first.id === 'en-note' && noteIsBlank(first.value)) {
+        var lbl0 = NOTE_LABELS[0] + ': ', ix0 = first.value.indexOf(lbl0);
+        var pos0 = ix0 >= 0 ? ix0 + lbl0.length : first.value.length;
+        first.setSelectionRange(pos0, pos0); /* land on the first prompt, leaving the blank line above free */
+      } else if (INLINE_EDITORS[first.id]) {
+        first.setSelectionRange(first.value.length, first.value.length);
+      }
     }
   }
 
