@@ -677,7 +677,10 @@
     background: transparent; border: none; border-radius: 8px;
     resize: vertical; min-height: 8em; outline: none;
   }
-  .rung-body .note .note-actions { display: flex; justify-content: flex-end; margin-top: 9px; }
+  .rung-body .note .note-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 9px; }
+  .note-guide { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink2); cursor: pointer; user-select: none; }
+  .note-guide input { cursor: pointer; margin: 0; accent-color: var(--accent); }
+  .note-guide-block { margin-top: 10px; }
   .rung-body hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
 
   .practice-form .sliders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 10px 0 12px; }
@@ -1117,6 +1120,9 @@
   var NOTE_QS = ['What will I approach?', 'What am I afraid could happen?', 'What compulsion or avoidance do I use?', 'What will I refrain from doing?', 'What did I learn about tolerating uncertainty?'];
   /* Two leading newlines: a <textarea> swallows the first, leaving one real blank line of room above. */
   var NOTE_SCAFFOLD = '\n\n' + NOTE_LABELS.map(function (l) { return l + ': '; }).join('\n');
+  var GUIDE_KEY = 'foothold.noteguide.v1';
+  /* whether note fields prefill the template and show the ghost questions (default on) */
+  function guideOn() { try { return localStorage.getItem(GUIDE_KEY) !== 'off'; } catch (e) { return true; } }
   /* which template label a line begins with, or -1 for free text */
   function noteLabelIndex(line) {
     for (var j = 0; j < NOTE_LABELS.length; j++) {
@@ -1147,7 +1153,7 @@
     for (var i = 0; i < lines.length; i++) {
       html += '<span>' + esc(lines[i]) + '</span>';
       var j = noteLabelIndex(lines[i]);
-      if (j >= 0 && lines[i].slice((NOTE_LABELS[j] + ':').length).trim() === '') {
+      if (guideOn() && j >= 0 && lines[i].slice((NOTE_LABELS[j] + ':').length).trim() === '') {
         html += '<span class="ghost">' + esc(NOTE_QS[j]) + '</span>';
       }
       html += '\n';
@@ -1844,7 +1850,8 @@
         '<span class="chip b' + bandOf(step.rating) + '" data-role="band"><span class="dot b' + bandOf(step.rating) + '" style="background:' + sudColor(step.rating) + '"></span><span class="num" data-role="val">' + step.rating + '</span>&nbsp;&middot; ' + BAND_NAMES[bandOf(step.rating)] + '</span></div></div>' +
         '<div><label for="es-note">Notes <span class="quieter" style="font-weight:400">(optional)</span></label>' +
         '<div class="note-wrap"><div class="note-backdrop" aria-hidden="true"></div>' +
-        '<textarea id="es-note" name="note" class="note-tall" rows="7">' + esc(step.note || NOTE_SCAFFOLD) + '</textarea></div></div>' +
+        '<textarea id="es-note" name="note" class="note-tall" rows="7" placeholder="Write a note, or a rule for this step.">' + esc(step.note || (guideOn() ? NOTE_SCAFFOLD : '')) + '</textarea></div>' +
+        '<label class="note-guide note-guide-block"><input type="checkbox" data-action="toggle-guide"' + (guideOn() ? ' checked' : '') + '> Guide questions</label></div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end">' +
           '<button class="btn ghost" type="button" data-action="cancel-edit-step">Cancel</button>' +
           '<button class="btn primary" type="submit">Save</button>' +
@@ -1856,8 +1863,9 @@
       h += '<form class="note" data-form="edit-note" data-id="' + step.id + '">' +
         '<p class="eyebrow">Note</p>' +
         '<div class="note-wrap"><div class="note-backdrop" aria-hidden="true"></div>' +
-        '<textarea id="en-note" name="note" class="note-tall" rows="7" autocomplete="off" aria-label="Step note">' + esc(step.note || NOTE_SCAFFOLD) + '</textarea></div>' +
-        '<div class="note-actions"><button class="btn primary tiny" type="submit">Save note</button></div>' +
+        '<textarea id="en-note" name="note" class="note-tall" rows="7" autocomplete="off" aria-label="Step note" placeholder="Write a note, or a rule for this step.">' + esc(step.note || (guideOn() ? NOTE_SCAFFOLD : '')) + '</textarea></div>' +
+        '<div class="note-actions"><label class="note-guide"><input type="checkbox" data-action="toggle-guide"' + (guideOn() ? ' checked' : '') + '> Guide questions</label>' +
+        '<button class="btn primary tiny" type="submit">Save note</button></div>' +
         '</form>';
     } else if (step.note) {
       h += '<div class="note">' +
@@ -2139,6 +2147,10 @@
       });
       sync();
     });
+    /* keep the note textarea focused when the guide checkbox is clicked (no blur-save, no close) */
+    $all('[data-action="toggle-guide"]').forEach(function (cb) {
+      cb.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    });
     var INLINE_EDITORS = { 'rn-name': 1, 'rs-title': 1, 'en-note': 1, 'hn-name': 1 };
     $all('#rn-name, #rs-title, #en-note, #hn-name').forEach(function (rn) {
       rn.addEventListener('blur', function () {
@@ -2275,6 +2287,23 @@
         state.renamingStepId = id;
         state.editingStepId = null; /* don't show two editors for the same title */
         render(); break;
+
+      case 'toggle-guide': (function () {
+        var on = !guideOn();
+        try { localStorage.setItem(GUIDE_KEY, on ? 'on' : 'off'); } catch (e) {}
+        el.checked = on;
+        var ta = document.getElementById('en-note') || document.getElementById('es-note');
+        if (ta) {
+          if (noteIsBlank(ta.value)) ta.value = on ? NOTE_SCAFFOLD : '';
+          buildNoteBackdrop(ta);
+          ta.focus();
+          if (on && noteIsBlank(ta.value)) {
+            var lbl = NOTE_LABELS[0] + ': ', ix = ta.value.indexOf(lbl);
+            var p = ix >= 0 ? ix + lbl.length : ta.value.length;
+            ta.setSelectionRange(p, p);
+          }
+        }
+      })(); break;
 
       case 'edit-note':
         if (!ladder) break;
