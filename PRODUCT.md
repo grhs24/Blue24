@@ -168,6 +168,18 @@ app stops recording new `beta_signups`, so generate codes from the list as of
 that moment (or filter by `joined_at`) — that way nobody can insert themselves
 into the list after the fact to claim a code.
 
+**Beta users keep their ladders.** Ladder data lives in `localStorage`
+(`foothold.v1`) and, for signed-in users, in the `user_progress` table; the
+mode flip touches neither, so no data is lost in the beta→paid transition, and
+the site tells beta users this. One caveat about *access*: in `'paid'` mode the
+gate blocks the whole app for non-subscribers, so a beta user who does not
+subscribe would be walled off from their still-saved ladders (and from the
+Backup/export button behind the gate). To honor "keep your ladders," grandfather
+your beta cohort at launch — set `is_comped = true` on their `profiles` rows
+(use the `beta_signups` list) so they retain full access. At minimum, give at
+least two weeks' notice (the gate and FAQ promise this) so people can download a
+Backup first.
+
 At launch (Stripe):
 
 1. Create the 50%-off **Coupon** (the discount rule): Stripe Dashboard →
