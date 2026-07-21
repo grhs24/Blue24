@@ -116,7 +116,16 @@
   .btn:disabled { opacity: 0.45; cursor: default; transform: none; }
   .btn.primary:disabled:hover { background: var(--accent); }
   .kbd { color: var(--ink3); font-size: 12.5px; }
-  :is(.btn, textarea, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :is(.btn, textarea, summary, input[type="range"]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* drift-speed control */
+  .speed { margin-top: 18px; }
+  .speed-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .speed-row input[type="range"] {
+    flex: 1; min-width: 0; height: 22px; cursor: pointer;
+    accent-color: var(--accent); background: transparent;
+  }
+  .speed .edge { flex: none; font-size: 12px; color: var(--ink3); }
 
   /* ---------- phases ---------- */
   .phase[hidden] { display: none; }
@@ -232,6 +241,14 @@
         <label class="field-label" for="thought">The thought that's hooking you</label>
         <textarea id="thought" placeholder="Write the thought, in its own words." rows="4" autocomplete="off"></textarea>
         <p class="hint">If it helps, begin with “I'm having the thought that…”—naming it as a thought is already part of the unhooking.</p>
+        <div class="speed">
+          <label class="field-label" for="speed" style="margin-bottom:0">Drift speed</label>
+          <div class="speed-row">
+            <span class="edge">Slower</span>
+            <input type="range" id="speed" min="0" max="100" value="50" step="1" aria-label="Drift speed">
+            <span class="edge">Faster</span>
+          </div>
+        </div>
         <div class="actions">
           <button class="btn primary" id="letGo" type="button" disabled>Let it drift</button>
           <span class="kbd" aria-hidden="true">or press ⌘/Ctrl + Enter</span>
@@ -282,6 +299,7 @@
   var ta = document.getElementById('thought');
   var letGo = document.getElementById('letGo');
   var again = document.getElementById('again');
+  var speed = document.getElementById('speed');
   var phaseWrite = document.getElementById('phaseWrite');
   var phaseRelease = document.getElementById('phaseRelease');
   var phaseDone = document.getElementById('phaseDone');
@@ -294,6 +312,21 @@
 
   function syncButton() { letGo.disabled = ta.value.trim().length === 0; }
   ta.addEventListener('input', syncButton);
+
+  // drift speed: higher slider value = faster (shorter durations).
+  // 50 keeps the default; the ends reach ~2.6x slower and ~0.38x faster.
+  function speedFactor() { return Math.pow(2.6, (50 - parseInt(speed.value, 10)) / 50); }
+  var SPEED_KEY = 'foothold.drift.speed';
+  function describeSpeed(v) {
+    return v < 20 ? 'very slow' : v < 40 ? 'slow' : v < 61 ? 'medium' : v < 81 ? 'fast' : 'very fast';
+  }
+  function syncSpeed() { speed.setAttribute('aria-valuetext', describeSpeed(parseInt(speed.value, 10))); }
+  try { var savedSpeed = localStorage.getItem(SPEED_KEY); if (savedSpeed !== null) speed.value = savedSpeed; } catch (e) {}
+  speed.addEventListener('input', function () {
+    syncSpeed();
+    try { localStorage.setItem(SPEED_KEY, speed.value); } catch (e) {}
+  });
+  syncSpeed();
 
   function show(phase) {
     phaseWrite.hidden = phase !== 'write';
@@ -312,6 +345,7 @@
     var text = ta.value.trim();
     if (!text) return;
 
+    var m = speedFactor();
     var words = text.split(/\s+/);
     drift.className = 'drift';
     drift.innerHTML = '';
@@ -319,25 +353,25 @@
       var span = document.createElement('span');
       span.className = 'w';
       span.textContent = words[i];
-      var delay = Math.min(i * 60, 900);
-      span.style.setProperty('--d', delay + 'ms');
+      var delay = Math.min(i * 60, 900) * m;
+      span.style.setProperty('--d', delay.toFixed(0) + 'ms');
       span.style.setProperty('--dx', rnd(-46, 46).toFixed(1) + 'px');
       span.style.setProperty('--dy', (-(120 + rnd(0, 130))).toFixed(1) + 'px');
       span.style.setProperty('--rot', rnd(-14, 14).toFixed(1) + 'deg');
-      span.style.setProperty('--dur', (1500 + rnd(0, 800)).toFixed(0) + 'ms');
+      span.style.setProperty('--dur', ((1500 + rnd(0, 800)) * m).toFixed(0) + 'ms');
       drift.appendChild(span);
     }
 
     show('release');
 
     if (reduce) {
-      // no travel; hold the words a beat, then close
-      window.setTimeout(finish, 900);
+      // no travel; hold the words a beat (scaled by speed), then close
+      window.setTimeout(finish, Math.round(700 * m));
       return;
     }
 
-    var maxDelay = Math.min((words.length - 1) * 60, 900);
-    var total = maxDelay + 2300 + 150;
+    var maxDelay = Math.min((words.length - 1) * 60, 900) * m;
+    var total = maxDelay + 2300 * m + 150;
     // next frame so the transition has a start state to animate from
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { drift.classList.add('go'); });
