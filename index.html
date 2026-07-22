@@ -778,12 +778,14 @@
   .gate {
     position: fixed; inset: 0;
     background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; overflow-y: auto;
+    display: flex; /* card is centered via its own margin:auto, which stays scrollable when the content is taller than the screen */
+    padding: 24px 20px calc(40px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
     z-index: 45; /* covers the app, but below modals (50) so paid-mode Sign in works */
   }
   .gate-card {
     max-width: 440px; width: 100%;
+    margin: auto; /* centers when there's room; when taller than the viewport it scrolls instead of clipping */
     text-align: center;
     background: var(--surface);
     border: 1px solid var(--line);
