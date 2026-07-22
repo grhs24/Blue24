@@ -28,6 +28,8 @@ These are self-contained, in-the-moment skills from other traditions, offered al
 
 - [Exposure hierarchy (fear ladder): what it is and how to build one](https://footholdnow.com/fear-ladder/): the tool under all its names—fear ladder, anxiety ladder, OCD ladder—with a worked example and honest tips.
 - [ERP therapy, explained gently](https://footholdnow.com/erp/): exposure and response prevention in plain language—the two halves of the name, the evidence, the history from Wolpe to Meyer, and what practice feels like.
+- [DBT distress tolerance: the pause before you react](https://footholdnow.com/dbt-distress-tolerance/): an APA-referenced explainer of the DBT STOP skill and checking the facts, the evidence base, and how a brief pause complements exposure work. Pairs with the Pause practice.
+- [Cognitive defusion in ACT](https://footholdnow.com/cognitive-defusion/): an APA-referenced explainer of cognitive defusion—seeing a thought as a thought—the leaves-on-a-stream lineage, the evidence, and how it complements exposure work. Pairs with the Let it drift practice.
 - [Using your notes to map an OCD loop](https://footholdnow.com/ocd-notes/): unpack the OCD cycle in writing—obsessions and urges, the feared outcome, physical and mental compulsions, avoided situations, and a response-prevention rule per step, with a copyable six-field note template.
 - [The SUDS scale (Subjective Units of Distress), explained](https://footholdnow.com/suds/): the 0–100 distress rating created by Joseph Wolpe—example anchors, why subjectivity is the point, and how it powers exposure practice.
 - [How to stop avoiding things](https://footholdnow.com/stop-avoiding/): the avoidance loop (relief now, interest later) and the graded way out.
