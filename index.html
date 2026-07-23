@@ -1412,6 +1412,131 @@
     pushTimer = setTimeout(function () { pushToServer(); }, 1500);
   }
 
+  /* ---------- privacy-minimized product analytics ----------
+     Counts how many people genuinely start using the ladder feature, via a
+     Supabase anonymous user created ONLY after a guest saves their first step.
+     Kept deliberately SEPARATE from the account/sync layer above: the anonymous
+     tracking session lives under its own key and never becomes the app
+     `session`, so guest ladder content is never uploaded, the Sign-in button
+     never changes, and beta_signups/entitlement are untouched. A signed-in
+     email account, when present, is used as the tracking user instead. Never
+     blocks or interrupts ladder work; failures are swallowed. No ladder content
+     or health data is ever sent—only a UUID, an event name, and an opaque
+     random event key (the ladder's random id). */
+  var TRACK_KEY = 'foothold.track.v1';
+  var trackSession = null;      /* { access_token, refresh_token, user: { id } } — anonymous only */
+  var trackUserPromise = null;  /* in-flight signInAnonymously, shared so concurrent calls make ONE user */
+
+  function loadTrackSession() {
+    try { trackSession = JSON.parse(localStorage.getItem(TRACK_KEY)); } catch (e) { trackSession = null; }
+    if (trackSession && !trackSession.access_token) trackSession = null;
+  }
+  function storeTrackSession() {
+    try {
+      if (trackSession) localStorage.setItem(TRACK_KEY, JSON.stringify(trackSession));
+      else localStorage.removeItem(TRACK_KEY);
+    } catch (e) {}
+  }
+  loadTrackSession();
+
+  /* Optional CAPTCHA/Turnstile hook. Returns a token when abuse protection is
+     wired, else null. If you enable Supabase CAPTCHA protection, mount an
+     invisible Turnstile widget and have it set window.__footholdCaptchaToken.
+     NEVER put a Turnstile SECRET key in this frontend—the secret lives only in
+     the Supabase dashboard. */
+  function captchaToken() {
+    try { return (window.__footholdCaptchaToken) || null; } catch (e) { return null; }
+  }
+
+  /* Create a Supabase anonymous user (GoTrue /signup with no email/password).
+     Requires "Allow anonymous sign-ins" enabled in the Supabase dashboard. */
+  function signInAnonymously() {
+    var body = { data: { account_origin: 'guest_browser' } };
+    var tok = captchaToken();
+    if (tok) body.gotrue_meta_security = { captcha_token: tok };
+    return fetch(SYNC.url + '/auth/v1/signup', {
+      method: 'POST',
+      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('anon signup ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (!j.access_token || !j.user || !j.user.id) throw new Error('anon signup: no session');
+      trackSession = { access_token: j.access_token, refresh_token: j.refresh_token || '', user: { id: j.user.id } };
+      storeTrackSession();
+      return trackSession;
+    });
+  }
+
+  function refreshTrackSession() {
+    if (!trackSession || !trackSession.refresh_token) return Promise.reject(new Error('no track refresh'));
+    return fetch(SYNC.url + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: trackSession.refresh_token })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('track refresh ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      trackSession.access_token = j.access_token;
+      if (j.refresh_token) trackSession.refresh_token = j.refresh_token;
+      if (j.user && j.user.id) trackSession.user = { id: j.user.id };
+      storeTrackSession();
+    });
+  }
+
+  /* Resolve the user to attribute events to. A signed-in email account is
+     preferred (and reused, not duplicated); otherwise an anonymous tracking
+     user is reused or created exactly once. Returns a Promise of { id, kind }. */
+  function ensureTrackingUser() {
+    if (!syncEnabled) return Promise.reject(new Error('sync disabled'));
+    if (session && session.user && session.user.id) return Promise.resolve({ id: session.user.id, kind: 'email' });
+    if (trackSession && trackSession.user && trackSession.user.id) return Promise.resolve({ id: trackSession.user.id, kind: 'anon' });
+    if (trackUserPromise) return trackUserPromise;   /* lock: concurrent callers share one signup */
+    trackUserPromise = signInAnonymously().then(function (s) {
+      trackUserPromise = null;
+      return { id: s.user.id, kind: 'anon' };
+    }, function (e) {
+      trackUserPromise = null;
+      throw e;
+    });
+    return trackUserPromise;
+  }
+
+  /* Insert an analytics event, idempotently (a duplicate is a no-op via the
+     table's unique constraint + Prefer: ignore-duplicates). Fire-and-forget;
+     never awaited on the UI path, never throws into ladder work. */
+  function trackProductEvent(eventName, eventKey) {
+    if (!syncEnabled || !eventName || !eventKey) return;
+    ensureTrackingUser().then(function (u) {
+      var payload = JSON.stringify({ user_id: u.id, event_name: eventName, event_key: String(eventKey) });
+      var prefer = 'resolution=ignore-duplicates,return=minimal';
+      if (u.kind === 'email') {
+        return authFetch('/rest/v1/product_events', {
+          method: 'POST', headers: { Prefer: prefer }, body: payload
+        }).then(function (r) { if (!r.ok && r.status !== 409) throw new Error('event ' + r.status); });
+      }
+      /* anonymous: insert with the tracking token; refresh once on 401, but do
+         NOT create another anonymous user (that would inflate the count) */
+      function insert() {
+        return fetch(SYNC.url + '/rest/v1/product_events', {
+          method: 'POST',
+          headers: { apikey: SYNC.anonKey, Authorization: 'Bearer ' + trackSession.access_token, 'Content-Type': 'application/json', Prefer: prefer },
+          body: payload
+        });
+      }
+      return insert().then(function (r) {
+        if (r.status === 401) return refreshTrackSession().then(insert);
+        return r;
+      }).then(function (r) {
+        if (r && !r.ok && r.status !== 409) throw new Error('event ' + r.status);
+      });
+    }).catch(function (e) {
+      try { console.warn('[foothold] analytics skipped:', (e && e.message) || e); } catch (_) {}
+    });
+  }
+
   /* on sign-in or page load: adopt the account copy when it's safe to,
      push the local copy when it's the one that moved */
   function maybeAutoPull() {
@@ -2748,7 +2873,13 @@
         createdAt: new Date().toISOString()
       });
       if (freeCapActive()) bumpFreeAdds();
-      save(); render();
+      save();
+      /* count a genuine "ladder started" the first time a step is saved to this
+         ladder—after the local save succeeds, never on load or on later edits.
+         ladder.id is the event key (a random UUID, no user content), so the
+         unique constraint makes it fire once per ladder. */
+      if (!memoryOnly && ladder.steps.length === 1) trackProductEvent('ladder_started', ladder.id);
+      render();
       var t = $('.add-step [name="title"]');
       if (t) t.focus();
     }
