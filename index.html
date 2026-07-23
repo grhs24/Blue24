@@ -471,9 +471,8 @@
   .ladder-card .meta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink2); }
 
   .home-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
-  .example-nudge { display: flex; align-items: center; gap: 12px; margin: 4px 0; flex-wrap: wrap; }
-  .example-nudge .ex-check { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--ink2); cursor: pointer; }
-  .example-nudge .ex-check input { accent-color: var(--accent); }
+  .example-nudge { display: flex; align-items: center; gap: 14px; margin: 4px 0; flex-wrap: wrap; }
+  .example-nudge .linklike { font-size: 13px; color: var(--ink2); }
 
   /* ---------- how it works ---------- */
   details.howto { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
@@ -537,6 +536,11 @@
   .ladder-menu .menu-pop button { text-align: left; background: transparent; border: 0; padding: 10px 12px; border-radius: 8px; font: inherit; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .ladder-menu .menu-pop button:hover { background: var(--surface2); }
   .ladder-menu .menu-pop button.danger { color: var(--danger); }
+  /* ⋮ menu on a ladder card on the home list (absolutely placed so it isn't nested in the card button) */
+  .ladder-card-wrap { position: relative; }
+  .ladder-card-wrap:has(.ladder-menu[open]) { z-index: 10; }
+  .ladder-menu.card-menu { position: absolute; top: 12px; right: 12px; }
+  .ladder-card-wrap .ladder-card h2 { padding-right: 40px; }
   .ladder-stats { display: flex; gap: 18px; margin: 16px 0 22px; font-size: 13.5px; color: var(--ink2); flex-wrap: wrap; }
   .ladder-stats b { color: var(--ink); font-weight: 600; }
 
@@ -1849,10 +1853,10 @@
     h += '<div class="home-head"><h1>Your ladders</h1>' +
       (state.addingLadder ? '' : '<button class="btn primary" data-action="new-ladder">New ladder</button>') +
       '</div>' +
-      (state.addingLadder ? '' :
+      (exampleHidden() || state.addingLadder ? '' :
         '<div class="example-nudge">' +
-          '<label class="ex-check"><input type="checkbox" data-action="toggle-example"' + (exampleHidden() ? '' : ' checked') + '> Show an example ladder</label>' +
-          (exampleHidden() ? '' : '<button class="btn ghost tiny" data-action="example">See it</button>') +
+          '<button class="btn ghost tiny" data-action="example">See an example ladder</button>' +
+          '<button class="linklike" data-action="hide-example" title="Stop showing this">Don’t show this</button>' +
         '</div>') +
       '<div style="height:14px"></div><div class="stack">';
 
@@ -1885,10 +1889,19 @@
           '</form>' + body +
         '</div>';
       } else {
-        h += '<button class="card ladder-card" data-action="open-ladder" data-id="' + l.id + '">' +
-          '<h2 data-action="rename-home-ladder" data-id="' + l.id + '" title="Click to rename">' + esc(l.name) + '</h2>' +
-          body +
-        '</button>';
+        h += '<div class="ladder-card-wrap">' +
+          '<button class="card ladder-card" data-action="open-ladder" data-id="' + l.id + '">' +
+            '<h2 data-action="rename-home-ladder" data-id="' + l.id + '" title="Click to rename">' + esc(l.name) + '</h2>' +
+            body +
+          '</button>' +
+          '<details class="ladder-menu card-menu">' +
+            '<summary aria-label="Ladder options" title="Ladder options">&#8942;</summary>' +
+            '<div class="menu-pop">' +
+              '<button type="button" data-action="edit-ladder" data-id="' + l.id + '">Edit details</button>' +
+              '<button type="button" class="danger" data-action="del-ladder" data-id="' + l.id + '">Delete ladder</button>' +
+            '</div>' +
+          '</details>' +
+        '</div>';
       }
     });
 
@@ -2418,7 +2431,9 @@
     if (!el) return;
     var action = el.getAttribute('data-action');
     var id = el.getAttribute('data-id');
-    var ladder = state.ladderId ? getLadder(state.ladderId) : null;
+    /* prefer a ladder named by data-id (e.g. a home card's ⋮ menu); otherwise the open ladder.
+       Step-level ids won't match a ladder, so those fall through to the current ladder. */
+    var ladder = (id && getLadder(id)) || (state.ladderId ? getLadder(state.ladderId) : null);
 
     switch (action) {
       case 'go-home':
@@ -2457,12 +2472,10 @@
         addSampleLadder('just-right'); /* the Just-right sample ladder is the built-in example */
         break;
 
-      case 'toggle-example':
-        try {
-          if (exampleHidden()) localStorage.removeItem(EXAMPLE_HIDE_KEY);
-          else localStorage.setItem(EXAMPLE_HIDE_KEY, 'yes');
-        } catch (e) {}
+      case 'hide-example':
+        try { localStorage.setItem(EXAMPLE_HIDE_KEY, 'yes'); } catch (e) {}
         render();
+        toast('Hidden. You can still find examples in Sample ladders, under the menu.');
         break;
 
       case 'open-ladder':
@@ -2481,7 +2494,10 @@
         state.editingStepId = null; state.editingNoteId = null;
         render(); break;
 
-      case 'edit-ladder': state.editingLadder = true; state.renamingLadder = false; render(); break;
+      case 'edit-ladder':
+        if (ladder) { state.view = 'ladder'; state.ladderId = ladder.id; } /* from a home card, open it first */
+        state.editingLadder = true; state.renamingLadder = false; state.openStepId = null;
+        render(); break;
       case 'cancel-edit-ladder': state.editingLadder = false; render(); break;
 
       case 'rename-ladder':
