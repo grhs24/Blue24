@@ -471,6 +471,8 @@
   .ladder-card .meta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink2); }
 
   .home-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .example-nudge { display: flex; align-items: center; gap: 14px; margin: 4px 0; flex-wrap: wrap; }
+  .example-nudge .linklike { font-size: 13px; color: var(--ink2); }
 
   /* ---------- how it works ---------- */
   details.howto { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
@@ -1148,6 +1150,9 @@
   var GUIDE_KEY = 'foothold.noteguide.v1';
   /* whether note fields prefill the template and show the ghost questions (default on) */
   function guideOn() { try { return localStorage.getItem(GUIDE_KEY) !== 'off'; } catch (e) { return true; } }
+  /* whether the dismissible "See an example ladder" nudge is hidden on the ladders view */
+  var EXAMPLE_HIDE_KEY = 'foothold.hideexample.v1';
+  function exampleHidden() { try { return localStorage.getItem(EXAMPLE_HIDE_KEY) === 'yes'; } catch (e) { return false; } }
   /* which template label a line begins with, or -1 for free text */
   function noteLabelIndex(line) {
     for (var j = 0; j < NOTE_LABELS.length; j++) {
@@ -1833,7 +1838,13 @@
 
     h += '<div class="home-head"><h1>Your ladders</h1>' +
       (state.addingLadder ? '' : '<button class="btn primary" data-action="new-ladder">New ladder</button>') +
-      '</div><div style="height:14px"></div><div class="stack">';
+      '</div>' +
+      (exampleHidden() || state.addingLadder ? '' :
+        '<div class="example-nudge">' +
+          '<button class="btn ghost tiny" data-action="example">See an example ladder</button>' +
+          '<button class="linklike" data-action="hide-example" title="Stop showing this">Don’t show this</button>' +
+        '</div>') +
+      '<div style="height:14px"></div><div class="stack">';
 
     if (state.addingLadder) {
       h += '<form class="card fade-in edit-grid" data-form="create-ladder">' +
@@ -2427,9 +2438,13 @@
       case 'cancel-new-ladder': state.addingLadder = false; render(); break;
 
       case 'example':
-        data.ladders.push(exampleLadder());
-        save(); render();
-        toast('Example added—poke around, then make it yours.');
+        addSampleLadder('just-right'); /* the Just-right sample ladder is the built-in example */
+        break;
+
+      case 'hide-example':
+        try { localStorage.setItem(EXAMPLE_HIDE_KEY, 'yes'); } catch (e) {}
+        render();
+        toast('Hidden. You can still find examples in Sample ladders, under the menu.');
         break;
 
       case 'open-ladder':
