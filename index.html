@@ -2223,9 +2223,7 @@
     if (first) {
       first.focus();
       if (first.id === 'en-note' && noteIsBlank(first.value)) {
-        var lbl0 = NOTE_LABELS[0] + ': ', ix0 = first.value.indexOf(lbl0);
-        var pos0 = ix0 >= 0 ? ix0 + lbl0.length : first.value.length;
-        first.setSelectionRange(pos0, pos0); /* land on the first prompt, leaving the blank line above free */
+        first.setSelectionRange(0, 0); /* land on the blank line above the template so you can start writing there */
       } else if (INLINE_EDITORS[first.id]) {
         first.setSelectionRange(first.value.length, first.value.length);
       }
