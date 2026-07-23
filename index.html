@@ -1264,34 +1264,28 @@
 
   /* ---- Free plan step cap ----
      After launch, a non-subscribing user keeps every ladder and step they
-     already built (grandfathered by a one-time baseline captured the first
-     time the cap is active) but may add only FREE_ADD_LIMIT more steps in
-     total across the whole account. Deleting a step frees room to add
-     another. This is INERT during beta (mode 'beta') and never applies to an
-     entitled subscriber, so nothing is capped today—it activates only when
-     GATE.mode is set to 'free' at launch. */
+     already built, but may add only FREE_ADD_LIMIT more steps, ever. Additions
+     are counted with a running total that ONLY goes up: deleting a step does
+     not free a slot (otherwise the cap could be gamed by deleting and
+     re-adding). Existing steps are grandfathered—they were added before the
+     free plan began and never touched the counter. This is INERT during beta
+     (mode 'beta') and never applies to an entitled subscriber, so nothing is
+     capped today; it activates only when GATE.mode is set to 'free' at launch. */
   var FREE_ADD_LIMIT = 3;
-  var FREE_BASE_KEY = 'foothold.freebase.v1';
+  var FREE_ADDS_KEY = 'foothold.freeadds.v1';
   function freeCapActive() { return GATE.mode === 'free' && !isEntitled(); }
-  function totalStepCount() {
-    var n = 0;
-    for (var i = 0; i < data.ladders.length; i++) n += data.ladders[i].steps.length;
-    return n;
+  function freeAddsUsed() {
+    try { var n = parseInt(localStorage.getItem(FREE_ADDS_KEY), 10); return isNaN(n) ? 0 : n; }
+    catch (e) { return 0; }
   }
-  function freeBaseline() {
-    var v = null;
-    try { var raw = localStorage.getItem(FREE_BASE_KEY); if (raw !== null) v = parseInt(raw, 10); } catch (e) {}
-    if (v === null || isNaN(v)) {
-      v = totalStepCount();
-      try { localStorage.setItem(FREE_BASE_KEY, String(v)); } catch (e) {}
-    }
-    return v;
+  function bumpFreeAdds() {
+    try { localStorage.setItem(FREE_ADDS_KEY, String(freeAddsUsed() + 1)); } catch (e) {}
   }
   function freeAddsLeft() {
     if (!freeCapActive()) return Infinity;
-    return Math.max(0, freeBaseline() + FREE_ADD_LIMIT - totalStepCount());
+    return Math.max(0, FREE_ADD_LIMIT - freeAddsUsed());
   }
-  function stepCapReached() { return freeCapActive() && freeAddsLeft() <= 0; }
+  function stepCapReached() { return freeCapActive() && freeAddsUsed() >= FREE_ADD_LIMIT; }
   function upgradeLink() {
     return GATE.checkoutUrl
       ? '<a href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Subscribe</a>'
@@ -2047,7 +2041,7 @@
     var capped = stepCapReached();
     var addsLeft = freeAddsLeft();
     var capNote = capped
-      ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">You’ve added your ' + FREE_ADD_LIMIT + ' free steps. ' + upgradeLink() + ' for unlimited steps, or remove a step to free one up.</p>'
+      ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">You’ve used your ' + FREE_ADD_LIMIT + ' free steps. ' + upgradeLink() + ' for unlimited steps.</p>'
       : (freeCapActive()
           ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">' + addsLeft + ' free step' + (addsLeft === 1 ? '' : 's') + ' left on the free plan. ' + upgradeLink() + ' for unlimited.</p>'
           : '');
@@ -2563,7 +2557,7 @@
       var title = form.title.value.trim();
       if (!title) return;
       if (stepCapReached()) {
-        toast('That’s your ' + FREE_ADD_LIMIT + ' free steps. Subscribe for unlimited, or remove a step to free one up.');
+        toast('That’s your ' + FREE_ADD_LIMIT + ' free steps. Subscribe for unlimited steps.');
         render();
         return;
       }
@@ -2573,6 +2567,7 @@
         note: '', settled: false, logs: [],
         createdAt: new Date().toISOString()
       });
+      if (freeCapActive()) bumpFreeAdds();
       save(); render();
       var t = $('.add-step [name="title"]');
       if (t) t.focus();

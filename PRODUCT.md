@@ -182,16 +182,17 @@ gate and FAQ promise this) gives everyone time to download a Backup first.
 **Free tier (`'free'` mode).** There are two ways to run post-beta. `'paid'`
 mode is a hard wall (above). `'free'` mode is freemium: the app stays usable
 with **no wall**, and a non-subscribing user keeps every ladder and step they
-already built but may add only **`FREE_ADD_LIMIT` (3) more steps in total**
-across the account. It works by capturing a one-time *baseline* (their step
-count the first time the cap is active) in `localStorage` under
-`foothold.freebase.v1`; existing steps are grandfathered, deleting a step frees
-a slot, and an entitled subscriber (`isEntitled()`) is never capped. The cap is
-**inert while `GATE.mode === 'beta'`**, so it affects nobody today. To launch the
-free tier, set `GATE.mode = 'free'` (and set `GATE.checkoutUrl` so the "Subscribe"
-prompt in the add-step form links to checkout). To change the limit, edit
-`FREE_ADD_LIMIT`. Note the public copy keeps the number vague ("a limited number
-of steps"); only the in-app cap notice names it.
+already built but may add only **`FREE_ADD_LIMIT` (3) more steps, ever**. It
+works by counting additions in a running total under `localStorage`
+`foothold.freeadds.v1` that **only goes up** — deleting a step does *not* free a
+slot, so the cap can't be gamed by delete-and-re-add. Existing steps are
+grandfathered (they were added before the free plan began, so they never touched
+the counter), and an entitled subscriber (`isEntitled()`) is never capped. The
+cap is **inert while `GATE.mode === 'beta'`**, so it affects nobody today. To
+launch the free tier, set `GATE.mode = 'free'` (and set `GATE.checkoutUrl` so the
+"Subscribe" prompt in the add-step form links to checkout). To change the limit,
+edit `FREE_ADD_LIMIT`. Note the public copy keeps the number vague ("a limited
+number of steps"); only the in-app cap notice names it.
 
 At launch (Stripe):
 
