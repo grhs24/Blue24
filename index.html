@@ -904,6 +904,7 @@
       <div class="menu-label">Guides</div>
       <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a>
       <a href="/erp/">ERP, explained gently</a>
+      <a href="/ocd-ladders/">Sample OCD ladders</a>
       <a href="/ocd-notes/">Using your notes to map an OCD loop</a>
       <a href="/suds/">The SUDS scale</a>
       <a href="/stop-avoiding/">How to stop avoiding things</a>
@@ -934,7 +935,7 @@
     unless you sign in to sync your ladders to your account.
     Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
-    <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/ocd-notes/">Using your notes to map an OCD loop</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
+    <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/ocd-ladders/">Sample OCD ladders</a> &middot; <a href="/ocd-notes/">Using your notes to map an OCD loop</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
     <div class="guides">About: <a href="/about/">Why I created Foothold Now</a> &middot; <a href="/privacy/">Email &amp; privacy</a></div>
     <div class="guides">© 2026 Graham Hong-Sidman. All rights reserved.</div>
   </footer>
@@ -2309,6 +2310,81 @@
     };
   }
 
+  /* Ready-made starter ladders offered by the /ocd-ladders/ guide. Each is an
+     illustrative hierarchy adapted from the ERP literature (references live on
+     that guide page), not medical advice—users are meant to reword and re-rate
+     the steps for themselves. Added via a ?sample=<key> link (handleSampleParam). */
+  var SAMPLE_LADDERS = {
+    'just-right': {
+      name: 'Just-right OCD',
+      why: 'Practice letting things be “off” without fixing them.',
+      steps: [
+        ['Leave a picture frame slightly crooked and walk away', 25],
+        ['Put a few books back out of order and leave them', 35],
+        ['Send a text without re-arranging the words to feel “right”', 45],
+        ['Set objects on my desk deliberately uneven, all day', 55],
+        ['Close a drawer or app “halfway,” resisting the urge to redo it', 65],
+        ['Write a paragraph and don’t re-read or even out the wording', 75],
+        ['Leave a task feeling incomplete overnight, no final “just right” check', 85]
+      ]
+    },
+    'perfectionism': {
+      name: 'Perfectionism OCD',
+      why: 'Practice “good enough” and tolerating small mistakes.',
+      steps: [
+        ['Send a casual text after reading it only once', 25],
+        ['Leave a small typo in a low-stakes message on purpose', 35],
+        ['Send an email after a single read, no re-checking', 45],
+        ['Hand in a task at “good enough” rather than perfect', 55],
+        ['Make a deliberate small slip in front of someone', 65],
+        ['Post something publicly without editing it over and over', 75],
+        ['Let a visible imperfection stand in finished work I care about', 85]
+      ]
+    },
+    'avoidance': {
+      name: 'Avoidance OCD',
+      why: 'Practice approaching what I avoid, without the usual outs.',
+      steps: [
+        ['Touch a doorknob and wait ten minutes before washing', 30],
+        ['Touch a light switch, then eat a snack without washing first', 40],
+        ['Use a public door handle and delay washing twenty minutes', 50],
+        ['Touch the outside of a trash can lid and carry on with my day', 60],
+        ['Hold a handrail in public, no hand sanitizer afterward', 70],
+        ['Shake hands, then use my phone without washing', 80],
+        ['Touch something I think of as “very contaminated,” resist washing an hour', 90]
+      ]
+    }
+  };
+
+  function addSampleLadder(key) {
+    var s = SAMPLE_LADDERS[key];
+    if (!s) return false;
+    var now = Date.now();
+    var ladder = {
+      id: uid(), name: s.name, why: s.why || '', createdAt: new Date(now).toISOString(),
+      steps: s.steps.map(function (st, i) {
+        return { id: uid(), title: st[0], rating: st[1], note: '', settled: false, logs: [], createdAt: new Date(now + i).toISOString() };
+      })
+    };
+    data.ladders.push(ladder);
+    save();
+    state.addingLadder = false;
+    state.view = 'ladder'; state.ladderId = ladder.id; state.openStepId = null;
+    render();
+    toast('Added the “' + s.name + '” sample ladder—make it your own: reword each step in your words and re-rate it 0–100.');
+    return true;
+  }
+
+  /* The /ocd-ladders/ guide links here as /?sample=<key>; add that ladder once,
+     then clear the param so a refresh doesn't add it again. */
+  function handleSampleParam() {
+    var m = /[?&]sample=([a-z-]+)/.exec(location.search || '');
+    if (!m) return;
+    var key = m[1];
+    history.replaceState(null, '', location.pathname + location.hash);
+    if (Object.prototype.hasOwnProperty.call(SAMPLE_LADDERS, key)) addSampleLadder(key);
+  }
+
   /* ---------- event delegation ---------- */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-action]');
@@ -2756,6 +2832,7 @@
   })();
 
   render();
+  handleSampleParam(); /* /?sample=<key> from the /ocd-ladders/ guide adds a starter ladder */
   if (syncEnabled) {
     var accountBtn = $('[data-action="open-account"]');
     if (accountBtn) accountBtn.hidden = false;
