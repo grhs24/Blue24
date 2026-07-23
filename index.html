@@ -1261,6 +1261,42 @@
   function isEntitled() {
     return !!(profile && (profile.is_comped || profile.sub_status === 'active' || profile.sub_status === 'on_trial'));
   }
+
+  /* ---- Free plan step cap ----
+     After launch, a non-subscribing user keeps every ladder and step they
+     already built (grandfathered by a one-time baseline captured the first
+     time the cap is active) but may add only FREE_ADD_LIMIT more steps in
+     total across the whole account. Deleting a step frees room to add
+     another. This is INERT during beta (mode 'beta') and never applies to an
+     entitled subscriber, so nothing is capped today—it activates only when
+     GATE.mode is set to 'free' at launch. */
+  var FREE_ADD_LIMIT = 3;
+  var FREE_BASE_KEY = 'foothold.freebase.v1';
+  function freeCapActive() { return GATE.mode === 'free' && !isEntitled(); }
+  function totalStepCount() {
+    var n = 0;
+    for (var i = 0; i < data.ladders.length; i++) n += data.ladders[i].steps.length;
+    return n;
+  }
+  function freeBaseline() {
+    var v = null;
+    try { var raw = localStorage.getItem(FREE_BASE_KEY); if (raw !== null) v = parseInt(raw, 10); } catch (e) {}
+    if (v === null || isNaN(v)) {
+      v = totalStepCount();
+      try { localStorage.setItem(FREE_BASE_KEY, String(v)); } catch (e) {}
+    }
+    return v;
+  }
+  function freeAddsLeft() {
+    if (!freeCapActive()) return Infinity;
+    return Math.max(0, freeBaseline() + FREE_ADD_LIMIT - totalStepCount());
+  }
+  function stepCapReached() { return freeCapActive() && freeAddsLeft() <= 0; }
+  function upgradeLink() {
+    return GATE.checkoutUrl
+      ? '<a href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Subscribe</a>'
+      : 'Subscribe';
+  }
   /* in 'paid' mode, drop the wall for an entitled subscriber; otherwise keep it */
   function refreshPaidGate() {
     if (GATE.mode !== 'paid') return Promise.resolve();
@@ -2008,11 +2044,19 @@
       h += '</div>';
     }
 
+    var capped = stepCapReached();
+    var addsLeft = freeAddsLeft();
+    var capNote = capped
+      ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">You’ve added your ' + FREE_ADD_LIMIT + ' free steps. ' + upgradeLink() + ' for unlimited steps, or remove a step to free one up.</p>'
+      : (freeCapActive()
+          ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">' + addsLeft + ' free step' + (addsLeft === 1 ? '' : 's') + ' left on the free plan. ' + upgradeLink() + ' for unlimited.</p>'
+          : '');
     h += '<form class="card add-step" data-form="add-step">' +
       '<p class="eyebrow">Add a step</p>' +
+      capNote +
       '<div class="row2">' +
-        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="Anything you’d like to practice—a task, situation, or moment." required autocomplete="off" aria-label="Step description"></textarea>' +
-        '<button class="btn primary" type="submit">Add</button>' +
+        '<textarea name="title" class="autogrow" rows="1" data-enter="submit" placeholder="Anything you’d like to practice—a task, situation, or moment."' + (capped ? ' disabled' : '') + ' required autocomplete="off" aria-label="Step description"></textarea>' +
+        '<button class="btn primary" type="submit"' + (capped ? ' disabled' : '') + '>Add</button>' +
       '</div>' +
       '<div class="slider-line">' +
         '<input type="range" name="rating" min="0" max="100" step="5" value="40" aria-label="How hard it feels, 0 to 100">' +
@@ -2518,6 +2562,11 @@
     if (kind === 'add-step' && ladder) {
       var title = form.title.value.trim();
       if (!title) return;
+      if (stepCapReached()) {
+        toast('That’s your ' + FREE_ADD_LIMIT + ' free steps. Subscribe for unlimited, or remove a step to free one up.');
+        render();
+        return;
+      }
       ladder.steps.push({
         id: uid(), title: title,
         rating: parseInt(form.rating.value, 10),
@@ -2574,6 +2623,7 @@
   /* show/hide the gate for the current mode + entitlement. Idempotent. */
   function ensureGate() {
     if (GATE.mode === 'off') { removeGate(); return; }
+    if (GATE.mode === 'free') { removeGate(); return; } /* freemium: no wall—the step cap gates instead */
     if (GATE.mode === 'beta') {
       if (betaGatePassed()) removeGate();
       else if (!gateOverlay) gateOverlay = renderGate();
