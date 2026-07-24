@@ -15,8 +15,7 @@
 // ~3.5 MB). The video length equals the script's real run time, so pacing
 // changes = editing the wait() calls in the walkthrough below. To convert to
 // mp4 for social uploads: ffmpeg -i in.webm -c:v libx264 -pix_fmt yuv420p out.mp4
-// (or any online converter). The beta gate is bypassed via localStorage so the
-// video shows the product, not the gate.
+// (or any online converter).
 
 const http = require('http');
 const fs = require('fs');
@@ -91,7 +90,7 @@ const CHROME = `
         '<svg width="64" height="64" viewBox="0 0 26 26"><rect x="2" y="18" width="9" height="4" rx="2" fill="${P.outroAccent}"/><rect x="8.5" y="11" width="9" height="4" rx="2" fill="${P.outroAccent}" opacity="0.75"/><rect x="15" y="4" width="9" height="4" rx="2" fill="${P.outroAccent}" opacity="0.5"/></svg>' +
         '<div style="font-size:54px;font-weight:500;margin-top:14px">Foothold Now</div>' +
         '<div style="font-size:23px;color:${P.outroSub};margin-top:12px">Practice the hard things—one small step at a time.</div>' +
-        '<div style="font-size:21px;color:${P.outroAccent};margin-top:26px;font-weight:600">footholdnow.com &middot; free while in beta</div>' +
+        '<div style="font-size:21px;color:${P.outroAccent};margin-top:26px;font-weight:600">grhs24.github.io &middot; free</div>' +
         '</div>';
       document.body.appendChild(o);
       requestAnimationFrame(function () { o.style.opacity = '1'; });
@@ -108,7 +107,6 @@ const CHROME = `
     colorScheme: THEME,
     recordVideo: { dir: TMP, size: { width: 1280, height: 720 } },
   });
-  await ctx.addInitScript(() => { try { localStorage.setItem('foothold.betapass.v1', 'yes'); } catch (e) {} });
   await ctx.addInitScript(CHROME);
   const pg = await ctx.newPage();
   await pg.route('**/beacon.min.js', r => r.fulfill({ status: 200, body: '' }));

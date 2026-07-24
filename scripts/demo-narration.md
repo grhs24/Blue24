@@ -22,7 +22,7 @@ cue; the gaps are intentional breathing room—silence over the b-roll is fine.
 | 0:37 | Pick a gentle step, practice it on purpose—then log how it felt: before, at the peak, and after. | Practice form, sliders moving |
 | 0:47 | Keep practicing. When a step comes all the way down to zero, it settles on its own. | "After" slider reaching zero, step settling |
 | 0:52 | Every ladder shows your footholds—settled steps, practices, progress. | Home screen with progress bar |
-| 0:57 | Foothold Now—free while in beta, at footholdnow dot com. | Outro card |
+| 0:57 | Foothold Now—free, at grhs24 dot github dot io. | Outro card |
 
 About 95 words—comfortable inside 62 seconds.
 
