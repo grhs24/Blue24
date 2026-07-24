@@ -855,6 +855,25 @@
     margin-bottom: 20px;
   }
 
+  /* migration notice: shown only on the old domain (footholdnow.com) */
+  .notice-banner {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+  .notice-banner b { color: var(--accent-strong); font-weight: 700; }
+  .notice-banner .notice-cta {
+    background: transparent; border: 0; padding: 0; margin: 0;
+    font: inherit; font-weight: 700; color: var(--accent-strong);
+    text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+  }
+  .notice-banner .notice-cta:hover { color: var(--accent); }
+
   footer.colophon {
     margin-top: 56px;
     padding-top: 20px;
@@ -896,7 +915,7 @@
     <nav id="site-menu" class="site-menu" hidden aria-label="Site menu">
       <div class="menu-label">About</div>
       <a href="/about/">Why I created Foothold Now</a>
-      <a href="/privacy/">Email &amp; privacy</a>
+      <a href="/privacy/">Privacy</a>
       <div class="menu-label">Guides</div>
       <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a>
       <a href="/erp/">ERP, explained gently</a>
@@ -909,6 +928,10 @@
       <button type="button" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button>
     </nav>
   </header>
+
+  <div class="notice-banner" id="migrate-banner" role="status" hidden>
+    <b>Foothold Now is moving to a free home on GitHub.</b> This web address (footholdnow.com) will be retired soon. Your ladders are saved in this browser and won’t carry over to the new address on their own, so please <button type="button" class="notice-cta" data-action="open-backup">download a backup now</button> to bring them with you.
+  </div>
 
   <main id="app" aria-live="polite"><noscript>
     <h1>A quiet place to practice the hard things.</h1>
@@ -930,7 +953,7 @@
     Everything you write stays in this browser—nothing is sent anywhere.    Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
     <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/sample-ladders/">Sample ladders</a> &middot; <a href="/ocd-notes/">Using your notes to map an OCD loop</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
-    <div class="guides">About: <a href="/about/">Why I created Foothold Now</a> &middot; <a href="/privacy/">Email &amp; privacy</a></div>
+    <div class="guides">About: <a href="/about/">Why I created Foothold Now</a> &middot; <a href="/privacy/">Privacy</a></div>
     <div class="guides">© 2026 Graham Hong-Sidman. All rights reserved.</div>
   </footer>
 </div>
@@ -2294,7 +2317,14 @@
   });
 
   render();
-  handleSampleParam(); /* /?sample=<key> from the /sample-ladders/ guide adds a starter ladder */})();
+  handleSampleParam(); /* /?sample=<key> from the /sample-ladders/ guide adds a starter ladder */
+
+  /* Migration notice: only on the old custom domain, so it disappears once the
+     site is reached at its new github.io address. */
+  if (/(^|\.)footholdnow\.com$/i.test(location.hostname)) {
+    var mb = document.getElementById('migrate-banner');
+    if (mb) mb.hidden = false;
+  }})();
 </script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0081041a2ba74cb9b466332bbb002b3f"}'></script><!-- End Cloudflare Web Analytics -->

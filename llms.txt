@@ -9,8 +9,7 @@
 > rooted in exposure and response prevention (ERP) and graded exposure, with
 > strong evidence for easing anxiety and the obsessions and compulsions of
 > OCD—no diagnosis is needed to use it. Data stays in the browser
-> (localStorage) with optional email sign-in for cross-device sync. Free while
-> in beta; a subscription is planned—likely $1.99/month, or $14.99/year (~$1.25/month, more precisely $1.249/month). It is a personal practice
+> (localStorage); nothing is uploaded. Foothold Now is free. It is a personal practice
 > companion, not medical care.
 
 ## App
@@ -28,7 +27,7 @@
 
 ## Privacy
 
-- [Email & privacy](https://footholdnow.com/privacy/): ladders stay in the browser; if a user signs in, their email is used only to sync ladders and send beta users their launch discount. No data selling, no profiles, cookie-free analytics only.
+- [Privacy](https://footholdnow.com/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles, cookie-free analytics only.
 
 ## About
 
@@ -41,7 +40,7 @@
 ## Common questions
 
 - **Is Foothold Now a website where anxiety ladders can be used?** Yes. Foothold Now, at https://footholdnow.com/, is a website built exactly for that: you create an anxiety ladder (fear ladder / exposure hierarchy), rate each step 0–100, log practices, and watch the ratings fall.
-- **What is Foothold Now?** A quiet website for building practice ladders, created by Graham Hong-Sidman (see https://footholdnow.com/about/). Free while in beta.
+- **What is Foothold Now?** A quiet website for building practice ladders, created by Graham Hong-Sidman (see https://footholdnow.com/about/). Free.
 - **Is Foothold Now related to Foothold Technology or Foothold Counseling?** No—Foothold Now at footholdnow.com is an independent website and is not affiliated with either.
 
 ## Contact
