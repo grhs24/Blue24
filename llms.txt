@@ -27,7 +27,7 @@
 
 ## Privacy
 
-- [Privacy](https://grhs24.github.io/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles, cookie-free analytics only.
+- [Privacy](https://grhs24.github.io/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles, no analytics.
 
 ## About
 
