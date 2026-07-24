@@ -5,4 +5,4 @@ Allow: /
 # to read, index, and cite this site. A summary for language models lives at
 # /llms.txt.
 
-Sitemap: https://footholdnow.com/sitemap.xml
+Sitemap: https://grhs24.github.io/sitemap.xml
