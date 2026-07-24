@@ -33,7 +33,7 @@
   "operatingSystem": "Any",
   "author": { "@type": "Person", "name": "Graham Hong-Sidman", "jobTitle": "Founder and Creator, Foothold Now", "url": "https://footholdnow.com/about/" },
   "keywords": "practice ladder, fear ladder, anxiety ladder, OCD ladder, exposure ladder, exposure hierarchy, ERP, ERP therapy, exposure and response prevention, graded exposure, OCD, anxiety, phobia, avoidance, SUDS, subjective units of distress scale",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free during beta." }
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free." }
 }
 </script>
 <script type="application/ld+json">
@@ -55,10 +55,7 @@
     { "@type": "Question", "name": "Can I build an exposure hierarchy ladder on Foothold Now?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike." } },
     { "@type": "Question", "name": "Is Foothold Now free?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes—free for everyone while we are in beta, with everything unlimited. Foothold Now plans to offer a free version after beta testing as well, where you can build a limited number of steps at no cost. For all its features, including unlimited steps, there will most likely be a subscription—at $1.99 a month or $14.99 a year (~$1.25/month, more precisely $1.249/month), with a free trial. It cost money to build this website and costs money to run this website, so the subscription keeps it alive. We plan for beta users who sign in with their email to get a 50%-off coupon (good on any plan, monthly or yearly) emailed to them at launch." } },
-    { "@type": "Question", "name": "When does the beta end, and do I keep my ladders?",
-      "acceptedAnswer": { "@type": "Answer", "text": "We plan for beta to end on November 1st, 2026, when the product will launch, though that may change. We will post at least two weeks' notice here first. Your ladders and progress are always yours to keep—saved in your browser, in your account if you sign in, and downloadable anytime as a Backup, so nothing is lost." } }
-  ]
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Foothold Now is free. You can build unlimited practice ladders and steps at no cost, with nothing to buy." } }  ]
 }
 </script>
 </head>
@@ -285,21 +282,6 @@
   .wordmark svg { display: block; }
   .wordmark .step { fill: var(--accent); }
   .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
-  .beta-badge {
-    flex-shrink: 0;
-    font-family: var(--sans);
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent-strong);
-    background: var(--accent-soft);
-    border-radius: 999px;
-    padding: 3px 8px;
-    line-height: 1;
-    align-self: center;
-    margin-top: 2px;
-  }
 
   /* ---------- type ---------- */
   h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 500; text-wrap: balance; }
@@ -810,14 +792,14 @@
     flex-shrink: 0;
   }
 
-  /* access gate (paywall / beta welcome) */
+  /* full-screen overlay styles (retained for modals) */
   .gate {
     position: fixed; inset: 0;
     background: var(--bg);
     display: flex; /* card is centered via its own margin:auto, which stays scrollable when the content is taller than the screen */
     padding: 24px 20px calc(40px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto; -webkit-overflow-scrolling: touch;
-    z-index: 45; /* covers the app, but below modals (50) so paid-mode Sign in works */
+    z-index: 45; /* covers the app, but below modals (50) */
   }
   .gate-card {
     max-width: 440px; width: 100%;
@@ -873,24 +855,6 @@
     margin-bottom: 20px;
   }
 
-  .notice-banner {
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-    border: 1px solid var(--accent);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 13.5px;
-    line-height: 1.55;
-    margin-bottom: 22px;
-  }
-  .notice-banner b { color: var(--accent-strong); font-weight: 700; }
-  .notice-banner .notice-cta {
-    background: transparent; border: 0; padding: 0; margin: 0;
-    font: inherit; font-weight: 700; color: var(--accent-strong);
-    text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
-  }
-  .notice-banner .notice-cta:hover { color: var(--accent); }
-
   footer.colophon {
     margin-top: 56px;
     padding-top: 20px;
@@ -925,10 +889,8 @@
         </svg>
         Foothold Now
       </button>
-      <span class="beta-badge" title="Foothold Now is in beta—free while we test">Beta</span>
     </div>
     <span style="display:flex;gap:6px">
-      <button class="btn ghost tiny" data-action="open-account" hidden>Sign in</button>
       <button class="btn ghost tiny" data-action="open-backup">Backup</button>
     </span>
     <nav id="site-menu" class="site-menu" hidden aria-label="Site menu">
@@ -948,10 +910,6 @@
     </nav>
   </header>
 
-  <div class="notice-banner" role="status">
-    <b>Foothold Now is going fully free.</b> We’re moving to a free home on GitHub, and this web address will be retired soon. Your ladders are saved in this browser and won’t carry over to the new address on their own, so please <button type="button" class="notice-cta" data-action="open-backup">download a backup now</button> to bring them with you.
-  </div>
-
   <main id="app" aria-live="polite"><noscript>
     <h1>A quiet place to practice the hard things.</h1>
     <p>Foothold Now helps you build practice ladders: name what you’re working
@@ -969,9 +927,7 @@
   <footer class="colophon">
     Foothold Now is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
-    Everything you write stays in this browser—nothing is sent anywhere
-    unless you sign in to sync your ladders to your account.
-    Use <b>Backup</b> now and then to keep a copy safe.
+    Everything you write stays in this browser—nothing is sent anywhere.    Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
     <div class="guides">Guides: <a href="/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/erp/">ERP, explained gently</a> &middot; <a href="/sample-ladders/">Sample ladders</a> &middot; <a href="/ocd-notes/">Using your notes to map an OCD loop</a> &middot; <a href="/suds/">The SUDS scale</a> &middot; <a href="/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
     <div class="guides">About: <a href="/about/">Why I created Foothold Now</a> &middot; <a href="/privacy/">Email &amp; privacy</a></div>
@@ -1027,7 +983,6 @@
     if (contentSig(data) !== lastContentSig || !data.savedAt) {
       data.savedAt = new Date().toISOString();
       lastContentSig = contentSig(data);
-      queuePush(); /* no-op except on the hosted Pro build, signed in */
     }
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
@@ -1142,38 +1097,10 @@
     });
   }
 
-  /* ---------- account & sync ----------
-     When SYNC is configured, signing in with an email link syncs the whole
-     app snapshot to a Supabase row (table user_progress), keyed by user id
-     and protected by row-level security so each person can only touch their
-     own row. localStorage stays the offline cache and source of truth; the
-     account row is a mirror kept up to date on every change. Leaving SYNC
-     empty (e.g. in the published artifact) disables all of it: no Sign in
-     button, no network calls—identical to the free local app. Talks to
-     Supabase's REST/auth API directly with fetch—no libraries, no CDN. */
-  var SYNC = {
-    url: 'https://buqwzfbhqmirqjyqlpey.supabase.co', /* Supabase project URL */
-    anonKey: 'sb_publishable_EjaKYV5TBRyuTSBbSUqrng_AaSKjFhW' /* Supabase publishable key (safe to ship; RLS protects data) */
-  };
-  var syncEnabled = !!(SYNC.url && SYNC.anonKey);
-  var SESSION_KEY = 'foothold.session.v1';
-  var SYNCMARK_KEY = 'foothold.syncmark.v1';
 
-  /* ---------- access gate (paywall) ----------
-     mode: 'off'  = no gate, app is open (the free/local build & artifact).
-           'beta' = show a welcome gate with a one-tap "continue free as a beta
-                    user" button; that click is remembered so they aren't asked
-                    again. Nothing is charged.
-           'paid' = show a subscribe wall (scaffolded for launch): the app is
-                    for subscribers only, opened via the Lemon Squeezy checkout.
-     Flip mode to 'paid' and fill checkoutUrl when the paid tier goes live. */
-  var GATE = {
-    mode: 'beta',
-    checkoutUrl: '', /* monthly plan checkout link (Lemon Squeezy Buy link or Stripe Payment Link), used in 'paid' mode */
-    annualCheckoutUrl: '' /* $14.99/yr plan checkout link; wire a second "Start yearly" button at launch (see PRODUCT.md). Empty + mode 'beta' = inert */
-  };
-  var GATE_PASS_KEY = 'foothold.betapass.v1';
-
+  /* ---------- access gate ----------
+     Local-only build: the app is always open, with no accounts. */
+  var GATE = { mode: 'off' };
   /* Step-note template. Labels are real (pre-filled) text; the question after
      each label shows as a per-line ghost that clears once that line is answered.
      A blank line above the template leaves room to write freely, and label lines
@@ -1228,596 +1155,6 @@
     back.scrollTop = ta.scrollTop;
   }
 
-  function betaGatePassed() {
-    try { return localStorage.getItem(GATE_PASS_KEY) === 'yes'; } catch (e) { return true; }
-  }
-  var session = null;      /* { access_token, refresh_token, user: { id, email } } */
-  var pushTimer = null;
-  var suppressPush = false;
-  var lastSyncedAt = null;
-
-  function loadStoredSession() {
-    try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { session = null; }
-    if (session && !session.access_token) session = null;
-  }
-
-  function storeSession() {
-    try {
-      if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      else localStorage.removeItem(SESSION_KEY);
-    } catch (e) {}
-  }
-
-  function setMark(savedAt, serverUpdatedAt) {
-    try { localStorage.setItem(SYNCMARK_KEY, JSON.stringify({ pushedSavedAt: savedAt || null, serverUpdatedAt: serverUpdatedAt || null })); } catch (e) {}
-  }
-
-  function signOutLocal() {
-    session = null;
-    profile = null;
-    storeSession();
-    try { localStorage.removeItem(SYNCMARK_KEY); } catch (e) {}
-    updateAccountButton();
-    ensureGate(); /* in 'paid' mode, signing out re-raises the wall */
-  }
-
-  function refreshSession() {
-    return fetch(SYNC.url + '/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: session.refresh_token })
-    }).then(function (r) {
-      if (!r.ok) throw new Error('refresh failed');
-      return r.json();
-    }).then(function (j) {
-      session.access_token = j.access_token;
-      if (j.refresh_token) session.refresh_token = j.refresh_token;
-      if (j.user && j.user.id) session.user = { id: j.user.id, email: j.user.email };
-      storeSession();
-    });
-  }
-
-  /* fetch with auth headers; retries once through a token refresh on 401 */
-  function authFetch(path, init, retried) {
-    init = init || {};
-    var send = {
-      method: init.method || 'GET',
-      headers: Object.assign({
-        apikey: SYNC.anonKey,
-        Authorization: 'Bearer ' + session.access_token,
-        'Content-Type': 'application/json'
-      }, init.headers || {}),
-      body: init.body
-    };
-    if (init.keepalive) send.keepalive = true;
-    return fetch(SYNC.url + path, send).then(function (r) {
-      if (r.status === 401 && !retried && session && session.refresh_token) {
-        return refreshSession().then(
-          function () { return authFetch(path, init, true); },
-          function () { signOutLocal(); throw new Error('session expired'); }
-        );
-      }
-      return r;
-    });
-  }
-
-  function fetchUser() {
-    return authFetch('/auth/v1/user').then(function (r) {
-      if (!r.ok) throw new Error('user ' + r.status);
-      return r.json();
-    }).then(function (j) {
-      session.user = { id: j.id, email: j.email };
-      storeSession();
-    });
-  }
-
-  /* entitlement, used only by the 'paid' gate: is this signed-in user a
-     subscriber (or comped)? Set by the Lemon Squeezy webhook in profiles. */
-  var profile = null;
-  function fetchProfile() {
-    return authFetch('/rest/v1/profiles?select=sub_status,is_comped').then(function (r) {
-      if (!r.ok) throw new Error('profile ' + r.status);
-      return r.json();
-    }).then(function (rows) { profile = (rows && rows[0]) || null; });
-  }
-  function isEntitled() {
-    return !!(profile && (profile.is_comped || profile.sub_status === 'active' || profile.sub_status === 'on_trial'));
-  }
-
-  /* ---- Free plan step cap ----
-     After launch, a non-subscribing user keeps every ladder and step they
-     already built, but may add only FREE_ADD_LIMIT more steps, ever. Additions
-     are counted with a running total that ONLY goes up: deleting a step does
-     not free a slot (otherwise the cap could be gamed by deleting and
-     re-adding). Existing steps are grandfathered—they were added before the
-     free plan began and never touched the counter. This is INERT during beta
-     (mode 'beta') and never applies to an entitled subscriber, so nothing is
-     capped today; it activates only when GATE.mode is set to 'free' at launch. */
-  var FREE_ADD_LIMIT = 3;
-  var FREE_ADDS_KEY = 'foothold.freeadds.v1';
-  function freeCapActive() { return GATE.mode === 'free' && !isEntitled(); }
-  function freeAddsUsed() {
-    try { var n = parseInt(localStorage.getItem(FREE_ADDS_KEY), 10); return isNaN(n) ? 0 : n; }
-    catch (e) { return 0; }
-  }
-  function bumpFreeAdds() {
-    try { localStorage.setItem(FREE_ADDS_KEY, String(freeAddsUsed() + 1)); } catch (e) {}
-  }
-  function freeAddsLeft() {
-    if (!freeCapActive()) return Infinity;
-    return Math.max(0, FREE_ADD_LIMIT - freeAddsUsed());
-  }
-  function stepCapReached() { return freeCapActive() && freeAddsUsed() >= FREE_ADD_LIMIT; }
-  function upgradeLink() {
-    return GATE.checkoutUrl
-      ? '<a href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Subscribe</a>'
-      : 'Subscribe';
-  }
-  /* in 'paid' mode, drop the wall for an entitled subscriber; otherwise keep it */
-  function refreshPaidGate() {
-    if (GATE.mode !== 'paid') return Promise.resolve();
-    if (!syncEnabled || !session || !session.user) { ensureGate(); return Promise.resolve(); }
-    return fetchProfile().then(ensureGate, function () {});
-  }
-
-  /* while in beta, quietly record signed-in users so we can offer them the
-     50%-off launch coupon. Insert-only under RLS, idempotent, best-effort—it
-     never blocks or interrupts anything. See supabase/beta_signups.sql. */
-  function recordBetaSignup() {
-    if (GATE.mode !== 'beta' || !syncEnabled || !session || !session.user) return;
-    authFetch('/rest/v1/beta_signups', {
-      method: 'POST',
-      headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
-      body: JSON.stringify({ id: session.user.id, email: session.user.email })
-    }).catch(function () {});
-  }
-
-  /* run after any successful sign-in (or a page load with a stored session):
-     capture the beta signup, and—since signing in is a stronger opt-in than the
-     one-tap bypass—let a beta user straight past the welcome gate. */
-  function afterSignIn() {
-    recordBetaSignup();
-    if (GATE.mode === 'beta') {
-      try { localStorage.setItem(GATE_PASS_KEY, 'yes'); } catch (e) {}
-      ensureGate();
-    }
-  }
-
-  function pullRow() {
-    return authFetch('/rest/v1/user_progress?select=data,updated_at').then(function (r) {
-      if (!r.ok) throw new Error('pull ' + r.status);
-      return r.json();
-    }).then(function (rows) {
-      return (rows && rows[0]) || null;
-    });
-  }
-
-  function adoptSnapshot(row) {
-    suppressPush = true;
-    data = migrate(row.data);
-    /* adopted content matches the account; keep its savedAt so identical
-       copies don't ping-pong between devices (save() re-stamps only if the
-       incoming row somehow lacked a savedAt) */
-    lastContentSig = data.savedAt ? contentSig(data) : null;
-    save();
-    suppressPush = false;
-    setMark(data.savedAt, row.updated_at);
-    state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, renamingHomeId: null, editingNoteId: null, addingLadder: false };
-    render();
-  }
-
-  function pushToServer(opts) {
-    opts = opts || {};
-    if (!syncEnabled || !session || !session.user) return Promise.resolve(false);
-    clearTimeout(pushTimer);
-    pushTimer = null;
-    var now = new Date().toISOString();
-    return authFetch('/rest/v1/user_progress', {
-      method: 'POST',
-      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify([{ user_id: session.user.id, data: data, updated_at: now }]),
-      keepalive: !!opts.keepalive
-    }).then(function (r) {
-      if (!r.ok) throw new Error('push ' + r.status);
-      lastSyncedAt = now;
-      setMark(data.savedAt, now);
-      return true;
-    }).catch(function (e) {
-      if (opts.manual) toast('Couldn’t reach your account—your ladders are safe on this device.');
-      return false;
-    });
-  }
-
-  function queuePush() {
-    if (!syncEnabled || !session || !session.user || suppressPush) return;
-    clearTimeout(pushTimer);
-    pushTimer = setTimeout(function () { pushToServer(); }, 1500);
-  }
-
-  /* ---------- privacy-minimized product analytics ----------
-     Counts how many people genuinely start using the ladder feature, via a
-     Supabase anonymous user created ONLY after a guest saves their first step.
-     Kept deliberately SEPARATE from the account/sync layer above: the anonymous
-     tracking session lives under its own key and never becomes the app
-     `session`, so guest ladder content is never uploaded, the Sign-in button
-     never changes, and beta_signups/entitlement are untouched. A signed-in
-     email account, when present, is used as the tracking user instead. Never
-     blocks or interrupts ladder work; failures are swallowed. No ladder content
-     or health data is ever sent—only a UUID, an event name, and an opaque
-     random event key (the ladder's random id). */
-  var TRACK_KEY = 'foothold.track.v1';
-  var trackSession = null;      /* { access_token, refresh_token, user: { id } } — anonymous only */
-  var trackUserPromise = null;  /* in-flight signInAnonymously, shared so concurrent calls make ONE user */
-
-  function loadTrackSession() {
-    try { trackSession = JSON.parse(localStorage.getItem(TRACK_KEY)); } catch (e) { trackSession = null; }
-    if (trackSession && !trackSession.access_token) trackSession = null;
-  }
-  function storeTrackSession() {
-    try {
-      if (trackSession) localStorage.setItem(TRACK_KEY, JSON.stringify(trackSession));
-      else localStorage.removeItem(TRACK_KEY);
-    } catch (e) {}
-  }
-  loadTrackSession();
-
-  /* Optional CAPTCHA/Turnstile hook. Returns a token when abuse protection is
-     wired, else null. If you enable Supabase CAPTCHA protection, mount an
-     invisible Turnstile widget and have it set window.__footholdCaptchaToken.
-     NEVER put a Turnstile SECRET key in this frontend—the secret lives only in
-     the Supabase dashboard. */
-  function captchaToken() {
-    try { return (window.__footholdCaptchaToken) || null; } catch (e) { return null; }
-  }
-
-  /* Create a Supabase anonymous user (GoTrue /signup with no email/password).
-     Requires "Allow anonymous sign-ins" enabled in the Supabase dashboard. */
-  function signInAnonymously() {
-    var body = { data: { account_origin: 'guest_browser' } };
-    var tok = captchaToken();
-    if (tok) body.gotrue_meta_security = { captcha_token: tok };
-    return fetch(SYNC.url + '/auth/v1/signup', {
-      method: 'POST',
-      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    }).then(function (r) {
-      if (!r.ok) throw new Error('anon signup ' + r.status);
-      return r.json();
-    }).then(function (j) {
-      if (!j.access_token || !j.user || !j.user.id) throw new Error('anon signup: no session');
-      trackSession = { access_token: j.access_token, refresh_token: j.refresh_token || '', user: { id: j.user.id } };
-      storeTrackSession();
-      return trackSession;
-    });
-  }
-
-  function refreshTrackSession() {
-    if (!trackSession || !trackSession.refresh_token) return Promise.reject(new Error('no track refresh'));
-    return fetch(SYNC.url + '/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: trackSession.refresh_token })
-    }).then(function (r) {
-      if (!r.ok) throw new Error('track refresh ' + r.status);
-      return r.json();
-    }).then(function (j) {
-      trackSession.access_token = j.access_token;
-      if (j.refresh_token) trackSession.refresh_token = j.refresh_token;
-      if (j.user && j.user.id) trackSession.user = { id: j.user.id };
-      storeTrackSession();
-    });
-  }
-
-  /* Resolve the user to attribute events to. A signed-in email account is
-     preferred (and reused, not duplicated); otherwise an anonymous tracking
-     user is reused or created exactly once. Returns a Promise of { id, kind }. */
-  function ensureTrackingUser() {
-    if (!syncEnabled) return Promise.reject(new Error('sync disabled'));
-    if (session && session.user && session.user.id) return Promise.resolve({ id: session.user.id, kind: 'email' });
-    if (trackSession && trackSession.user && trackSession.user.id) return Promise.resolve({ id: trackSession.user.id, kind: 'anon' });
-    if (trackUserPromise) return trackUserPromise;   /* lock: concurrent callers share one signup */
-    trackUserPromise = signInAnonymously().then(function (s) {
-      trackUserPromise = null;
-      return { id: s.user.id, kind: 'anon' };
-    }, function (e) {
-      trackUserPromise = null;
-      throw e;
-    });
-    return trackUserPromise;
-  }
-
-  /* Insert an analytics event, idempotently (a duplicate is a no-op via the
-     table's unique constraint + Prefer: ignore-duplicates). Fire-and-forget;
-     never awaited on the UI path, never throws into ladder work. */
-  function trackProductEvent(eventName, eventKey) {
-    if (!syncEnabled || !eventName || !eventKey) return;
-    ensureTrackingUser().then(function (u) {
-      var payload = JSON.stringify({ user_id: u.id, event_name: eventName, event_key: String(eventKey) });
-      var prefer = 'resolution=ignore-duplicates,return=minimal';
-      if (u.kind === 'email') {
-        return authFetch('/rest/v1/product_events', {
-          method: 'POST', headers: { Prefer: prefer }, body: payload
-        }).then(function (r) { if (!r.ok && r.status !== 409) throw new Error('event ' + r.status); });
-      }
-      /* anonymous: insert with the tracking token; refresh once on 401, but do
-         NOT create another anonymous user (that would inflate the count) */
-      function insert() {
-        return fetch(SYNC.url + '/rest/v1/product_events', {
-          method: 'POST',
-          headers: { apikey: SYNC.anonKey, Authorization: 'Bearer ' + trackSession.access_token, 'Content-Type': 'application/json', Prefer: prefer },
-          body: payload
-        });
-      }
-      return insert().then(function (r) {
-        if (r.status === 401) return refreshTrackSession().then(insert);
-        return r;
-      }).then(function (r) {
-        if (r && !r.ok && r.status !== 409) throw new Error('event ' + r.status);
-      });
-    }).catch(function (e) {
-      try { console.warn('[foothold] analytics skipped:', (e && e.message) || e); } catch (_) {}
-    });
-  }
-
-  /* on sign-in or page load: adopt the account copy when it's safe to,
-     push the local copy when it's the one that moved */
-  function maybeAutoPull() {
-    return pullRow().then(function (row) {
-      var localEmpty = !data.ladders.length && !data.trash.length;
-      if (!row) {
-        if (!localEmpty) pushToServer();
-        return;
-      }
-      if (localEmpty) {
-        adoptSnapshot(row);
-        toast('Your ladders are here—loaded from your account.');
-        return;
-      }
-      /* both sides have data: the copy edited most recently wins. Every change
-         stamps data.savedAt, and that stamp rides along inside the synced row,
-         so this compares like with like across devices. */
-      var serverAt = (row.data && row.data.savedAt) || row.updated_at || '';
-      var localAt = data.savedAt || '';
-      if (serverAt > localAt) {
-        adoptSnapshot(row);
-        toast('Loaded your latest—synced from another device.');
-      } else if (localAt > serverAt) {
-        pushToServer();
-      }
-      /* equal timestamps → already in sync, nothing to do */
-    }).catch(function () {});
-  }
-
-  function updateAccountButton() {
-    var b = $('[data-action="open-account"]');
-    if (b) b.textContent = session ? 'Account' : 'Sign in';
-  }
-
-  function openAccount() {
-    var overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    var codeSentTo = ''; /* email a code was just sent to; switches to the code-entry step */
-
-    function bodyHTML() {
-      if (!session) {
-        if (codeSentTo) {
-          return '<p class="eyebrow">Account</p><h2>Enter your code</h2>' +
-            '<p class="quiet small">We emailed a sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right here on this page, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
-            '<form data-role="verify"><div class="edit-grid">' +
-            '<input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" placeholder="Enter the code" aria-label="Sign-in code">' +
-            '</div><div class="actions" style="justify-content:space-between;align-items:center">' +
-            '<button class="btn ghost tiny" type="button" data-x="resend">Resend code</button>' +
-            '<span style="display:flex;gap:10px">' +
-            '<button class="btn ghost" type="button" data-x="restart">Back</button>' +
-            '<button class="btn primary" type="submit">Verify &amp; sign in</button>' +
-            '</span></div></form>';
-        }
-        return '<p class="eyebrow">Account</p><h2>Sign in</h2>' +
-          '<p class="quiet small">Sign in to keep your ladders in sync across your devices. Enter your email and we’ll send a one-time sign-in code—no password to remember.</p>' +
-          '<p class="quieter small">Your email is used only to sync your ladders and, during beta, to send your discount—nothing else. <a href="/privacy/">Privacy</a></p>' +
-          '<form data-role="signin"><div class="edit-grid">' +
-          '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
-          '</div><div class="actions">' +
-          '<button class="btn ghost" type="button" data-x="close">Cancel</button>' +
-          '<button class="btn primary" type="submit">Email me a sign-in code</button>' +
-          '</div></form>';
-      }
-      return '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>' +
-        '<p class="quiet small">Signed in—your ladders sync to your account as you change them, and stay on this device to work offline.</p>' +
-        '<p class="quieter small">' + (lastSyncedAt ? 'Last synced at ' + new Date(lastSyncedAt).toLocaleTimeString() + '.' : 'Not synced yet this visit.') + '</p>' +
-        '<div class="actions" style="justify-content:flex-start">' +
-        '<button class="btn" data-x="sync-now">Sync now</button>' +
-        '<button class="btn" data-x="load-server">Load from account…</button>' +
-        '</div>' +
-        '<div class="actions" style="justify-content:space-between">' +
-        '<button class="btn ghost tiny" data-x="signout">Sign out</button>' +
-        '<button class="btn ghost" data-x="close">Close</button></div>';
-    }
-
-    var modal = document.createElement('div');
-    modal.className = 'modal fade-in';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', 'Account');
-    overlay.appendChild(modal);
-
-    function renderBody() {
-      modal.innerHTML = bodyHTML();
-      var focusEl = $('input[name="code"]', modal) || $('input[name="email"]', modal);
-      if (focusEl) focusEl.focus();
-    }
-    renderBody();
-
-    function close() {
-      document.removeEventListener('keydown', onKey);
-      overlay.remove();
-    }
-    function onKey(e) { if (e.key === 'Escape') close(); }
-
-    /* Send a one-time code (supabase.auth.signInWithOtp equivalent). The same
-       email also carries a magic link—see the email template in PRODUCT.md.
-       redirect_to keeps that link pointed at THIS page rather than the
-       project's default Site URL; its origin must be in the Redirect URLs
-       allowlist. */
-    function sendCode(email) {
-      var redirectTo = window.location.origin + window.location.pathname;
-      return fetch(SYNC.url + '/auth/v1/otp?redirect_to=' + encodeURIComponent(redirectTo), {
-        method: 'POST',
-        headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, create_user: true })
-      }).then(function (r) {
-        if (r.ok) { codeSentTo = email; renderBody(); return; }
-        return r.json().catch(function () { return {}; }).then(function (body) {
-          var msg = (body && (body.msg || body.error_description || body.error || body.message)) || '';
-          if (r.status === 429 || /rate limit/i.test(msg)) {
-            toast('Too many sign-in emails just now—wait a few minutes, then try once more.');
-          } else if (r.status === 422 || /redirect|url/i.test(msg)) {
-            toast('This address isn’t allowed for sign-in yet—add it to Supabase’s Redirect URLs.');
-          } else {
-            toast('Couldn’t send the code' + (msg ? '—' + msg : '—please try again in a moment.'));
-          }
-        });
-      }).catch(function () {
-        toast('Couldn’t reach the sign-in service—check your connection and try again.');
-      });
-    }
-
-    /* Verify the typed code (supabase.auth.verifyOtp equivalent) and persist
-       the returned session exactly like the magic-link path does. */
-    function verifyCode(email, code) {
-      if (!email) { codeSentTo = ''; renderBody(); toast('Enter your email again to get a fresh code.'); return; }
-      fetch(SYNC.url + '/auth/v1/verify', {
-        method: 'POST',
-        headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'email', email: email, token: code })
-      }).then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (j) {
-          if (!r.ok || !j.access_token) {
-            var msg = (j && (j.msg || j.error_description || j.error || j.message)) || '';
-            if (r.status === 403 || /expired|invalid|token|otp/i.test(msg)) {
-              toast('That code didn’t match or has expired—check it, or resend a fresh one.');
-            } else {
-              toast('Couldn’t verify the code' + (msg ? '—' + msg : '.'));
-            }
-            return;
-          }
-          session = {
-            access_token: j.access_token,
-            refresh_token: j.refresh_token || '',
-            user: j.user ? { id: j.user.id, email: j.user.email } : null
-          };
-          storeSession();
-          codeSentTo = '';
-          updateAccountButton();
-          var ensureUser = session.user ? Promise.resolve() : fetchUser();
-          ensureUser.catch(function () {}).then(function () {
-            updateAccountButton();
-            renderBody();
-            toast('Signed in.');
-            maybeAutoPull();
-            afterSignIn();     /* beta: record the signup and pass the welcome gate */
-            refreshPaidGate(); /* paid mode: drop the wall if this account is a subscriber */
-          });
-        });
-      }).catch(function () {
-        toast('Couldn’t reach the sign-in service—check your connection and try again.');
-      });
-    }
-
-    overlay.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var form = e.target;
-      var role = form.getAttribute('data-role');
-      if (role === 'signin') {
-        var email = form.email.value.trim();
-        if (email) sendCode(email);
-      } else if (role === 'verify') {
-        var code = form.code.value.trim();
-        if (code) verifyCode(codeSentTo, code);
-      }
-    });
-
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) { close(); return; }
-      var b = e.target.closest('[data-x]');
-      if (!b) return;
-      var x = b.getAttribute('data-x');
-      if (x === 'close') close();
-      if (x === 'resend' && codeSentTo) { sendCode(codeSentTo); toast('Sent a fresh code.'); }
-      if (x === 'restart') { codeSentTo = ''; renderBody(); }
-      if (x === 'signout') {
-        signOutLocal();
-        renderBody();
-        toast('Signed out—your ladders stay on this device.');
-      }
-      if (x === 'sync-now') {
-        pushToServer({ manual: true }).then(function (okPush) {
-          if (okPush) { renderBody(); toast('Synced.'); }
-        });
-      }
-      if (x === 'load-server') {
-        confirmModal('Load your account copy?', 'The ladders saved to your account will replace what’s on this device.', 'Load', false)
-          .then(function (okLoad) {
-            if (!okLoad) return;
-            pullRow().then(function (row) {
-              if (!row) { toast('Nothing saved to your account yet.'); return; }
-              adoptSnapshot(row);
-              close();
-              toast('Loaded from your account.');
-            }, function () { toast('Couldn’t reach your account—try again in a moment.'); });
-          });
-      }
-    });
-
-    document.addEventListener('keydown', onKey);
-    document.body.appendChild(overlay);
-  }
-
-  function parseHashSession() {
-    var h = location.hash || '';
-    if (h.indexOf('access_token=') === -1) {
-      if (h.indexOf('error=') !== -1) {
-        toast('That sign-in link didn’t work—it may have expired. Send yourself a fresh one.');
-        history.replaceState(null, '', location.pathname + location.search);
-      }
-      return false;
-    }
-    var p = {};
-    h.slice(1).split('&').forEach(function (kv) {
-      var i = kv.indexOf('=');
-      if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
-    });
-    if (!p.access_token) return false;
-    session = { access_token: p.access_token, refresh_token: p.refresh_token || '', user: null };
-    storeSession();
-    history.replaceState(null, '', location.pathname + location.search);
-    return true;
-  }
-
-  function initSync() {
-    updateAccountButton();
-    var fromLink = parseHashSession();
-    if (!session) loadStoredSession();
-    if (!session) { updateAccountButton(); return; }
-    var ensureUser = session.user ? Promise.resolve() : fetchUser();
-    ensureUser.catch(function () {
-      return refreshSession().then(fetchUser);
-    }).then(function () {
-      updateAccountButton();
-      if (fromLink) toast('Signed in.');
-      return maybeAutoPull();
-    }).then(function () {
-      afterSignIn();            /* beta: record the signup and pass the welcome gate */
-      return refreshPaidGate(); /* paid mode: a returning subscriber skips the wall */
-    }).catch(function () {
-      signOutLocal();
-    });
-  }
-
-  /* flush a pending sync push when the page is backgrounded */
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden' && pushTimer) pushToServer({ keepalive: true });
-  });
 
   /* ---------- backup modal ---------- */
   function openBackup() {
@@ -1829,7 +1166,7 @@
         '<div class="section">' +
           '<p class="eyebrow">Your data</p>' +
           '<h2>Backup &amp; restore</h2>' +
-          '<p class="quiet small">Your ladders live in this browser, and in your account too, if you sign in to sync. Download a backup to keep them safe, or copy it to move them to another device—it pastes in below, under Restore.</p>' +
+          '<p class="quiet small">Your ladders live in this browser. Download a backup to keep them safe, or copy it to move them to another device—it pastes in below, under Restore.</p>' +
           '<textarea class="backup" readonly aria-label="Backup data"></textarea>' +
           '<div class="actions" style="justify-content:flex-start">' +
             '<button class="btn primary" data-x="download">Download backup</button>' +
@@ -1973,9 +1310,7 @@
       '<div class="body">' +
         '<p class="quiet"><b>What is Foothold Now?</b><br>Foothold Now (footholdnow.com) is a website for building practice ladders—also called fear ladders, anxiety ladders, or exposure hierarchies. You break something you avoid into small steps, rate each one 0–100, and practice until the hard things lose their grip.</p>' +
         '<p class="quiet"><b>Can I build an exposure hierarchy ladder on Foothold Now?</b><br>Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike.</p>' +
-        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes—free for everyone while we’re in beta, with everything unlimited. Foothold Now plans to offer a free version after beta testing as well, where you can build a limited number of steps at no cost. For all its features, including unlimited steps, there will most likely be a subscription—at $1.99 a month or $14.99 a year (~$1.25/month, more precisely $1.249/month), with a free trial. It cost money to build this website and costs money to run this website, so the subscription keeps it alive. We plan for beta users who sign in with their email to get a 50%-off coupon (good on any plan, monthly or yearly) emailed to them at launch.</p>' +
-        '<p class="quiet"><b>When does the beta end, and do I keep my ladders?</b><br>We plan for beta to end on November 1st, 2026, when the product will launch, though that may change. We’ll post at least two weeks’ notice here first. Your ladders and progress are always yours to keep—saved in your browser, in your account if you sign in, and downloadable anytime as a Backup, so nothing is lost.</p>' +
-      '</div></details>';
+        '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes. Foothold Now is free. You can build unlimited practice ladders and steps at no cost, with nothing to buy.</p>' +      '</div></details>';
   }
 
   function homeHTML() {
@@ -2283,14 +1618,8 @@
       h += '</div>';
     }
 
-    var capped = stepCapReached();
-    var addsLeft = freeAddsLeft();
-    var capNote = capped
-      ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">You’ve used your ' + FREE_ADD_LIMIT + ' free steps. ' + upgradeLink() + ' for unlimited steps.</p>'
-      : (freeCapActive()
-          ? '<p class="quiet" style="margin:0 0 12px;font-size:13.5px">' + addsLeft + ' free step' + (addsLeft === 1 ? '' : 's') + ' left on the free plan. ' + upgradeLink() + ' for unlimited.</p>'
-          : '');
-    h += '<form class="card add-step" data-form="add-step">' +
+    var capped = false;
+    var capNote = '';    h += '<form class="card add-step" data-form="add-step">' +
       '<p class="eyebrow">Add a step</p>' +
       capNote +
       '<div class="row2">' +
@@ -2591,7 +1920,6 @@
         render(); break;
 
       case 'open-backup': openBackup(); break;
-      case 'open-account': if (syncEnabled) openAccount(); break;
 
       case 'copy-email': (function () {
         var EMAIL = 'footholdnowsupport@gmail.com';
@@ -2883,24 +2211,13 @@
     if (kind === 'add-step' && ladder) {
       var title = form.title.value.trim();
       if (!title) return;
-      if (stepCapReached()) {
-        toast('That’s your ' + FREE_ADD_LIMIT + ' free steps. Subscribe for unlimited steps.');
-        render();
-        return;
-      }
       ladder.steps.push({
         id: uid(), title: title,
         rating: parseInt(form.rating.value, 10),
         note: '', settled: false, logs: [],
         createdAt: new Date().toISOString()
       });
-      if (freeCapActive()) bumpFreeAdds();
       save();
-      /* count a genuine "ladder started" the first time a step is saved to this
-         ladder—after the local save succeeds, never on load or on later edits.
-         ladder.id is the event key (a random UUID, no user content), so the
-         unique constraint makes it fire once per ladder. */
-      if (!memoryOnly && ladder.steps.length === 1) trackProductEvent('ladder_started', ladder.id);
       render();
       var t = $('.add-step [name="title"]');
       if (t) t.focus();
@@ -2945,74 +2262,9 @@
     }
   });
 
-  /* ---------- access gate ---------- */
-  var gateOverlay = null;
-
-  /* show/hide the gate for the current mode + entitlement. Idempotent. */
-  function ensureGate() {
-    if (GATE.mode === 'off') { removeGate(); return; }
-    if (GATE.mode === 'free') { removeGate(); return; } /* freemium: no wall—the step cap gates instead */
-    if (GATE.mode === 'beta') {
-      if (betaGatePassed()) removeGate();
-      else if (!gateOverlay) gateOverlay = renderGate();
-      return;
-    }
-    /* paid: a signed-in, entitled subscriber walks straight in; everyone else
-       hits the wall (the real, un-bypassable check is the Supabase RLS policy) */
-    if (syncEnabled && session && session.user && isEntitled()) removeGate();
-    else if (!gateOverlay) gateOverlay = renderGate();
-  }
-  function removeGate() {
-    if (gateOverlay) { gateOverlay.remove(); gateOverlay = null; }
-  }
-
-  function renderGate() {
-    var beta = GATE.mode === 'beta';
-
-    var logo = '<svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true">' +
-      '<rect x="2" y="18" width="9" height="4" rx="2" fill="var(--accent)"></rect>' +
-      '<rect x="8.5" y="11" width="9" height="4" rx="2" fill="var(--accent)" opacity="0.75"></rect>' +
-      '<rect x="15" y="4" width="9" height="4" rx="2" fill="var(--accent)" opacity="0.5"></rect></svg>';
-
-    var body = beta
-      ? '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span><span class="beta-badge">Beta</span></div>' +
-        '<h1>Every feature free while we’re in beta.</h1>' +
-        '<p class="quiet">Foothold Now commits to offer, once launched after beta, a free tier, and a paid subscription where you can create unlimited steps—$1.99 a month or $14.99 a year (~$1.25/month, more precisely $1.249/month), with a free trial. It cost money to build this website and costs money to run this website, so the subscription keeps the site alive. For now, while we’re in beta, every feature is free for everyone. Thank you for helping shape Foothold Now.</p>' +
-        '<div class="gate-actions"><button class="btn primary" data-gate="beta">Continue free as a beta user</button></div>' +
-        '<p class="quieter small">We plan for beta users who sign in with their email to get <b>50% off</b> any plan—monthly or yearly—when the subscription launches. We’ll email your coupon at launch. <button class="linklike" data-gate="signin">Sign in with email</button></p>' +
-        '<p class="quieter small">We plan for beta to end on November 1st, 2026, when the product will launch, though that may change. We’ll post at least two weeks’ notice here before the switch, and your ladders and progress stay saved in your browser and your account.</p>' +
-        '<p class="quieter small">If you don’t want to sign in with your email, just click “Continue free as a beta user” above. Your ladders stay private in your browser; email—if you sign in—is used only for sync across your different devices and your beta discount. <a href="/privacy/">Privacy</a></p>' +
-        '<p class="quieter small">Questions? <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></p>'
-      : '<div class="gate-brand">' + logo + '<span class="gate-name">Foothold Now</span></div>' +
-        '<h1>Practice the hard things.</h1>' +
-        '<p class="quiet">Foothold Now is $1.99 a month or $14.99 a year (~$1.25/month, more precisely $1.249/month), with a free trial. Start your trial to build your ladders and keep them in sync across your devices.</p>' +
-        '<div class="gate-actions">' +
-          (GATE.checkoutUrl
-            ? '<a class="btn primary" href="' + esc(GATE.checkoutUrl) + '" target="_blank" rel="noopener">Start your free trial</a>'
-            : '<button class="btn primary" disabled>Start your free trial</button>') +
-        '</div>' +
-        '<p class="quieter small">Have a beta coupon? Add it at checkout for 50% off.</p>' +
-        '<p class="quieter small">Already subscribed? <button class="linklike" data-gate="signin">Sign in</button></p>';
-
-    var overlay = document.createElement('div');
-    overlay.className = 'gate';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Foothold Now');
-    overlay.innerHTML = '<div class="gate-card fade-in">' + body + '</div>';
-    overlay.addEventListener('click', function (e) {
-      if (e.target.closest('[data-gate="beta"]')) {
-        try { localStorage.setItem(GATE_PASS_KEY, 'yes'); } catch (er) {}
-        removeGate();
-      }
-      if (e.target.closest('[data-gate="signin"]') && syncEnabled) openAccount();
-    });
-    document.body.appendChild(overlay);
-    var btn = overlay.querySelector('.btn');
-    if (btn) btn.focus();
-    return overlay;
-  }
-
+  /* ---------- access gate ----------
+     Local-only build: the app is always open. */
+  function ensureGate() {}
   /* the slide-down site menu by the logo (About, guides, contact) */
   (function () {
     var btn = $('.menu-btn'), menu = $('#site-menu');
@@ -3042,15 +2294,7 @@
   });
 
   render();
-  handleSampleParam(); /* /?sample=<key> from the /sample-ladders/ guide adds a starter ladder */
-  if (syncEnabled) {
-    var accountBtn = $('[data-action="open-account"]');
-    if (accountBtn) accountBtn.hidden = false;
-    initSync();
-  }
-  ensureGate();        /* beta/off decided now; paid shows the wall by default */
-  refreshPaidGate();   /* paid: if a subscriber is already signed in, drop the wall */
-})();
+  handleSampleParam(); /* /?sample=<key> from the /sample-ladders/ guide adds a starter ladder */})();
 </script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0081041a2ba74cb9b466332bbb002b3f"}'></script><!-- End Cloudflare Web Analytics -->
