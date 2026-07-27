@@ -1,0 +1,17 @@
+{
+  "name": "Movement",
+  "short_name": "Movement",
+  "description": "A quiet, private log for sets, weights, and treadmill intervals.",
+  "id": "/movement/",
+  "start_url": "/movement/",
+  "scope": "/movement/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4EF",
+  "theme_color": "#F2F4EF",
+  "icons": [
+    { "src": "/movement/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/movement/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/movement/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
