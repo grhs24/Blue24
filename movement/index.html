@@ -317,6 +317,24 @@
   .routine-head .sec-title { margin: 0; flex: 1; min-width: 0; color: var(--tone); }
 
   /* ---------- building a routine ---------- */
+  .howto { border-top: 1px solid var(--line); margin-top: 13px; padding-top: 12px; }
+  .howto summary {
+    cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent);
+    list-style: none; padding: 2px 0;
+  }
+  .howto summary::-webkit-details-marker { display: none; }
+  .howto summary::after { content: " ›"; display: inline-block; transition: transform 0.15s ease; }
+  .howto[open] summary::after { transform: rotate(90deg); }
+  .howto ol { margin: 10px 0 2px; padding-left: 19px; font-size: 13.5px; color: var(--ink2); line-height: 1.65; }
+  .howto li { margin-bottom: 8px; }
+  .howto li:last-child { margin-bottom: 0; }
+  .howto b { color: var(--ink); font-weight: 600; }
+  .howto a { color: var(--accent); }
+  .howto code {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px;
+    background: var(--surface2); padding: 1px 5px; border-radius: 5px;
+  }
+
   .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface2); border-radius: 13px; }
   .seg button { height: 38px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--ink2); }
   .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
@@ -1057,7 +1075,13 @@
     html += '<div class="sec-title">Building with Claude</div><article class="card" style="padding:14px">' +
       '<label class="lbl" for="ai-key">Claude API key</label>' +
       '<input id="ai-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" value="' + esc(apiKey()) + '" data-act="aikey">' +
-      '<p class="tiny muted" style="margin:10px 2px 0">Only needed to build a routine from a description. The key is kept on this phone, is left out of backups, and goes to Anthropic and nowhere else. Get one at console.anthropic.com.</p>' +
+      '<p class="tiny muted" style="margin:10px 2px 0">Only needed to build a routine from a description. The key is kept on this phone, is left out of backups, and goes to Anthropic and nowhere else.</p>' +
+      '<details class="howto"><summary>Where do I get a key?</summary><ol>' +
+      '<li>Open <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> and sign in. The login you already use for Claude works.</li>' +
+      '<li>Put a few dollars of credit on the account under <b>Billing</b>. This part is pay-as-you-go and a Claude subscription does not cover it. Building one routine costs a few cents, so a small top-up lasts a long time here.</li>' +
+      '<li>Go to <b>API keys</b>, tap <b>Create key</b>, and copy the line starting <code>sk-ant-</code>. Copy it while it is on screen—it is only shown the once.</li>' +
+      '<li>Paste it in the box above. That is it; the box will hold it for next time.</li>' +
+      "</ol></details>" +
       (apiKey() ? '<div style="height:11px"></div><button class="btn quiet sm" style="color:var(--danger);padding:0" data-act="aiforget">Forget the key</button>' : "") +
       "</article>";
 
