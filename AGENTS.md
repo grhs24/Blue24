@@ -55,12 +55,24 @@ included. Other artifacts and projects are free to use the feature.
 
 ## Hosting
 
-The site is served free from GitHub Pages at `https://grhs24.github.io/`. All
-canonical tags, `og:url`, structured data (JSON-LD), `sitemap.xml`, and
-`robots.txt` use that origin. Internal links are root-relative (`/about/`,
-`/privacy/`), which resolve correctly at the user-site root. `index.html` shows
-a one-line migration banner only when the hostname is the old `footholdnow.com`,
-so it never appears on the github.io site.
+The repo is the GitHub Pages **user site** for `grhs24`, so it serves from
+`https://grhs24.github.io/`. The site itself lives one level down, at
+`https://grhs24.github.io/foothold-now/`, and everything under `foothold-now/`
+is the site: `index.html`, the guides, icons, `og.png`, and
+`manifest.webmanifest` (whose `start_url` and `scope` are `/foothold-now/`).
+Internal links are root-relative and **include the base** (`/foothold-now/about/`).
+
+The origin root holds only support files: `index.html` there is a redirect stub
+to `/foothold-now/`, alongside `robots.txt`, `sitemap.xml`, `llms.txt` (all of
+which must stay at the root to be found), the Google Search Console
+verification file (moving it breaks verification), `.nojekyll`, and `movement/`.
+
+There is no build step, no framework, and no GitHub Actions workflow: Pages
+publishes the branch as-is, which is why paths are written out literally rather
+than derived from a `base` setting. Adding a page means adding a real directory
+with its own `index.html`, so refreshes resolve natively and no SPA 404
+fallback is needed. When adding one, remember three places: the `/foothold-now/`
+prefix on its links, an entry in `sitemap.xml`, and its canonical/`og:url`.
 
 ## Copy style
 
