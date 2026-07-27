@@ -66,8 +66,18 @@ here, often OCD and anxiety content—to a server, quietly breaking that promise
 If an AI feature is ever genuinely wanted, the privacy page has to be rewritten
 first, with the owner's explicit go-ahead.
 
-This restriction covers everything served from this origin, `movement/`
-included. Other artifacts and projects are free to use the feature.
+This restriction covers every Foothold Now page served from this origin. Other
+artifacts and projects are free to use the feature.
+
+**`movement/` is the one exemption, granted by the owner** after this rule was
+written, and only for its routine builder. What makes it a different case: it
+is a private personal tool rather than part of Foothold Now, it holds sets and
+weights rather than ladder text, the key is the owner's own and stays on the
+device, and the only thing that ever leaves is a routine description typed on
+purpose—the log itself is never sent. Foothold Now's own pages are unchanged
+and still call nothing. Do not read this exemption as loosening the rule above:
+anything else, on any Foothold page, still needs the privacy page rewritten
+first and the owner's explicit go-ahead.
 
 ## Hosting
 
