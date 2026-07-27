@@ -1,0 +1,1630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Movement</title>
+<meta name="description" content="A quiet, private log for sets, weights, and treadmill intervals. Everything stays on your own phone.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F2F4EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141B17" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Movement">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='14' width='28' height='4' rx='2' fill='%2333685A' opacity='0.45'/%3E%3Crect x='6' y='10' width='4' height='12' rx='2' fill='%2333685A'/%3E%3Crect x='22' y='10' width='4' height='12' rx='2' fill='%2333685A'/%3E%3Crect x='11' y='6' width='5' height='20' rx='2.5' fill='%2333685A' opacity='0.72'/%3E%3Crect x='16' y='6' width='5' height='20' rx='2.5' fill='%2333685A' opacity='0.72'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/movement/apple-touch-icon.png">
+<link rel="manifest" href="/movement/manifest.webmanifest">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #F2F4EF;
+    --surface: #FCFDFB;
+    --surface2: #E9EDE5;
+    --ink: #22302A;
+    --ink2: #59685F;
+    --ink3: #6F7F77;
+    --line: #DBE1D7;
+    --accent: #33685A;
+    --accent-strong: #2A574B;
+    --accent-soft: #E0EBE5;
+    --on-accent: #F4FAF7;
+    --danger: #A3402F;
+    --danger-soft: #F4E3DE;
+    --r-upper: #33685A;
+    --r-core: #AC5B33;
+    --r-lower: #47657F;
+    --r-tread: #8A6C3E;
+    --r-upper-soft: #E0EBE5;
+    --r-core-soft: #F4E3DE;
+    --r-lower-soft: #E1E8EF;
+    --r-tread-soft: #F3E7CD;
+    --shadow: 0 1px 2px rgba(34, 48, 42, 0.05), 0 8px 24px -12px rgba(34, 48, 42, 0.14);
+    --serif: 'Iowan Old Style', 'Newsreader', Georgia, 'Times New Roman', serif;
+    --sans: system-ui, -apple-system, 'Segoe UI', 'Albert Sans', sans-serif;
+    --radius: 16px;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141B17;
+      --surface: #1C2521;
+      --surface2: #26312B;
+      --ink: #E4EAE5;
+      --ink2: #A2B2A8;
+      --ink3: #7E8E7C;
+      --line: #303C35;
+      --accent: #7FC0A8;
+      --accent-strong: #95D0BA;
+      --accent-soft: #24352E;
+      --on-accent: #0F211B;
+      --danger: #E08D77;
+      --danger-soft: #3A2620;
+      --r-upper: #7FC0A8;
+      --r-core: #E0A481;
+      --r-lower: #97B2CD;
+      --r-tread: #D8BC7A;
+      --r-upper-soft: #24352E;
+      --r-core-soft: #33241E;
+      --r-lower-soft: #1F2833;
+      --r-tread-soft: #302A1D;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
+      color-scheme: dark;
+    }
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; padding: 0; }
+
+  .wrap { max-width: 620px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(12px);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid transparent;
+    padding-top: env(safe-area-inset-top);
+    transition: border-color 0.2s ease;
+  }
+  .topbar.stuck { border-bottom-color: var(--line); }
+  .topbar-in { display: flex; align-items: center; gap: 10px; min-height: 54px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-family: var(--serif); font-size: 19px; font-weight: 600; }
+  .brand svg { display: block; }
+  .topbar .spacer { flex: 1; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); font-weight: 600; }
+
+  .icon-btn {
+    display: inline-grid; place-items: center;
+    width: 40px; height: 40px; border-radius: 12px;
+    color: var(--ink2); border: 1px solid transparent;
+  }
+  .icon-btn:hover, .icon-btn:focus-visible { color: var(--ink); background: var(--surface); border-color: var(--line); }
+
+  /* ---------- generic ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    min-height: 44px; padding: 0 18px; border-radius: 12px;
+    background: var(--accent); color: var(--on-accent);
+    font-weight: 600; font-size: 15px; border: 1px solid var(--accent);
+    transition: transform 0.06s ease, background 0.15s ease;
+  }
+  .btn:active { transform: scale(0.985); }
+  .btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+  .btn.ghost:hover { border-color: var(--accent); }
+  .btn.quiet { background: transparent; color: var(--ink2); border-color: transparent; padding: 0 10px; }
+  .btn.quiet:hover { color: var(--ink); }
+  .btn.danger { background: transparent; color: var(--danger); border-color: var(--line); }
+  .btn.sm { min-height: 36px; padding: 0 13px; font-size: 14px; border-radius: 10px; }
+  .btn.wide { width: 100%; }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 999px;
+    background: var(--surface2); color: var(--ink2);
+    font-size: 12.5px; font-weight: 600; line-height: 1.5;
+  }
+  .chip.setup { background: var(--accent-soft); color: var(--accent-strong); }
+  @media (prefers-color-scheme: dark) { .chip.setup { color: var(--accent); } }
+
+  .muted { color: var(--ink2); }
+  .tiny { font-size: 13px; }
+  .center { text-align: center; }
+  .stack { display: grid; gap: 12px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .sec-title { font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin: 26px 0 10px; }
+
+  .empty { padding: 26px 18px; text-align: center; color: var(--ink2); font-size: 14.5px; }
+
+  /* ---------- today ---------- */
+  .hero { padding: 22px 2px 6px; }
+  .hero h1 { font-size: 30px; line-height: 1.15; }
+  .hero p { margin: 7px 0 0; color: var(--ink2); font-size: 15px; }
+
+  .tiles { display: grid; gap: 12px; }
+  .tile {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; text-align: left; padding: 15px 16px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
+    transition: transform 0.06s ease, border-color 0.15s ease;
+  }
+  .tile:active { transform: scale(0.99); }
+  .tile::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--tone); }
+  .tile-mark {
+    flex: none; width: 42px; height: 42px; border-radius: 13px;
+    display: grid; place-items: center;
+    background: var(--tone-soft); color: var(--tone);
+  }
+  .tile-body { flex: 1; min-width: 0; }
+  .tile-body strong { display: block; font-family: var(--serif); font-size: 18px; font-weight: 600; }
+  .tile-body span { display: block; font-size: 13.5px; color: var(--ink2); margin-top: 1px; }
+  .tile .go { flex: none; color: var(--ink3); }
+
+  .resume {
+    display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
+    padding: 14px 16px; border-radius: var(--radius);
+    background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent);
+    box-shadow: var(--shadow);
+  }
+  .resume strong { display: block; font-size: 15.5px; }
+  .resume span { display: block; font-size: 13px; opacity: 0.85; }
+  .resume .go { margin-left: auto; }
+
+  .streak { display: flex; gap: 6px; margin-top: 14px; }
+  .streak i {
+    flex: 1; height: 34px; border-radius: 9px; background: var(--surface2);
+    display: grid; place-items: center; font-style: normal; font-size: 11px;
+    color: var(--ink3); font-weight: 700; letter-spacing: 0.04em;
+  }
+  .streak i.on { background: var(--accent-soft); color: var(--accent-strong); }
+  @media (prefers-color-scheme: dark) { .streak i.on { color: var(--accent); } }
+
+  /* ---------- session ---------- */
+  .session-bar {
+    position: sticky; z-index: 30;
+    top: calc(54px + env(safe-area-inset-top));
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    margin: 0 -16px; padding: 9px 16px 10px;
+  }
+  .session-bar .row { justify-content: space-between; }
+  .bar-meta { font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .progress { height: 5px; border-radius: 999px; background: var(--surface2); margin-top: 8px; overflow: hidden; }
+  .progress > i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.25s ease; }
+
+  .mv { padding: 14px 14px 12px; }
+  .mv + .mv { margin-top: 12px; }
+  .mv.done { border-color: var(--accent-soft); }
+  .mv-head { display: flex; align-items: flex-start; gap: 10px; }
+  .mv-head h3 { font-size: 17px; flex: 1; min-width: 0; line-height: 1.25; }
+  .mv-count {
+    flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink3);
+    font-variant-numeric: tabular-nums; padding-top: 2px;
+  }
+  .mv.done .mv-count { color: var(--accent); }
+  .mv-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .mv-note { margin: 9px 0 0; font-size: 13px; color: var(--ink2); }
+
+  .sets { margin-top: 11px; display: grid; gap: 7px; }
+  .set {
+    display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) 42px;
+    align-items: center; gap: 7px;
+  }
+  .set-n { font-size: 13px; font-weight: 700; color: var(--ink3); font-variant-numeric: tabular-nums; text-align: center; }
+  .field {
+    display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px;
+    align-items: center; height: 46px;
+    background: var(--surface2); border-radius: 12px; border: 1px solid transparent;
+  }
+  .field:focus-within { border-color: var(--accent); background: var(--surface); }
+  .field button { height: 100%; color: var(--ink3); font-size: 18px; line-height: 1; border-radius: 12px; }
+  .field button:active { color: var(--accent); }
+  /* Number over unit, so a long value never runs into its label. */
+  .field .val {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; min-width: 0; padding-top: 3px;
+  }
+  .field input {
+    width: 100%; height: 20px; border: none; background: none; outline: none;
+    text-align: center; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums;
+    padding: 0; -moz-appearance: textfield;
+  }
+  .field input::-webkit-outer-spin-button, .field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .field .unit {
+    font-size: 8.5px; letter-spacing: 0.07em; line-height: 1; margin-top: 2px;
+    text-transform: uppercase; color: var(--ink3); font-weight: 700; pointer-events: none;
+  }
+  .set.done .field { background: var(--accent-soft); }
+  .check {
+    height: 46px; width: 42px; border-radius: 12px; display: grid; place-items: center;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink3);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .check[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .set-last { font-size: 11.5px; color: var(--ink3); margin: -3px 0 -1px 30px; font-variant-numeric: tabular-nums; }
+
+  .mv-foot { display: flex; gap: 4px; margin-top: 9px; }
+
+  /* ---------- rest timer ---------- */
+  .rest {
+    position: fixed; left: 0; right: 0; z-index: 45;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    display: flex; justify-content: center; pointer-events: none;
+  }
+  .rest-in {
+    pointer-events: auto; display: flex; align-items: center; gap: 12px;
+    padding: 9px 10px 9px 16px; border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
+  }
+  .rest-in b { font-variant-numeric: tabular-nums; font-size: 16px; letter-spacing: 0.02em; }
+  .rest-in button { color: var(--bg); opacity: 0.75; font-size: 13.5px; font-weight: 600; padding: 5px 9px; border-radius: 999px; }
+  .rest-in button:hover { opacity: 1; }
+
+  /* ---------- treadmill ---------- */
+  .ivl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.86fr) 32px; gap: 6px; align-items: center; }
+  .ivl + .ivl { margin-top: 7px; }
+  .ivl .field { grid-template-columns: 24px minmax(0, 1fr) 24px; }
+  .ivl-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.86fr) 32px; gap: 6px; margin-bottom: 6px; }
+  /* On the narrowest phones the steppers would squeeze the number—type instead. */
+  @media (max-width: 359px) {
+    .ivl .field { grid-template-columns: minmax(0, 1fr); }
+    .ivl .field > button { display: none; }
+  }
+  .ivl-head span { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink3); font-weight: 700; text-align: center; }
+  .x-btn { display: grid; place-items: center; height: 46px; color: var(--ink3); border-radius: 10px; }
+  .x-btn:hover { color: var(--danger); background: var(--danger-soft); }
+
+  .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .stat { padding: 12px 10px; text-align: center; border-radius: 13px; background: var(--surface2); }
+  .stat b { display: block; font-family: var(--serif); font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .stat span { display: block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin-top: 3px; }
+
+  .runner { padding: 20px 16px; text-align: center; }
+  .runner .now { font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink3); font-weight: 700; }
+  .runner .clock { font-family: var(--serif); font-size: 56px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.05; margin: 4px 0 2px; }
+  .runner .speed { font-size: 17px; font-weight: 600; }
+  .runner .next { margin-top: 6px; font-size: 13.5px; color: var(--ink2); }
+  .runner .controls { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+  .runner .ring { height: 6px; border-radius: 999px; background: var(--surface2); margin-top: 16px; overflow: hidden; }
+  .runner .ring > i { display: block; height: 100%; background: var(--r-tread); border-radius: 999px; }
+
+  /* ---------- history ---------- */
+  .log { width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 13px 15px; }
+  .log + .log { border-top: 1px solid var(--line); }
+  .log .dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--tone); }
+  .log b { display: block; font-size: 15px; font-weight: 600; }
+  .log span { display: block; font-size: 13px; color: var(--ink2); }
+  .log .when { margin-left: auto; font-size: 12.5px; color: var(--ink3); text-align: right; flex: none; }
+
+  .list-card { padding: 0; overflow: hidden; }
+
+  .detail-mv { padding: 11px 0; border-top: 1px solid var(--line); }
+  .detail-mv:first-child { border-top: none; }
+  .detail-mv b { font-size: 15px; font-weight: 600; }
+  .detail-mv p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+
+  select {
+    width: 100%; height: 44px; padding: 0 12px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line); appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink3) 50%), linear-gradient(135deg, var(--ink3) 50%, transparent 50%);
+    background-position: calc(100% - 17px) 20px, calc(100% - 12px) 20px;
+    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+  textarea, input[type="text"] {
+    width: 100%; padding: 11px 13px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line); outline: none; resize: vertical;
+  }
+  textarea:focus, input[type="text"]:focus { border-color: var(--accent); }
+  label.lbl { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin-bottom: 5px; }
+
+  .chart { width: 100%; height: auto; display: block; overflow: visible; margin-top: 12px; }
+  .chart .area { fill: var(--accent); opacity: 0.12; }
+  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .chart .pt { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
+  .chart .gl { stroke: var(--line); stroke-width: 1; }
+  .chart text { font-size: 10px; fill: var(--ink3); font-weight: 600; }
+
+  /* ---------- plan ---------- */
+  .plan-mv { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
+  .plan-mv + .plan-mv { border-top: 1px solid var(--line); }
+  .plan-mv .grip { flex: 1; min-width: 0; text-align: left; }
+  .plan-mv b { display: block; font-size: 15px; font-weight: 600; }
+  .plan-mv span { display: block; font-size: 12.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .mini { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; color: var(--ink3); border: 1px solid var(--line); }
+  .mini:hover { color: var(--ink); border-color: var(--accent); }
+  .mini:disabled { opacity: 0.3; }
+
+  .edit-grid { display: grid; gap: 10px; padding: 13px 14px 15px; border-top: 1px solid var(--line); background: var(--surface2); }
+  .edit-sets { display: grid; gap: 6px; }
+  .edit-set { display: grid; grid-template-columns: 20px 1fr 1fr 32px; gap: 6px; align-items: center; }
+  .edit-set input { text-align: center; }
+  .edit-set .lbl-in { position: relative; }
+  .edit-set .lbl-in i { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink3); font-weight: 700; }
+  .edit-set input[type="text"] { padding-right: 34px; }
+
+  /* ---------- tab bar ---------- */
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tabbar-in { display: flex; max-width: 620px; margin: 0 auto; }
+  .tab {
+    flex: 1; display: grid; place-items: center; gap: 2px; padding: 8px 0 9px;
+    color: var(--ink3); font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+  }
+  .tab[aria-current="page"] { color: var(--accent); }
+  .tab svg { display: block; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 60;
+    background: var(--ink); color: var(--bg); padding: 10px 17px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .toast.on { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  .foot { padding: 30px 4px 10px; text-align: center; font-size: 12.5px; color: var(--ink3); line-height: 1.7; }
+  .foot a { color: var(--ink2); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="wrap topbar-in">
+    <button class="brand" data-act="home" aria-label="Home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.4"></rect>
+        <rect x="6" y="10" width="4" height="12" rx="2" fill="currentColor"></rect>
+        <rect x="22" y="10" width="4" height="12" rx="2" fill="currentColor"></rect>
+        <rect x="11" y="6" width="5" height="20" rx="2.5" fill="currentColor" opacity="0.72"></rect>
+        <rect x="16" y="6" width="5" height="20" rx="2.5" fill="currentColor" opacity="0.72"></rect>
+      </svg>
+      <span id="brand-name">Movement</span>
+    </button>
+    <span class="spacer"></span>
+    <div id="topbar-slot"></div>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<div id="rest-slot"></div>
+
+<nav class="tabbar">
+  <div class="tabbar-in">
+    <button class="tab" data-act="tab" data-view="today">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V20h13V9.5"></path></svg>
+      Today
+    </button>
+    <button class="tab" data-act="tab" data-view="history">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V6"></path><path d="M4 19h16"></path><path d="M8 19v-6"></path><path d="M13 19V9"></path><path d="M18 19v-9"></path></svg>
+      History
+    </button>
+    <button class="tab" data-act="tab" data-view="plan">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14"></path><path d="M5 12h14"></path><path d="M5 19h9"></path><circle cx="18.5" cy="19" r="2.2"></circle></svg>
+      Plan
+    </button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     Storage
+     ============================================================ */
+
+  const KEY = "movement.v1";
+  const UNIT = "lb";
+
+  const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+
+  function set(w, r, note) { return { w: w, r: r, note: note || "" }; }
+
+  // Ids stay stable across resets so the progress charts keep their history.
+  function mv(id, name, sets, opts) {
+    opts = opts || {};
+    return {
+      id: id,
+      name: name,
+      setup: opts.setup || "",
+      step: opts.step || 5,
+      sets: sets
+    };
+  }
+
+  function seed() {
+    return {
+      v: 1,
+      prefs: { rest: 75 },
+      routines: [
+        {
+          id: "upper", name: "Upper Body", tone: "upper", kind: "lift",
+          items: [
+            mv("u-chest-press", "Chest Press", [set(65, 10), set(65, 10, "Drop to 55 halfway."), set(55, 10)], { step: 5 }),
+            mv("u-lat-pulldown", "Lat Pulldown", [set(77, 10), set(66, 10), set(66, 10)], { step: 11 }),
+            mv("u-row", "Seated Cable or Machine Row", [set(55, 10), set(55, 10), set(44, 10)], { step: 11 }),
+            mv("u-shoulder-press", "Machine Shoulder Press", [set(10, 10), set(10, 10), set(10, 10)], { step: 5 }),
+            mv("u-lateral-raise", "Dumbbell Lateral Raise", [set(7.5, 12), set(7.5, 12), set(5, 12)], { step: 2.5 }),
+            mv("u-rear-delts", "Reverse Pec Deck—Rear Delts", [set(30, 12), set(30, 12), set(20, 12)], { step: 5 }),
+            mv("u-triceps", "Cable Triceps Pulldown", [set(22, 12), set(11, 12), set(11, 12)], { step: 11 }),
+            mv("u-biceps", "Dumbbell or Cable Bicep Curls", [set(12.5, 10), set(10, 10), set(10, 10)], { step: 2.5 }),
+            mv("u-incline-press", "Incline Dumbbell Press", [set(17.5, 10), set(15, 10), set(15, 10)], { step: 2.5 }),
+            mv("u-preacher-curl", "Dumbbell Preacher Curl", [set(30, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Seat 8" })
+          ]
+        },
+        {
+          id: "core", name: "Core", tone: "core", kind: "lift",
+          items: [
+            mv("c-kneeling-crunch", "Cable Kneeling Crunch", [set(40, 12), set(40, 12), set(40, 12)], { step: 5 }),
+            mv("c-knee-raise", "Captain's Chair Knee Raise", [set(0, 8), set(0, 8), set(0, 8)], { step: 5 }),
+            mv("c-pallof", "Pallof Press", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Each side" }),
+            mv("c-ab-crunch", "Abdominal Crunch", [set(0, 15), set(0, 15), set(0, 15)], { step: 5 }),
+            mv("c-wood-chop", "Cable Wood Chop", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Each side" }),
+            mv("c-dead-bug", "Weighted Dead Bug", [set(0, 8), set(0, 8), set(0, 8)], { step: 2.5 })
+          ]
+        },
+        {
+          id: "lower", name: "Lower Body", tone: "lower", kind: "lift",
+          items: [
+            mv("l-leg-press", "Seated Leg Press", [set(100, 10), set(100, 10), set(100, 10)], { step: 10, setup: "Seat 5" }),
+            mv("l-ham-curl", "Seated Hamstring Curl", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Leg part 5" }),
+            mv("l-leg-extension", "Leg Extension", [set(30, 10), set(30, 10), set(30, 10)], { step: 5, setup: "Leg part large, rotator standing up" }),
+            mv("l-abductor", "Hip Abductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { step: 5, setup: "Leg part 2" }),
+            mv("l-adductor", "Hip Adductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { step: 5, setup: "Leg part 7" }),
+            mv("l-calf", "Standing Calf Machine", [set(10, 12), set(0, 12), set(0, 12)], { step: 5, setup: "Top part 3" })
+          ]
+        },
+        {
+          id: "tread", name: "Treadmill", tone: "tread", kind: "tread",
+          intervals: [
+            { id: uid(), label: "Warm up", min: 5, mph: 3, incline: 0 },
+            { id: uid(), label: "Steady", min: 10, mph: 3.5, incline: 1 },
+            { id: uid(), label: "Cool down", min: 5, mph: 3, incline: 0 }
+          ]
+        }
+      ],
+      sessions: [],
+      draft: null
+    };
+  }
+
+  let S;
+  try {
+    S = JSON.parse(localStorage.getItem(KEY)) || seed();
+  } catch (err) {
+    S = seed();
+  }
+  if (!S.routines || !S.routines.length) S = seed();
+  if (!S.prefs) S.prefs = { rest: 75 };
+  if (!S.sessions) S.sessions = [];
+
+  let saveTimer = null;
+  function saveNow() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (err) { /* ignore */ }
+  }
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(KEY, JSON.stringify(S)); }
+      catch (err) { toast("Could not save—storage is full."); }
+    }, 120);
+  }
+
+  saveNow();
+
+  /* ============================================================
+     Helpers
+     ============================================================ */
+
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const app = $("#app");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  function num(n) {
+    if (n == null || n === "" || isNaN(n)) return "0";
+    return String(Math.round(Number(n) * 100) / 100);
+  }
+
+  function weightLabel(w) { return Number(w) > 0 ? num(w) + " " + UNIT : "empty"; }
+
+  function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
+
+  const DAY = 86400000;
+  function startOfDay(t) { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); }
+
+  function dayLabel(t) {
+    const diff = Math.round((startOfDay(Date.now()) - startOfDay(t)) / DAY);
+    if (diff === 0) return "Today";
+    if (diff === 1) return "Yesterday";
+    if (diff < 7) return diff + " days ago";
+    if (diff < 14) return "Last week";
+    return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  function fullDate(t) {
+    return new Date(t).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  }
+
+  function clock(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    const m = Math.floor(s / 60);
+    return m + ":" + String(s % 60).padStart(2, "0");
+  }
+
+  function duration(ms) {
+    const m = Math.max(0, Math.round(ms / 60000));
+    if (m < 60) return m + " min";
+    return Math.floor(m / 60) + "h " + (m % 60) + "m";
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = $("#toast");
+    el.textContent = msg;
+    el.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("on"), 2200);
+  }
+
+  function buzz(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* ignore */ }
+  }
+
+  const routineById = id => S.routines.filter(r => r.id === id)[0];
+
+  function lastSessionFor(routineId, beforeId) {
+    const found = S.sessions
+      .filter(x => x.routineId === routineId && x.id !== beforeId)
+      .sort((a, b) => b.start - a.start);
+    return found[0] || null;
+  }
+
+  function sessionVolume(sn) {
+    let v = 0;
+    (sn.items || []).forEach(function (it) {
+      it.sets.forEach(function (st) {
+        if (st.done) v += (Number(st.w) || 0) * (Number(st.r) || 0);
+      });
+    });
+    return v;
+  }
+
+  function setsDone(sn) {
+    let d = 0, t = 0;
+    (sn.items || []).forEach(function (it) {
+      it.sets.forEach(function (st) { t++; if (st.done) d++; });
+    });
+    return { done: d, total: t };
+  }
+
+  function treadTotals(list) {
+    let min = 0, dist = 0;
+    (list || []).forEach(function (iv) {
+      const m = Number(iv.min) || 0, s = Number(iv.mph) || 0;
+      min += m; dist += s * m / 60;
+    });
+    return { min: min, dist: dist, avg: min ? dist / (min / 60) : 0 };
+  }
+
+  /* ============================================================
+     Icons
+     ============================================================ */
+
+  const ICONS = {
+    upper: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 12h18"></path><path d="M6 8v8"></path><path d="M18 8v8"></path><path d="M9.5 6v12"></path><path d="M14.5 6v12"></path></svg>',
+    core: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"></circle><path d="M12 3.8v16.4"></path><path d="M3.8 12h16.4"></path></svg>',
+    lower: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v7l-2 5.5"></path><path d="M16 3v7l2 5.5"></path><path d="M6 21h4"></path><path d="M14 21h4"></path></svg>',
+    tread: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="4.6" r="1.9"></circle><path d="M13.5 21l1.2-5.4-3-2.4.9-4.2"></path><path d="M12.6 9l-3.1 1.6-.9 2.9"></path><path d="M12.6 9l3.4 1.3 2.4 2.6"></path><path d="M18 21l-2-4.4"></path></svg>',
+    chevron: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>',
+    check: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"></path></svg>',
+    back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>',
+    up: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6"></path><path d="M6 11l6-6 6 6"></path></svg>',
+    down: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v13"></path><path d="M6 13l6 6 6-6"></path></svg>',
+    pencil: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"></path><path d="M14 6l4 4"></path></svg>',
+    trash: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5h6v2"></path><path d="M6.5 7l1 13h9l1-13"></path></svg>',
+    x: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>'
+  };
+
+  /* ============================================================
+     View state
+     ============================================================ */
+
+  const V = { name: "today", routineId: null, sessionId: null, movementId: null, editing: null, running: null };
+
+  function go(name, extra) {
+    Object.assign(V, { routineId: null, sessionId: null, movementId: null, editing: null }, extra || {}, { name: name });
+    window.scrollTo(0, 0);
+    render();
+  }
+
+  /* ============================================================
+     Today
+     ============================================================ */
+
+  function viewToday() {
+    const now = Date.now();
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+    let html = '<section class="hero"><h1>' + greet + '.</h1><p>' + esc(fullDate(now)) + "</p></section>";
+
+    if (S.draft) {
+      const r = routineById(S.draft.routineId);
+      const label = S.draft.kind === "tread"
+        ? plural((S.draft.intervals || []).length, "interval")
+        : setsDone(S.draft).done + " of " + setsDone(S.draft).total + " sets";
+      html += '<button class="resume" data-act="resume" style="margin-bottom:14px">' +
+        "<div><strong>Pick up where you left off</strong><span>" +
+        esc(r ? r.name : S.draft.routineName) + "—" + label + "</span></div>" +
+        '<span class="go">' + ICONS.chevron + "</span></button>";
+    }
+
+    html += '<div class="tiles">';
+    S.routines.forEach(function (r) {
+      const last = lastSessionFor(r.id);
+      const count = r.kind === "tread"
+        ? plural((r.intervals || []).length, "interval")
+        : plural((r.items || []).length, "movement");
+      const when = last ? "last " + dayLabel(last.start).toLowerCase() : "not logged yet";
+      html += '<button class="tile" data-act="start" data-id="' + r.id + '" style="--tone:var(--r-' + r.tone + ');--tone-soft:var(--r-' + r.tone + '-soft)">' +
+        '<span class="tile-mark">' + (ICONS[r.tone] || ICONS.upper) + "</span>" +
+        '<span class="tile-body"><strong>' + esc(r.name) + "</strong><span>" + count + " · " + when + "</span></span>" +
+        '<span class="go">' + ICONS.chevron + "</span></button>";
+    });
+    html += "</div>";
+
+    // Last seven days.
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = startOfDay(now - i * DAY);
+      const hit = S.sessions.some(sn => startOfDay(sn.start) === d);
+      days.push('<i class="' + (hit ? "on" : "") + '">' +
+        new Date(d).toLocaleDateString(undefined, { weekday: "narrow" }) + "</i>");
+    }
+    html += '<div class="sec-title">This week</div><div class="streak">' + days.join("") + "</div>";
+
+    const recent = S.sessions.slice().sort((a, b) => b.start - a.start).slice(0, 4);
+    if (recent.length) {
+      html += '<div class="sec-title">Recent</div><div class="card list-card">' +
+        recent.map(logRow).join("") + "</div>";
+    }
+
+    html += '<p class="foot">Everything you enter stays in this browser—nothing is sent anywhere.</p>';
+
+    app.innerHTML = html;
+    setTopbar("");
+  }
+
+  function logRow(sn) {
+    const r = routineById(sn.routineId);
+    const tone = r ? r.tone : "upper";
+    let sub;
+    if (sn.kind === "tread") {
+      const t = treadTotals(sn.intervals);
+      sub = Math.round(t.min) + " min · " + t.dist.toFixed(2) + " mi";
+    } else {
+      const d = setsDone(sn);
+      sub = plural(d.done, "set") + " · " + Math.round(sessionVolume(sn)).toLocaleString() + " " + UNIT;
+    }
+    return '<button class="log" data-act="detail" data-id="' + sn.id + '" style="--tone:var(--r-' + tone + ')">' +
+      '<span class="dot"></span>' +
+      "<span><b>" + esc(sn.routineName) + "</b><span>" + sub + "</span></span>" +
+      '<span class="when">' + esc(dayLabel(sn.start)) + "</span></button>";
+  }
+
+  /* ============================================================
+     Starting and running a session
+     ============================================================ */
+
+  function startSession(routineId) {
+    const r = routineById(routineId);
+    if (!r) return;
+
+    if (S.draft && S.draft.routineId !== routineId) {
+      if (!confirm("You have an unfinished " + S.draft.routineName + " session. Start " + r.name + " instead and drop it?")) return;
+      S.draft = null;
+    }
+
+    if (!S.draft) {
+      const prev = lastSessionFor(routineId);
+      if (r.kind === "tread") {
+        const src = (prev && prev.intervals && prev.intervals.length) ? prev.intervals : r.intervals;
+        S.draft = {
+          id: uid(), routineId: r.id, routineName: r.name, kind: "tread",
+          start: Date.now(), notes: "",
+          intervals: (src || []).map(iv => ({ id: uid(), label: iv.label || "", min: iv.min, mph: iv.mph, incline: iv.incline || 0 }))
+        };
+      } else {
+        S.draft = {
+          id: uid(), routineId: r.id, routineName: r.name, kind: "lift",
+          start: Date.now(), notes: "",
+          items: (r.items || []).map(function (it) {
+            const old = prev && (prev.items || []).filter(p => p.mid === it.id)[0];
+            const sets = (it.sets || []).map(function (st, i) {
+              const o = old && old.sets[i];
+              return {
+                w: o ? o.w : st.w,
+                r: o ? o.r : st.r,
+                note: st.note || "",
+                last: o ? { w: o.w, r: o.r } : null,
+                done: false
+              };
+            });
+            return { id: uid(), mid: it.id, name: it.name, setup: it.setup, step: it.step, sets: sets };
+          })
+        };
+      }
+      save();
+    }
+    go("session");
+  }
+
+  function viewSession() {
+    const d = S.draft;
+    if (!d) return go("today");
+    if (d.kind === "tread") return viewTread();
+
+    const p = setsDone(d);
+    const pct = p.total ? Math.round(p.done / p.total * 100) : 0;
+
+    let html = '<div class="session-bar"><div class="row">' +
+      "<div><strong>" + esc(d.routineName) + "</strong> " +
+      '<span class="bar-meta">· ' + duration(Date.now() - d.start) + "</span></div>" +
+      '<span class="bar-meta">' + p.done + "/" + p.total + " sets</span>" +
+      '</div><div class="progress"><i style="width:' + pct + '%"></i></div></div>';
+
+    html += '<div style="height:14px"></div>';
+
+    d.items.forEach(function (it, idx) {
+      const allDone = it.sets.every(s => s.done);
+      html += '<article class="card mv' + (allDone ? " done" : "") + '" data-mi="' + idx + '">' +
+        '<div class="mv-head"><h3>' + esc(it.name) + "</h3>" +
+        '<span class="mv-count">' + it.sets.filter(s => s.done).length + "/" + it.sets.length + "</span></div>";
+
+      if (it.setup) html += '<div class="mv-tags"><span class="chip setup">' + esc(it.setup) + "</span></div>";
+
+      html += '<div class="sets">';
+      it.sets.forEach(function (st, si) {
+        if (st.last && (Number(st.last.w) !== Number(st.w) || Number(st.last.r) !== Number(st.r))) {
+          html += '<div class="set-last">last time ' + weightLabel(st.last.w) + " × " + num(st.last.r) + "</div>";
+        }
+        html += '<div class="set' + (st.done ? " done" : "") + '">' +
+          '<span class="set-n">' + (si + 1) + "</span>" +
+          numField(idx, si, "w", st.w, it.step, UNIT) +
+          numField(idx, si, "r", st.r, 1, "reps") +
+          '<button class="check" data-act="toggle" data-mi="' + idx + '" data-si="' + si + '" aria-pressed="' + (st.done ? "true" : "false") + '" aria-label="Mark set ' + (si + 1) + ' done">' +
+          ICONS.check + "</button></div>";
+        if (st.note) html += '<div class="set-last">' + esc(st.note) + "</div>";
+      });
+      html += "</div>";
+
+      html += '<div class="mv-foot">' +
+        '<button class="btn quiet sm" data-act="addset" data-mi="' + idx + '">+ Set</button>' +
+        (it.sets.length > 1 ? '<button class="btn quiet sm" data-act="dropset" data-mi="' + idx + '">− Set</button>' : "") +
+        '<button class="btn quiet sm" data-act="alldone" data-mi="' + idx + '">' + (allDone ? "Clear" : "All done") + "</button>" +
+        "</div></article>";
+    });
+
+    html += '<div class="sec-title">A word about how it went</div>' +
+      '<textarea rows="3" data-act="notes" placeholder="Optional.">' + esc(d.notes || "") + "</textarea>";
+
+    html += '<div style="height:16px"></div>' +
+      '<button class="btn wide" data-act="finish">Finish session</button>' +
+      '<div style="height:8px"></div>' +
+      '<button class="btn ghost wide" data-act="discard">Discard</button>' +
+      '<div style="height:20px"></div>';
+
+    app.innerHTML = html;
+    setTopbar('<button class="icon-btn" data-act="home" aria-label="Leave open and go back">' + ICONS.x + "</button>");
+  }
+
+  function numField(mi, si, k, val, step, unit) {
+    return '<div class="field">' +
+      '<button data-act="bump" data-mi="' + mi + '" data-si="' + si + '" data-k="' + k + '" data-d="-1" aria-label="Less">−</button>' +
+      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
+      '" data-act="num" data-mi="' + mi + '" data-si="' + si + '" data-k="' + k + '" data-step="' + step + '">' +
+      '<span class="unit">' + unit + "</span></span>" +
+      '<button data-act="bump" data-mi="' + mi + '" data-si="' + si + '" data-k="' + k + '" data-d="1" aria-label="More">+</button>' +
+      "</div>";
+  }
+
+  function finishSession() {
+    const d = S.draft;
+    if (!d) return;
+    if (d.kind === "tread") {
+      if (!(d.intervals || []).length) { toast("Add an interval first."); return; }
+    } else {
+      const p = setsDone(d);
+      if (!p.done) {
+        if (!confirm("Nothing is marked done. Save this session anyway?")) return;
+      }
+    }
+    d.end = Date.now();
+    S.sessions.push(d);
+    S.draft = null;
+    endRest();
+    save();
+    buzz([18, 60, 18]);
+    toast("Saved.");
+    go("detail", { sessionId: d.id });
+  }
+
+  /* ============================================================
+     Treadmill
+     ============================================================ */
+
+  function viewTread() {
+    const d = S.draft;
+    const t = treadTotals(d.intervals);
+
+    if (V.running) return viewRunner();
+
+    let html = '<div class="session-bar"><div class="row">' +
+      "<div><strong>" + esc(d.routineName) + "</strong></div>" +
+      '<span class="bar-meta">' + Math.round(t.min) + " min</span>" +
+      "</div></div><div style=\"height:14px\"></div>";
+
+    html += '<article class="card" style="padding:14px">' +
+      '<div class="ivl-head"><span>Minutes</span><span>Speed</span><span>Incline</span><span></span></div>';
+
+    d.intervals.forEach(function (iv, i) {
+      html += '<div class="ivl">' +
+        ivlField(i, "min", iv.min, 1, "min") +
+        ivlField(i, "mph", iv.mph, 0.1, "mph") +
+        ivlField(i, "incline", iv.incline, 0.5, "%") +
+        '<button class="x-btn" data-act="delivl" data-i="' + i + '" aria-label="Remove interval">' + ICONS.x + "</button>" +
+        "</div>";
+    });
+
+    html += '<div style="height:10px"></div><button class="btn ghost sm" data-act="addivl">+ Interval</button>';
+
+    html += '<div class="totals">' +
+      '<div class="stat"><b>' + Math.round(t.min) + '</b><span>minutes</span></div>' +
+      '<div class="stat"><b>' + t.dist.toFixed(2) + '</b><span>miles</span></div>' +
+      '<div class="stat"><b>' + t.avg.toFixed(1) + '</b><span>avg mph</span></div>' +
+      "</div></article>";
+
+    html += '<div style="height:14px"></div>' +
+      '<button class="btn wide" data-act="run">Start the timer</button>';
+
+    html += '<div class="sec-title">A word about how it went</div>' +
+      '<textarea rows="3" data-act="notes" placeholder="Optional.">' + esc(d.notes || "") + "</textarea>";
+
+    html += '<div style="height:16px"></div>' +
+      '<button class="btn ghost wide" data-act="finish">Save session</button>' +
+      '<div style="height:8px"></div>' +
+      '<button class="btn quiet wide" data-act="discard">Discard</button>' +
+      '<div style="height:20px"></div>';
+
+    app.innerHTML = html;
+    setTopbar('<button class="icon-btn" data-act="home" aria-label="Leave open and go back">' + ICONS.x + "</button>");
+  }
+
+  function ivlField(i, k, val, step, unit) {
+    return '<div class="field">' +
+      '<button data-act="ibump" data-i="' + i + '" data-k="' + k + '" data-d="-1" aria-label="Less">−</button>' +
+      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
+      '" data-act="inum" data-i="' + i + '" data-k="' + k + '" data-step="' + step + '">' +
+      '<span class="unit">' + unit + "</span></span>" +
+      '<button data-act="ibump" data-i="' + i + '" data-k="' + k + '" data-d="1" aria-label="More">+</button>' +
+      "</div>";
+  }
+
+  /* ---- interval runner ---- */
+
+  let runTimer = null;
+  let wakeLock = null;
+  let audioCtx = null;
+
+  // Safari only lets sound start from a tap, so the context is opened on one
+  // and kept warm for the timers that fire later.
+  function primeAudio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch (err) { /* ignore */ }
+  }
+
+  function beep(freq, ms) {
+    try {
+      primeAudio();
+      if (!audioCtx) return;
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + ms / 1000);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + ms / 1000 + 0.05);
+    } catch (err) { /* audio is a nicety, not a requirement */ }
+  }
+
+  async function keepAwake(on) {
+    try {
+      if (on && "wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen");
+      else if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    } catch (err) { /* ignore */ }
+  }
+
+  function startRunner() {
+    const list = (S.draft.intervals || []).filter(iv => Number(iv.min) > 0);
+    if (!list.length) { toast("Add an interval first."); return; }
+    endRest();
+    V.running = { i: 0, endAt: Date.now() + Number(list[0].min) * 60000, paused: false, left: 0 };
+    beep(880, 140);
+    keepAwake(true);
+    tick();
+    runTimer = setInterval(tick, 250);
+    render();
+  }
+
+  function stopRunner() {
+    clearInterval(runTimer); runTimer = null;
+    V.running = null;
+    keepAwake(false);
+    render();
+  }
+
+  function tick() {
+    const R = V.running;
+    if (!R || R.paused) return;
+    const list = (S.draft.intervals || []).filter(iv => Number(iv.min) > 0);
+    if (Date.now() >= R.endAt) {
+      R.i++;
+      if (R.i >= list.length) {
+        beep(660, 200); setTimeout(() => beep(880, 300), 230);
+        buzz([120, 80, 120, 80, 200]);
+        toast("All intervals done.");
+        stopRunner();
+        return;
+      }
+      beep(880, 160); setTimeout(() => beep(1100, 160), 190);
+      buzz([90, 70, 90]);
+      R.endAt = Date.now() + Number(list[R.i].min) * 60000;
+    }
+    paintRunner();
+  }
+
+  function viewRunner() {
+    const list = (S.draft.intervals || []).filter(iv => Number(iv.min) > 0);
+    const R = V.running;
+    const iv = list[R.i] || list[0];
+    const next = list[R.i + 1];
+
+    app.innerHTML = '<div style="height:18px"></div><article class="card runner">' +
+      '<div class="now">Interval ' + (R.i + 1) + " of " + list.length + (iv.label ? " · " + esc(iv.label) : "") + "</div>" +
+      '<div class="clock" id="run-clock">0:00</div>' +
+      '<div class="speed">' + num(iv.mph) + " mph" + (Number(iv.incline) ? " · " + num(iv.incline) + "% incline" : "") + "</div>" +
+      '<div class="next">' + (next ? "Next: " + num(next.mph) + " mph for " + num(next.min) + " min" : "Last one.") + "</div>" +
+      '<div class="ring"><i id="run-ring" style="width:0%"></i></div>' +
+      '<div class="controls">' +
+      '<button class="btn ghost sm" data-act="pause">' + (R.paused ? "Resume" : "Pause") + "</button>" +
+      '<button class="btn ghost sm" data-act="skip">Skip</button>' +
+      '<button class="btn ghost sm" data-act="stoprun">Stop</button>' +
+      "</div></article>";
+
+    setTopbar("");
+    paintRunner();
+  }
+
+  function paintRunner() {
+    const R = V.running;
+    if (!R) return;
+    const el = document.getElementById("run-clock");
+    if (!el) return;
+    const list = (S.draft.intervals || []).filter(iv => Number(iv.min) > 0);
+    const iv = list[R.i];
+    if (!iv) return;
+    const total = Number(iv.min) * 60000;
+    const left = R.paused ? R.left : Math.max(0, R.endAt - Date.now());
+    el.textContent = clock(left);
+    const ring = document.getElementById("run-ring");
+    if (ring) ring.style.width = Math.min(100, (1 - left / total) * 100) + "%";
+  }
+
+  /* ============================================================
+     History
+     ============================================================ */
+
+  function viewHistory() {
+    const list = S.sessions.slice().sort((a, b) => b.start - a.start);
+
+    let html = '<section class="hero"><h1>History</h1><p>' +
+      (list.length ? plural(list.length, "session") + " logged." : "Nothing here yet.") + "</p></section>";
+
+    if (list.length) {
+      const lifts = S.routines.filter(r => r.kind !== "tread");
+      let opts = "";
+      lifts.forEach(function (r) {
+        (r.items || []).forEach(function (it) {
+          if (S.sessions.some(sn => (sn.items || []).some(x => x.mid === it.id && x.sets.some(s => s.done)))) {
+            opts += '<option value="' + it.id + '"' + (V.movementId === it.id ? " selected" : "") + ">" + esc(it.name) + "</option>";
+          }
+        });
+      });
+      if (opts) {
+        html += '<div class="sec-title">Progress</div>' +
+          '<article class="card" style="padding:14px">' +
+          '<select data-act="pickmv"><option value="">Pick a movement</option>' + opts + "</select>" +
+          (V.movementId ? progressBlock(V.movementId) : '<p class="tiny muted" style="margin:10px 2px 2px">Choose one to see how the weight has moved.</p>') +
+          "</article>";
+      }
+
+      html += '<div class="sec-title">All sessions</div><div class="card list-card">' +
+        list.map(logRow).join("") + "</div>";
+    } else {
+      html += '<div class="card empty">Finish a session and it will show up here—with every set you logged.</div>';
+    }
+
+    html += '<div style="height:20px"></div>';
+    app.innerHTML = html;
+    setTopbar("");
+  }
+
+  function progressBlock(mid) {
+    const pts = [];
+    S.sessions.slice().sort((a, b) => a.start - b.start).forEach(function (sn) {
+      (sn.items || []).forEach(function (it) {
+        if (it.mid !== mid) return;
+        const done = it.sets.filter(s => s.done);
+        if (!done.length) return;
+        const top = Math.max.apply(null, done.map(s => Number(s.w) || 0));
+        const vol = done.reduce((a, s) => a + (Number(s.w) || 0) * (Number(s.r) || 0), 0);
+        pts.push({ t: sn.start, top: top, vol: vol, sets: done.length });
+      });
+    });
+
+    if (pts.length < 1) return '<p class="tiny muted" style="margin:10px 2px 2px">No finished sets yet.</p>';
+
+    const last = pts[pts.length - 1];
+    const first = pts[0];
+    const delta = last.top - first.top;
+
+    let html = pts.length > 1
+      ? chartSVG(pts)
+      : '<p class="tiny muted" style="margin:12px 2px 0">One session so far—the shape shows up after the next one.</p>';
+    html += '<div class="totals" style="margin-top:12px">' +
+      '<div class="stat"><b>' + weightLabel(last.top).replace(" " + UNIT, "") + '</b><span>top set</span></div>' +
+      '<div class="stat"><b>' + (delta > 0 ? "+" : "") + num(delta) + '</b><span>change</span></div>' +
+      '<div class="stat"><b>' + pts.length + '</b><span>sessions</span></div>' +
+      "</div>";
+    return html;
+  }
+
+  function chartSVG(pts) {
+    const W = 300, H = 120, pad = 14;
+    const vals = pts.map(p => p.top);
+    const peak = Math.max.apply(null, vals);
+    let lo = Math.min.apply(null, vals), hi = peak;
+    if (hi === lo) { hi = lo + 1; lo = Math.max(0, lo - 1); }
+    const span = hi - lo;
+    const x = i => pts.length === 1 ? W / 2 : pad + i * (W - pad * 2) / (pts.length - 1);
+    const y = v => H - pad - (v - lo) / span * (H - pad * 2);
+
+    const line = pts.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.top).toFixed(1)).join(" ");
+    const area = line + " L" + x(pts.length - 1).toFixed(1) + " " + (H - pad) + " L" + x(0).toFixed(1) + " " + (H - pad) + " Z";
+    const dots = pts.map((p, i) => '<circle class="pt" cx="' + x(i).toFixed(1) + '" cy="' + y(p.top).toFixed(1) + '" r="3.4"></circle>').join("");
+
+    return '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Top set over time">' +
+      '<line class="gl" x1="' + pad + '" y1="' + (H - pad) + '" x2="' + (W - pad) + '" y2="' + (H - pad) + '"></line>' +
+      '<path class="area" d="' + area + '"></path>' +
+      '<path class="line" d="' + line + '"></path>' + dots +
+      "</svg>" +
+      '<div class="row tiny muted" style="justify-content:space-between;margin-top:4px">' +
+      "<span>" + esc(dayLabel(pts[0].t)) + "</span><span>" + num(peak) + " " + UNIT + " high</span>" +
+      "<span>" + esc(dayLabel(pts[pts.length - 1].t)) + "</span></div>";
+  }
+
+  function viewDetail() {
+    const sn = S.sessions.filter(x => x.id === V.sessionId)[0];
+    if (!sn) return go("history");
+
+    let html = '<section class="hero"><h1>' + esc(sn.routineName) + "</h1><p>" +
+      esc(fullDate(sn.start)) + (sn.end ? " · " + duration(sn.end - sn.start) : "") + "</p></section>";
+
+    if (sn.kind === "tread") {
+      const t = treadTotals(sn.intervals);
+      html += '<div class="totals" style="margin-top:6px">' +
+        '<div class="stat"><b>' + Math.round(t.min) + '</b><span>minutes</span></div>' +
+        '<div class="stat"><b>' + t.dist.toFixed(2) + '</b><span>miles</span></div>' +
+        '<div class="stat"><b>' + t.avg.toFixed(1) + '</b><span>avg mph</span></div></div>';
+      html += '<div class="sec-title">Intervals</div><article class="card" style="padding:4px 15px 12px">';
+      (sn.intervals || []).forEach(function (iv, i) {
+        html += '<div class="detail-mv"><b>' + (iv.label ? esc(iv.label) : "Interval " + (i + 1)) + "</b>" +
+          "<p>" + num(iv.min) + " min at " + num(iv.mph) + " mph" +
+          (Number(iv.incline) ? " · " + num(iv.incline) + "% incline" : "") + "</p></div>";
+      });
+      html += "</article>";
+    } else {
+      const p = setsDone(sn);
+      html += '<div class="totals" style="margin-top:6px">' +
+        '<div class="stat"><b>' + p.done + '</b><span>sets</span></div>' +
+        '<div class="stat"><b>' + Math.round(sessionVolume(sn)).toLocaleString() + '</b><span>' + UNIT + ' lifted</span></div>' +
+        '<div class="stat"><b>' + (sn.end ? Math.round((sn.end - sn.start) / 60000) : "—") + '</b><span>minutes</span></div></div>';
+
+      html += '<div class="sec-title">What you did</div><article class="card" style="padding:4px 15px 12px">';
+      (sn.items || []).forEach(function (it) {
+        const done = it.sets.filter(s => s.done);
+        html += '<div class="detail-mv"><b>' + esc(it.name) + "</b><p>" +
+          (done.length ? done.map(s => weightLabel(s.w) + " × " + num(s.r)).join(" · ") : "skipped") +
+          (it.setup ? " · " + esc(it.setup) : "") + "</p></div>";
+      });
+      html += "</article>";
+    }
+
+    if (sn.notes) {
+      html += '<div class="sec-title">Note</div><article class="card" style="padding:14px"><p style="margin:0;font-size:14.5px">' +
+        esc(sn.notes) + "</p></article>";
+    }
+
+    html += '<div style="height:18px"></div><button class="btn danger wide" data-act="delsession" data-id="' + sn.id + '">Delete this session</button><div style="height:20px"></div>';
+
+    app.innerHTML = html;
+    setTopbar('<button class="icon-btn" data-act="back-history" aria-label="Back">' + ICONS.back + "</button>");
+  }
+
+  /* ============================================================
+     Plan
+     ============================================================ */
+
+  function viewPlan() {
+    let html = '<section class="hero"><h1>Plan</h1><p>Your starting numbers. Change them any time—sessions always begin from what you did last.</p></section>';
+
+    S.routines.forEach(function (r) {
+      html += '<div class="sec-title">' + esc(r.name) + "</div>";
+      html += '<article class="card list-card">';
+      if (r.kind === "tread") {
+        (r.intervals || []).forEach(function (iv, i) {
+          html += '<div class="plan-mv"><span class="grip"><b>' + (iv.label ? esc(iv.label) : "Interval " + (i + 1)) +
+            "</b><span>" + num(iv.min) + " min · " + num(iv.mph) + " mph" +
+            (Number(iv.incline) ? " · " + num(iv.incline) + "%" : "") + "</span></span></div>";
+        });
+        html += '<div class="plan-mv"><span class="tiny muted">Edit these while the session is open.</span></div>';
+      } else {
+        (r.items || []).forEach(function (it, i) {
+          const open = V.editing === it.id;
+          html += '<div class="plan-mv">' +
+            '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b><span>" +
+            it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
+            (it.setup ? " · " + esc(it.setup) : "") + "</span></button>" +
+            '<button class="mini" data-act="mvup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
+            '<button class="mini" data-act="mvdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.items.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
+            '<button class="mini" data-act="edit" data-id="' + it.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
+            "</div>";
+          if (open) html += editForm(r, it);
+        });
+        html += '<div class="plan-mv"><button class="btn quiet sm" data-act="addmv" data-rid="' + r.id + '">+ Add a movement</button></div>';
+      }
+      html += "</article>";
+    });
+
+    html += '<div class="sec-title">Rest timer</div><article class="card" style="padding:14px">' +
+      '<label class="lbl" for="rest-pref">Seconds between sets</label>' +
+      '<div class="ivl" style="grid-template-columns:1fr"><div class="field">' +
+      '<button data-act="restbump" data-d="-1" aria-label="Less">−</button>' +
+      '<span class="val"><input id="rest-pref" type="number" inputmode="numeric" step="15" value="' + Number(S.prefs.rest || 0) + '" data-act="restnum"><span class="unit">sec</span></span>' +
+      '<button data-act="restbump" data-d="1" aria-label="More">+</button></div></div>' +
+      '<p class="tiny muted" style="margin:9px 2px 0">Set it to 0 to turn the timer off.</p></article>';
+
+    html += '<div class="sec-title">Your data</div><article class="card" style="padding:14px">' +
+      '<p class="tiny muted" style="margin:0 0 12px">Everything lives in this browser only. Back it up before you switch phones or clear your history.</p>' +
+      '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="backup">Back up</button>' +
+      '<button class="btn ghost sm" data-act="restore">Restore</button>' +
+      '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
+
+    html += '<div style="height:16px"></div><button class="btn danger wide" data-act="reset">Reset to the starting numbers</button>';
+    html += '<p class="foot">Movement—yours, on this phone.</p>';
+
+    app.innerHTML = html;
+    setTopbar("");
+  }
+
+  function editForm(r, it) {
+    let html = '<div class="edit-grid">' +
+      '<div><label class="lbl">Name</label><input type="text" value="' + esc(it.name) + '" data-act="mvname" data-id="' + it.id + '"></div>' +
+      '<div><label class="lbl">Setup note</label><input type="text" value="' + esc(it.setup || "") + '" placeholder="Seat 8, leg part 2…" data-act="mvsetup" data-id="' + it.id + '"></div>' +
+      '<div><label class="lbl">Sets</label><div class="edit-sets">';
+
+    it.sets.forEach(function (st, i) {
+      html += '<div class="edit-set"><span class="set-n">' + (i + 1) + "</span>" +
+        '<span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(st.w) + '" data-act="setw" data-id="' + it.id + '" data-si="' + i + '"><i>' + UNIT + "</i></span>" +
+        '<span class="lbl-in"><input type="text" inputmode="numeric" value="' + num(st.r) + '" data-act="setr" data-id="' + it.id + '" data-si="' + i + '"><i>reps</i></span>' +
+        '<button class="mini" data-act="delset" data-id="' + it.id + '" data-si="' + i + '" aria-label="Remove set"' + (it.sets.length < 2 ? " disabled" : "") + ">" + ICONS.x + "</button></div>";
+    });
+
+    html += "</div></div>" +
+      '<div><label class="lbl">Step size</label>' +
+      '<div class="edit-set" style="grid-template-columns:1fr"><span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(it.step) + '" data-act="mvstep" data-id="' + it.id + '"><i>' + UNIT + "</i></span></div></div>" +
+      '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addplanset" data-id="' + it.id + '">+ Set</button>' +
+      '<button class="btn quiet sm" data-act="edit" data-id="">Done</button>' +
+      '<span style="flex:1"></span>' +
+      '<button class="btn quiet sm" style="color:var(--danger)" data-act="delmv" data-rid="' + r.id + '" data-id="' + it.id + '">' + ICONS.trash + "</button></div>" +
+      "</div>";
+    return html;
+  }
+
+  function findMv(id) {
+    for (const r of S.routines) {
+      const hit = (r.items || []).filter(x => x.id === id)[0];
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  /* ============================================================
+     Rest timer
+     ============================================================ */
+
+  let rest = null, restTimer = null;
+
+  function startRest() {
+    const secs = Number(S.prefs.rest) || 0;
+    if (!secs) return;
+    rest = { endAt: Date.now() + secs * 1000 };
+    clearInterval(restTimer);
+    restTimer = setInterval(paintRest, 250);
+    paintRest();
+  }
+
+  function endRest() {
+    clearInterval(restTimer); restTimer = null; rest = null;
+    $("#rest-slot").innerHTML = "";
+  }
+
+  function paintRest() {
+    if (!rest) return;
+    const left = rest.endAt - Date.now();
+    const slot = $("#rest-slot");
+    if (left <= 0) {
+      beep(760, 180);
+      buzz([60, 50, 60]);
+      endRest();
+      return;
+    }
+    slot.innerHTML = '<div class="rest"><div class="rest-in">' +
+      "<b>" + clock(left) + "</b>" +
+      '<button data-act="rest30">+30s</button>' +
+      '<button data-act="restskip">Skip</button>' +
+      "</div></div>";
+  }
+
+  /* ============================================================
+     Backup and restore
+     ============================================================ */
+
+  function backup() {
+    const blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const d = new Date();
+    a.href = url;
+    a.download = "movement-" + d.toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast("Backed up.");
+  }
+
+  function restore(file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!data || !data.routines) throw new Error("bad file");
+        if (!confirm("Replace everything on this device with the backup?")) return;
+        S = data;
+        if (!S.prefs) S.prefs = { rest: 75 };
+        if (!S.sessions) S.sessions = [];
+        save();
+        go("today");
+        toast("Restored.");
+      } catch (err) {
+        toast("That file did not look right.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ============================================================
+     Events
+     ============================================================ */
+
+  document.addEventListener("click", function (e) {
+    const t = e.target.closest("[data-act]");
+    if (!t) return;
+    const act = t.dataset.act;
+    const mi = Number(t.dataset.mi), si = Number(t.dataset.si), i = Number(t.dataset.i);
+    primeAudio();
+
+    switch (act) {
+      case "home": go("today"); break;
+      case "tab": go(t.dataset.view); break;
+      case "start": startSession(t.dataset.id); break;
+      case "resume": go("session"); break;
+      case "detail": go("detail", { sessionId: t.dataset.id }); break;
+      case "back-history": go("history"); break;
+
+      case "toggle": {
+        const st = S.draft.items[mi].sets[si];
+        st.done = !st.done;
+        save();
+        if (st.done) { buzz(12); startRest(); } else endRest();
+        render();
+        break;
+      }
+      case "alldone": {
+        const it = S.draft.items[mi];
+        const all = it.sets.every(s => s.done);
+        it.sets.forEach(s => { s.done = !all; });
+        save(); render();
+        break;
+      }
+      case "addset": {
+        const it = S.draft.items[mi];
+        const last = it.sets[it.sets.length - 1];
+        it.sets.push({ w: last.w, r: last.r, note: "", last: null, done: false });
+        save(); render();
+        break;
+      }
+      case "dropset": {
+        const it = S.draft.items[mi];
+        if (it.sets.length > 1) it.sets.pop();
+        save(); render();
+        break;
+      }
+      case "bump": {
+        const st = S.draft.items[mi].sets[si];
+        const k = t.dataset.k;
+        const step = k === "w" ? (Number(S.draft.items[mi].step) || 5) : 1;
+        st[k] = Math.max(0, Math.round(((Number(st[k]) || 0) + Number(t.dataset.d) * step) * 100) / 100);
+        save(); render();
+        break;
+      }
+      case "finish": finishSession(); break;
+      case "discard":
+        if (confirm("Drop this session without saving?")) { S.draft = null; endRest(); save(); go("today"); }
+        break;
+
+      case "addivl": {
+        const list = S.draft.intervals;
+        const last = list[list.length - 1] || { min: 5, mph: 3, incline: 0 };
+        list.push({ id: uid(), label: "", min: last.min, mph: last.mph, incline: last.incline || 0 });
+        save(); render();
+        break;
+      }
+      case "delivl": S.draft.intervals.splice(i, 1); save(); render(); break;
+      case "ibump": {
+        const iv = S.draft.intervals[i];
+        const k = t.dataset.k;
+        const step = k === "min" ? 1 : k === "mph" ? 0.1 : 0.5;
+        iv[k] = Math.max(0, Math.round(((Number(iv[k]) || 0) + Number(t.dataset.d) * step) * 10) / 10);
+        save(); render();
+        break;
+      }
+      case "run": startRunner(); break;
+      case "stoprun": stopRunner(); break;
+      case "pause": {
+        const R = V.running;
+        if (R.paused) { R.endAt = Date.now() + R.left; R.paused = false; }
+        else { R.left = Math.max(0, R.endAt - Date.now()); R.paused = true; }
+        render();
+        break;
+      }
+      case "skip": {
+        V.running.endAt = Date.now();
+        V.running.paused = false;
+        tick();
+        render();
+        break;
+      }
+
+      case "rest30": rest.endAt += 30000; paintRest(); break;
+      case "restskip": endRest(); break;
+      case "restbump": {
+        S.prefs.rest = Math.max(0, (Number(S.prefs.rest) || 0) + Number(t.dataset.d) * 15);
+        save(); render();
+        break;
+      }
+
+      case "pickmv": break;
+      case "delsession":
+        if (confirm("Delete this session for good?")) {
+          S.sessions = S.sessions.filter(x => x.id !== t.dataset.id);
+          save(); go("history");
+        }
+        break;
+
+      case "edit": V.editing = (V.editing === t.dataset.id || !t.dataset.id) ? null : t.dataset.id; render(); break;
+      case "mvup": case "mvdown": {
+        const r = routineById(t.dataset.rid);
+        const j = act === "mvup" ? i - 1 : i + 1;
+        if (j < 0 || j >= r.items.length) break;
+        const tmp = r.items[i]; r.items[i] = r.items[j]; r.items[j] = tmp;
+        save(); render();
+        break;
+      }
+      case "addmv": {
+        const r = routineById(t.dataset.rid);
+        const fresh = mv(uid(), "New movement", [set(0, 10), set(0, 10), set(0, 10)]);
+        r.items.push(fresh);
+        V.editing = fresh.id;
+        save(); render();
+        break;
+      }
+      case "delmv": {
+        const r = routineById(t.dataset.rid);
+        if (confirm("Remove this movement from the plan? Past sessions keep it.")) {
+          r.items = r.items.filter(x => x.id !== t.dataset.id);
+          V.editing = null;
+          save(); render();
+        }
+        break;
+      }
+      case "addplanset": {
+        const it = findMv(t.dataset.id);
+        const last = it.sets[it.sets.length - 1];
+        it.sets.push({ w: last.w, r: last.r, note: "" });
+        save(); render();
+        break;
+      }
+      case "delset": {
+        const it = findMv(t.dataset.id);
+        if (it.sets.length > 1) it.sets.splice(si, 1);
+        save(); render();
+        break;
+      }
+
+      case "backup": backup(); break;
+      case "restore": $("#restore-file").click(); break;
+      case "reset":
+        if (confirm("Put the plan back to its starting numbers? Your logged sessions are kept.")) {
+          const keptSessions = S.sessions, keptDraft = S.draft, keptPrefs = S.prefs;
+          S = seed();
+          S.sessions = keptSessions;
+          S.draft = keptDraft;
+          S.prefs = keptPrefs;
+          save(); go("plan");
+        }
+        break;
+    }
+  });
+
+  // Live field edits: commit without a re-render so the keyboard stays put.
+  document.addEventListener("input", function (e) {
+    const t = e.target.closest("[data-act]");
+    if (!t) return;
+    const act = t.dataset.act;
+    const val = t.value;
+
+    switch (act) {
+      case "num": {
+        const st = S.draft.items[Number(t.dataset.mi)].sets[Number(t.dataset.si)];
+        st[t.dataset.k] = val === "" ? 0 : Math.max(0, Number(val) || 0);
+        save();
+        break;
+      }
+      case "inum": {
+        S.draft.intervals[Number(t.dataset.i)][t.dataset.k] = val === "" ? 0 : Math.max(0, Number(val) || 0);
+        save();
+        break;
+      }
+      case "notes": S.draft.notes = val; save(); break;
+      case "restnum": S.prefs.rest = Math.max(0, Number(val) || 0); save(); break;
+      case "mvname": findMv(t.dataset.id).name = val; save(); break;
+      case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
+      case "mvstep": findMv(t.dataset.id).step = Math.max(0.5, Number(val) || 5); save(); break;
+      case "setw": findMv(t.dataset.id).sets[Number(t.dataset.si)].w = Math.max(0, Number(val) || 0); save(); break;
+      case "setr": findMv(t.dataset.id).sets[Number(t.dataset.si)].r = Math.max(0, Number(val) || 0); save(); break;
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    const t = e.target.closest("[data-act]");
+    if (t && t.dataset.act === "pickmv") { V.movementId = t.value || null; render(); return; }
+    if (e.target.id === "restore-file" && e.target.files[0]) restore(e.target.files[0]);
+  });
+
+  // Select the whole number when a field is tapped, so typing replaces it.
+  document.addEventListener("focusin", function (e) {
+    if (e.target.matches('.field input, .edit-set input')) e.target.select();
+  });
+
+  window.addEventListener("scroll", function () {
+    $("#topbar").classList.toggle("stuck", window.scrollY > 4);
+  }, { passive: true });
+
+  window.addEventListener("beforeunload", saveNow);
+  window.addEventListener("pagehide", saveNow);
+
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && V.running) { keepAwake(true); paintRunner(); }
+  });
+
+  /* ============================================================
+     Render
+     ============================================================ */
+
+  function setTopbar(html) {
+    $("#topbar-slot").innerHTML = html;
+    $("#brand-name").textContent = V.name === "session" && S.draft ? S.draft.routineName : "Movement";
+  }
+
+  function render() {
+    document.querySelectorAll(".tab").forEach(function (b) {
+      const on = b.dataset.view === V.name || (V.name === "detail" && b.dataset.view === "history");
+      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+
+    if (V.name === "session") viewSession();
+    else if (V.name === "history") viewHistory();
+    else if (V.name === "detail") viewDetail();
+    else if (V.name === "plan") viewPlan();
+    else viewToday();
+  }
+
+  render();
+
+  // Keep the elapsed clock honest while a session is open.
+  setInterval(function () {
+    if (V.name === "session" && S.draft && S.draft.kind !== "tread" && !V.running) {
+      const el = document.querySelector(".session-bar .bar-meta");
+      if (el) el.textContent = "· " + duration(Date.now() - S.draft.start);
+    }
+  }, 20000);
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/movement/sw.js").catch(function () { /* offline is a bonus */ });
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -22,6 +22,19 @@ card; `robots.txt` and `sitemap.xml` cover the app plus the guides. The site
 deliberately names ERP, OCD, and anxiety for search while emphasizing that no
 diagnosis is needed.
 
+## Movement
+
+`movement/` is a separate single-file app in the same palette: a private log
+for sets, weights, and treadmill intervals, stored in `localStorage` under
+`movement.v1`. It shares the origin and nothing else. Keep it that way: no
+link from any Foothold page in, no link back out, no entry in `sitemap.xml`,
+`llms.txt`, or the site menu, and `noindex, nofollow` on the page itself. It
+ships its own PWA pieces so it installs to a home screen on its
+own—`manifest.webmanifest` scoped to `/movement/`, its own icons, and `sw.js`
+for an offline shell. Deliberate wording: the app never uses the words
+"workout" or "exercise"; a thing you do is a **movement**, a visit to the gym
+is a **session**, and the three groups plus the treadmill are **routines**.
+
 ## Hosting
 
 The site is served free from GitHub Pages at `https://grhs24.github.io/`. All
