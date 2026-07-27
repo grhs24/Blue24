@@ -46,8 +46,8 @@ is likewise no streak strip. Both were removed on request—the point is
 knowing what you can lift today, not watching a line climb.
 
 A treadmill routine is a list of **blocks**, not a flat list of intervals. A
-steady block is one stretch at one speed; a repeat block is a fast leg and an
-easy leg run back to back N times (30s at 12.5 / 90s at 3.5, twelve times over).
+steady block is one stretch at one speed; a repeat block is a fast leg and a
+slower leg run back to back N times (30s at 12.5 / 90s at 3.5, twelve times over).
 Times are held in **seconds**, because that is how the short ones are counted.
 `allLegs()` flattens blocks into what the timer actually runs.
 

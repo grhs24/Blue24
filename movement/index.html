@@ -860,7 +860,7 @@
      Treadmill
 
      A session is a list of blocks. A steady block is one stretch at
-     one speed; a repeat block is a fast leg and an easy leg, run
+     one speed; a repeat block is a fast leg and a slower leg, run
      back to back a number of times. Times are in seconds, because
      that is how the short ones are counted.
      ============================================================ */
@@ -893,7 +893,7 @@
     const reps = Math.max(1, Math.round(Number(b.reps) || 1));
     for (let i = 1; i <= reps; i++) {
       legs.push({ name: b.label || "Fast", sub: i + " of " + reps, secs: Number(b.work.secs) || 0, mph: Number(b.work.mph) || 0, incline: Number(b.incline) || 0, fast: true });
-      legs.push({ name: "Easy", sub: i + " of " + reps, secs: Number(b.rest.secs) || 0, mph: Number(b.rest.mph) || 0, incline: Number(b.incline) || 0, fast: false });
+      legs.push({ name: "Slower", sub: i + " of " + reps, secs: Number(b.rest.secs) || 0, mph: Number(b.rest.mph) || 0, incline: Number(b.incline) || 0, fast: false });
     }
     return legs;
   }
@@ -951,7 +951,7 @@
     keys.forEach(function (k) {
       const b = S.bests[k], p = k.split("/");
       html += '<div class="best' + (here[k] ? " on" : "") + '">' +
-        "<b>" + p[0] + "s fast · " + p[1] + "s easy</b>" +
+        "<b>" + p[0] + "s fast · " + p[1] + "s slower</b>" +
         "<span>" + num(b.mph) + " mph · " + plural(b.reps, "block") + "</span></div>";
     });
     html += '<p class="tiny muted" style="margin:9px 0 0">Your quickest fast leg at each shape, and how many blocks you held it for.</p></article>';
@@ -987,7 +987,7 @@
         html += '<div class="leg"><span class="leg-tag">Fast</span>' +
           bField(bi, "work", "secs", b.work.secs, 5, "sec") +
           bField(bi, "work", "mph", b.work.mph, 0.1, "mph") + "</div>";
-        html += '<div class="leg"><span class="leg-tag">Easy</span>' +
+        html += '<div class="leg"><span class="leg-tag">Slower</span>' +
           bField(bi, "rest", "secs", b.rest.secs, 5, "sec") +
           bField(bi, "rest", "mph", b.rest.mph, 0.1, "mph") + "</div>";
       } else {
