@@ -83,7 +83,7 @@
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: contain;
-    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    padding-bottom: calc(30px + env(safe-area-inset-bottom));
   }
 
   h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; margin: 0; }
@@ -159,65 +159,7 @@
 
   .empty { padding: 26px 18px; text-align: center; color: var(--ink2); font-size: 14.5px; }
 
-  /* ---------- today ---------- */
-  .hero { padding: 22px 2px 6px; }
-  .hero h1 { font-size: 30px; line-height: 1.15; }
-  .hero p { margin: 7px 0 0; color: var(--ink2); font-size: 15px; }
-
-  .tiles { display: grid; gap: 12px; }
-  .tile {
-    display: flex; align-items: center; gap: 14px;
-    width: 100%; text-align: left; padding: 15px 16px;
-    background: var(--surface); border: 1px solid var(--line);
-    border-radius: var(--radius); box-shadow: var(--shadow);
-    position: relative; overflow: hidden;
-    transition: transform 0.06s ease, border-color 0.15s ease;
-  }
-  .tile:active { transform: scale(0.99); }
-  .tile::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--tone); }
-  .tile-mark {
-    flex: none; width: 42px; height: 42px; border-radius: 13px;
-    display: grid; place-items: center;
-    background: color-mix(in srgb, var(--tone) 15%, transparent); color: var(--tone);
-  }
-  .tile-body { flex: 1; min-width: 0; }
-  .tile-body strong { display: block; font-family: var(--serif); font-size: 18px; font-weight: 600; }
-  .tile-body span { display: block; font-size: 13.5px; color: var(--ink2); margin-top: 1px; }
-  .tile .go { flex: none; color: var(--ink3); }
-
-  /* ---------- session ---------- */
-  .session-bar {
-    position: sticky; z-index: 30;
-    top: calc(54px + env(safe-area-inset-top));
-    background: color-mix(in srgb, var(--bg) 92%, transparent);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
-    margin: 0 -16px; padding: 9px 16px 10px;
-  }
-  .session-bar .row { justify-content: space-between; }
-  .bar-meta { font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
-  .progress { height: 5px; border-radius: 999px; background: var(--surface2); margin-top: 8px; overflow: hidden; }
-  .progress > i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.25s ease; }
-
-  .mv { padding: 14px 14px 12px; }
-  .mv + .mv { margin-top: 12px; }
-  .mv.done { border-color: var(--accent-soft); }
-  .mv-head { display: flex; align-items: flex-start; gap: 10px; }
-  .mv-head h3 { font-size: 17px; flex: 1; min-width: 0; line-height: 1.25; }
-  .mv-count {
-    flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink3);
-    font-variant-numeric: tabular-nums; padding-top: 2px;
-  }
-  .mv.done .mv-count { color: var(--accent); }
-  .mv-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .mv-note { margin: 9px 0 0; font-size: 13px; color: var(--ink2); }
-
-  .sets { margin-top: 11px; display: grid; gap: 7px; }
-  .set {
-    display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) 42px;
-    align-items: center; gap: 7px;
-  }
-  .set-n { font-size: 13px; font-weight: 700; color: var(--ink3); font-variant-numeric: tabular-nums; text-align: center; }
+  /* ---------- number fields ---------- */
   .field {
     display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px;
     align-items: center; height: 46px;
@@ -238,122 +180,44 @@
   }
   .field input::-webkit-outer-spin-button, .field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .field .unit {
-    font-size: 8.5px; letter-spacing: 0.07em; line-height: 1; margin-top: 2px;
+    font-size: 8.5px; letter-spacing: 0.12em; line-height: 1; margin-top: 2px;
     text-transform: uppercase; color: var(--ink3); font-weight: 700; pointer-events: none;
   }
-  .set.done .field { background: var(--accent-soft); }
-  .check {
-    height: 46px; width: 42px; border-radius: 12px; display: grid; place-items: center;
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink3);
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .check[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-  .set-last { font-size: 11.5px; color: var(--ink3); margin: -3px 0 -1px 30px; font-variant-numeric: tabular-nums; }
 
-  .mv-foot { display: flex; gap: 4px; margin-top: 9px; }
-
-  /* ---------- rest timer ---------- */
-  body.resting { padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
-  .rest {
-    position: fixed; left: 0; right: 0; z-index: 45;
-    bottom: calc(72px + env(safe-area-inset-bottom));
-    display: flex; justify-content: center; pointer-events: none;
-  }
-  .rest-in {
-    pointer-events: auto; display: flex; align-items: center; gap: 12px;
-    padding: 9px 10px 9px 16px; border-radius: 999px;
-    background: var(--ink); color: var(--bg);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
-  }
-  .rest-in b { font-variant-numeric: tabular-nums; font-size: 16px; letter-spacing: 0.02em; }
-  .rest-in button { color: var(--bg); opacity: 0.75; font-size: 13.5px; font-weight: 600; padding: 5px 9px; border-radius: 999px; }
-  .rest-in button:hover { opacity: 1; }
-
-  /* ---------- treadmill ---------- */
-  .x-btn { display: grid; place-items: center; height: 46px; color: var(--ink3); border-radius: 10px; }
-  .x-btn:hover { color: var(--danger); background: var(--danger-soft); }
-
-  .blk { padding: 13px 14px 14px; }
-  .blk + .blk { margin-top: 10px; }
-  .blk-head { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
-  .blk-head input { flex: 1; min-width: 0; font-weight: 600; }
   .leg { display: grid; grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr); gap: 7px; align-items: center; }
   .leg + .leg { margin-top: 7px; }
   .leg-tag { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; }
   .leg-note { font-size: 12px; color: var(--ink3); padding-left: 2px; }
   .leg .field { grid-template-columns: 28px minmax(0, 1fr) 28px; }
-
-  .best { padding: 10px 0; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 10px; }
-  .best:first-child { border-top: none; }
-  .best b { flex: 1; font-size: 14.5px; font-weight: 600; }
-  .best span { font-size: 13.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
-  .best.on b { color: var(--accent); }
-  .best.on span { color: var(--accent); }
-
-  .runner.fast .clock { color: var(--accent); }
-
   @media (max-width: 359px) {
     .leg { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
     .leg .field { grid-template-columns: minmax(0, 1fr); }
     .leg .field > button { display: none; }
   }
 
-  .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-  .stat { padding: 12px 10px; text-align: center; border-radius: 13px; background: var(--surface2); }
-  .stat b { display: block; font-family: var(--serif); font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
-  .stat span { display: block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin-top: 3px; }
-
-  .runner { padding: 20px 16px; text-align: center; }
-  .runner .now { font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink3); font-weight: 700; }
-  .runner .clock { font-family: var(--serif); font-size: 56px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.05; margin: 4px 0 2px; }
-  .runner .speed { font-size: 17px; font-weight: 600; }
-  .runner .next { margin-top: 6px; font-size: 13.5px; color: var(--ink2); }
-  .runner .controls { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
-  .runner .ring { height: 6px; border-radius: 999px; background: var(--surface2); margin-top: 16px; overflow: hidden; }
-  .runner .ring > i { display: block; height: 100%; background: var(--r-tread); border-radius: 999px; }
-
-  select {
-    width: 100%; height: 44px; padding: 0 12px; border-radius: 12px;
-    background: var(--surface); border: 1px solid var(--line); appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--ink3) 50%), linear-gradient(135deg, var(--ink3) 50%, transparent 50%);
-    background-position: calc(100% - 17px) 20px, calc(100% - 12px) 20px;
-    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
-  }
-  textarea, input[type="text"], input[type="password"] {
+  input[type="text"] {
     width: 100%; padding: 11px 13px; border-radius: 12px;
-    background: var(--surface); border: 1px solid var(--line); outline: none; resize: vertical;
+    background: var(--surface); border: 1px solid var(--line); outline: none;
   }
-  textarea:focus, input[type="text"]:focus, input[type="password"]:focus { border-color: var(--accent); }
-  label.lbl { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin-bottom: 5px; }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--ink3); }
 
+  /* ---------- page furniture ---------- */
+  .hero { padding: 22px 2px 6px; }
+  .hero h1 { font-size: 30px; line-height: 1.15; }
+  .hero p { margin: 7px 0 0; color: var(--ink2); font-size: 15px; }
 
-  /* ---------- plan: routine headers ---------- */
+  .list-card { padding: 0; overflow: hidden; }
+
+  label.lbl {
+    display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 700; margin-bottom: 5px;
+  }
+
+  .set-n { font-size: 13px; font-weight: 700; color: var(--ink3); font-variant-numeric: tabular-nums; text-align: center; }
+
   .routine-head { display: flex; align-items: center; gap: 8px; margin: 26px 0 10px; }
   .routine-head .sec-title { margin: 0; flex: 1; min-width: 0; color: var(--tone); }
-
-  /* ---------- building a routine ---------- */
-  /* ---------- building a routine ---------- */
-  .howto { border-top: 1px solid var(--line); margin-top: 13px; padding-top: 12px; }
-  .howto summary {
-    cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent);
-    list-style: none; padding: 2px 0;
-  }
-  .howto summary::-webkit-details-marker { display: none; }
-  .howto summary::after { content: " ›"; display: inline-block; transition: transform 0.15s ease; }
-  .howto[open] summary::after { transform: rotate(90deg); }
-  .howto ol { margin: 10px 0 2px; padding-left: 19px; font-size: 13.5px; color: var(--ink2); line-height: 1.65; }
-  .howto li { margin-bottom: 8px; }
-  .howto li:last-child { margin-bottom: 0; }
-  .howto b { color: var(--ink); font-weight: 600; }
-  .howto a { color: var(--accent); }
-  .howto code {
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px;
-    background: var(--surface2); padding: 1px 5px; border-radius: 5px;
-  }
-
-  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface2); border-radius: 13px; }
-  .seg button { height: 38px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--ink2); }
-  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 
   /* ---------- plan ---------- */
   .plan-mv { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
@@ -372,23 +236,6 @@
   .edit-set .lbl-in { position: relative; }
   .edit-set .lbl-in i { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink3); font-weight: 700; }
   .edit-set input[type="text"] { padding-right: 34px; }
-
-  /* ---------- tab bar ---------- */
-  .tabbar {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-    background: color-mix(in srgb, var(--bg) 90%, transparent);
-    backdrop-filter: saturate(1.4) blur(14px);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    border-top: 1px solid var(--line);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .tabbar-in { display: flex; max-width: 620px; margin: 0 auto; }
-  .tab {
-    flex: 1; display: grid; place-items: center; gap: 2px; padding: 8px 0 9px;
-    color: var(--ink3); font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
-  }
-  .tab[aria-current="page"] { color: var(--accent); }
-  .tab svg { display: block; }
 
   .toast {
     position: fixed; left: 50%; transform: translateX(-50%);
@@ -409,7 +256,7 @@
 
 <header class="topbar" id="topbar">
   <div class="wrap topbar-in">
-    <button class="brand" data-act="home" aria-label="Home">
+    <span class="brand">
       <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
         <rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.4"></rect>
         <rect x="6" y="10" width="4" height="12" rx="2" fill="currentColor"></rect>
@@ -417,29 +264,12 @@
         <rect x="11" y="6" width="5" height="20" rx="2.5" fill="currentColor" opacity="0.72"></rect>
         <rect x="16" y="6" width="5" height="20" rx="2.5" fill="currentColor" opacity="0.72"></rect>
       </svg>
-      <span id="brand-name">Movement Now</span>
-    </button>
-    <span class="spacer"></span>
-    <div id="topbar-slot"></div>
+      Movement Now
+    </span>
   </div>
 </header>
 
 <main class="wrap" id="app"></main>
-
-<div id="rest-slot"></div>
-
-<nav class="tabbar">
-  <div class="tabbar-in">
-    <button class="tab" data-act="tab" data-view="today">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V20h13V9.5"></path></svg>
-      Today
-    </button>
-    <button class="tab" data-act="tab" data-view="plan">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14"></path><path d="M5 12h14"></path><path d="M5 19h9"></path><circle cx="18.5" cy="19" r="2.2"></circle></svg>
-      Plan
-    </button>
-  </div>
-</nav>
 
 <div class="toast" id="toast"></div>
 
@@ -448,7 +278,12 @@
   "use strict";
 
   /* ============================================================
-     Storage
+     Movement Now — a logger, and nothing else.
+
+     One page. Every number on it is what you can currently do,
+     edited in place. No sessions, no timers, no history: routines
+     are written elsewhere and timed elsewhere; this holds the
+     numbers.
      ============================================================ */
 
   const KEY = "movement.v1";
@@ -458,22 +293,25 @@
 
   function set(w, r, note) { return { w: w, r: r, note: note || "" }; }
 
-  // Ids stay stable across resets so the progress charts keep their history.
   function mv(id, name, sets, opts) {
     opts = opts || {};
+    return { id: id, name: name, setup: opts.setup || "", step: opts.step || 5, sets: sets };
+  }
+
+  function steady(label, secs, mph, incline) {
+    return { id: uid(), type: "steady", label: label, secs: secs, mph: mph, incline: incline || 0 };
+  }
+
+  function repeatBlock(label, reps, wSecs, wMph, rSecs, rMph, incline) {
     return {
-      id: id,
-      name: name,
-      setup: opts.setup || "",
-      step: opts.step || 5,
-      sets: sets
+      id: uid(), type: "repeat", label: label, reps: reps,
+      work: { secs: wSecs, mph: wMph }, rest: { secs: rSecs, mph: rMph }, incline: incline || 0
     };
   }
 
   function seed() {
     return {
-      v: 1,
-      prefs: { rest: 75 },
+      v: 2,
       routines: [
         {
           id: "upper", name: "Upper Body", tone: "lime", icon: "upper", kind: "lift",
@@ -514,46 +352,35 @@
         },
         {
           id: "tread", name: "Treadmill", tone: "amber", icon: "tread", kind: "tread",
-          blocks: [
-            steady("Warm up", 300, 3.5),
-            repeatBlock("Sprints", 12, 30, 12.5, 90, 3.5),
-            steady("Cool down", 300, 3)
-          ]
+          blocks: [repeatBlock("Sprints", 10, 30, 12.5, 90, 3.5)]
         }
-      ],
-      sessions: [],
-      draft: null
+      ]
     };
   }
 
   let S;
-  try {
-    S = JSON.parse(localStorage.getItem(KEY)) || seed();
-  } catch (err) {
-    S = seed();
-  }
+  try { S = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch (err) { S = seed(); }
   if (!S.routines || !S.routines.length) S = seed();
-  if (!S.prefs) S.prefs = { rest: 75 };
-  if (!S.sessions) S.sessions = [];
 
-  // Early builds keyed the colour off the body area; colour and glyph are now
-  // separate so a routine you make yourself can pick either.
-  // Treadmill sessions used to be a flat list of minute-long intervals.
-  function liftIntervals(o) {
-    if (!o || !o.intervals || o.blocks) return;
-    o.blocks = o.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
-    delete o.intervals;
-  }
-  S.routines.forEach(liftIntervals);
-  (S.sessions || []).forEach(liftIntervals);
-  liftIntervals(S.draft);
+  /* ---- carry older saves forward ---- */
 
   const OLD_TONES = { upper: "lime", core: "coral", lower: "sky", tread: "amber" };
   S.routines.forEach(function (r) {
     if (!r.icon) r.icon = OLD_TONES[r.tone] ? r.tone : (r.kind === "tread" ? "tread" : "upper");
     if (OLD_TONES[r.tone]) r.tone = OLD_TONES[r.tone];
     if (!r.tone) r.tone = "lime";
+    // Treadmill used to be a flat list of minute-long intervals.
+    if (r.intervals && !r.blocks) {
+      r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
+      delete r.intervals;
+    }
+    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 10, 30, 12.5, 90, 3.5)];
   });
+  // Sessions, drafts, speed records and the rest-timer setting belonged to the
+  // old start-and-finish app. The plan itself is the record now.
+  ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete S[k]; });
+  S.v = 2;
+  try { localStorage.removeItem("movement.key"); } catch (err) { /* ignore */ }
 
   let saveTimer = null;
   function saveNow() {
@@ -566,11 +393,7 @@
       catch (err) { toast("Could not save—storage is full."); }
     }, 120);
   }
-
   saveNow();
-
-  // The routine builder is gone; drop any key a previous version stored.
-  try { localStorage.removeItem("movement.key"); } catch (err) { /* ignore */ }
 
   /* ============================================================
      Helpers
@@ -591,35 +414,10 @@
   }
 
   function weightLabel(w) { return Number(w) > 0 ? num(w) + " " + UNIT : "empty"; }
-
   function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
-
-  const DAY = 86400000;
-  function startOfDay(t) { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); }
-
-  function dayLabel(t) {
-    const diff = Math.round((startOfDay(Date.now()) - startOfDay(t)) / DAY);
-    if (diff === 0) return "Today";
-    if (diff === 1) return "Yesterday";
-    if (diff < 7) return diff + " days ago";
-    if (diff < 14) return "Last week";
-    return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  }
-
-  function fullDate(t) {
-    return new Date(t).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  }
-
-  function clock(ms) {
-    const s = Math.max(0, Math.round(ms / 1000));
-    const m = Math.floor(s / 60);
-    return m + ":" + String(s % 60).padStart(2, "0");
-  }
-
-  function duration(ms) {
-    const m = Math.max(0, Math.round(ms / 60000));
-    if (m < 60) return m + " min";
-    return Math.floor(m / 60) + "h " + (m % 60) + "m";
+  function clockOf(secs) {
+    const s = Math.max(0, Math.round(secs));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
   }
 
   let toastTimer = null;
@@ -628,28 +426,31 @@
     el.textContent = msg;
     el.classList.add("on");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove("on"), 2200);
-  }
-
-  function buzz(pattern) {
-    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* ignore */ }
+    toastTimer = setTimeout(() => el.classList.remove("on"), 2000);
   }
 
   const routineById = id => S.routines.filter(r => r.id === id)[0];
 
-  function lastSessionFor(routineId, beforeId) {
-    const found = S.sessions
-      .filter(x => x.routineId === routineId && x.id !== beforeId)
-      .sort((a, b) => b.start - a.start);
-    return found[0] || null;
+  function findMv(id) {
+    for (const r of S.routines) {
+      const hit = (r.items || []).filter(x => x.id === id)[0];
+      if (hit) return hit;
+    }
+    return null;
   }
 
-  function setsDone(sn) {
-    let d = 0, t = 0;
-    (sn.items || []).forEach(function (it) {
-      it.sets.forEach(function (st) { t++; if (st.done) d++; });
-    });
-    return { done: d, total: t };
+  function findBlock(id) {
+    for (const r of S.routines) {
+      const hit = (r.blocks || []).filter(x => x.id === id)[0];
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  const TONES = ["lime", "coral", "sky", "amber", "violet", "mint"];
+  function nextTone() {
+    const used = S.routines.map(r => r.tone);
+    return TONES.filter(t => used.indexOf(t) < 0)[0] || TONES[S.routines.length % TONES.length];
   }
 
   /* ============================================================
@@ -657,13 +458,6 @@
      ============================================================ */
 
   const ICONS = {
-    upper: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 12h18"></path><path d="M6 8v8"></path><path d="M18 8v8"></path><path d="M9.5 6v12"></path><path d="M14.5 6v12"></path></svg>',
-    core: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"></circle><path d="M12 3.8v16.4"></path><path d="M3.8 12h16.4"></path></svg>',
-    lower: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v7l-2 5.5"></path><path d="M16 3v7l2 5.5"></path><path d="M6 21h4"></path><path d="M14 21h4"></path></svg>',
-    tread: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="4.6" r="1.9"></circle><path d="M13.5 21l1.2-5.4-3-2.4.9-4.2"></path><path d="M12.6 9l-3.1 1.6-.9 2.9"></path><path d="M12.6 9l3.4 1.3 2.4 2.6"></path><path d="M18 21l-2-4.4"></path></svg>',
-    chevron: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>',
-    check: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"></path></svg>',
-    back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>',
     up: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6"></path><path d="M6 11l6-6 6 6"></path></svg>',
     down: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v13"></path><path d="M6 13l6 6 6-6"></path></svg>',
     pencil: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"></path><path d="M14 6l4 4"></path></svg>',
@@ -672,575 +466,49 @@
   };
 
   /* ============================================================
-     View state
+     What is open for editing
      ============================================================ */
 
-  const V = { name: "today", routineId: null, editing: null, running: null };
-
-  function go(name, extra) {
-    Object.assign(V, { routineId: null, editing: null }, extra || {}, { name: name });
-    window.scrollTo(0, 0);
-    render();
-  }
+  const V = { editing: null };
 
   /* ============================================================
-     Today
+     Number field
      ============================================================ */
 
-  function viewToday() {
-    const now = Date.now();
-    const hour = new Date().getHours();
-    const greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-
-    let html = '<section class="hero"><h1>' + greet + '.</h1><p>' + esc(fullDate(now)) + "</p></section>";
-
-    html += '<div class="tiles">';
-    S.routines.forEach(function (r) {
-      const last = lastSessionFor(r.id);
-      const count = r.kind === "tread"
-        ? clockOf(treadTotals(r.blocks).secs)
-        : plural((r.items || []).length, "movement");
-      const open = S.draft && S.draft.routineId === r.id;
-      const when = open ? "in progress" : last ? dayLabel(last.start) : "not yet";
-      html += '<button class="tile" data-act="start" data-id="' + r.id + '" style="--tone:var(--r-' + r.tone + ')">' +
-        '<span class="tile-mark">' + (ICONS[r.icon] || ICONS.upper) + "</span>" +
-        '<span class="tile-body"><strong>' + esc(r.name) + "</strong><span>" + count + " · " + when + "</span></span>" +
-        '<span class="go">' + ICONS.chevron + "</span></button>";
-    });
-    html += "</div>";
-
-    html += '<p class="foot">Everything you enter stays in this browser—nothing is sent anywhere.</p>';
-
-    app.innerHTML = html;
-    setTopbar("");
-  }
-
-  /* ============================================================
-     Starting and running a session
-     ============================================================ */
-
-  function startSession(routineId) {
-    const r = routineById(routineId);
-    if (!r) return;
-
-    if (S.draft && S.draft.routineId !== routineId) {
-      if (!confirm("You have an unfinished " + S.draft.routineName + " session. Start " + r.name + " instead and drop it?")) return;
-      S.draft = null;
-    }
-
-    if (!S.draft) {
-      const prev = lastSessionFor(routineId);
-      if (r.kind === "tread") {
-        const src = (prev && prev.blocks && prev.blocks.length) ? prev.blocks : r.blocks;
-        S.draft = {
-          id: uid(), routineId: r.id, routineName: r.name, kind: "tread",
-          start: Date.now(), notes: "",
-          blocks: (src || []).map(clone)
-        };
-      } else {
-        S.draft = {
-          id: uid(), routineId: r.id, routineName: r.name, kind: "lift",
-          start: Date.now(), notes: "",
-          items: (r.items || []).map(function (it) {
-            const old = prev && (prev.items || []).filter(p => p.mid === it.id)[0];
-            const sets = (it.sets || []).map(function (st, i) {
-              const o = old && old.sets[i];
-              return {
-                w: o ? o.w : st.w,
-                r: o ? o.r : st.r,
-                note: st.note || "",
-                last: o ? { w: o.w, r: o.r } : null,
-                done: false
-              };
-            });
-            return { id: uid(), mid: it.id, name: it.name, setup: it.setup, step: it.step, sets: sets };
-          })
-        };
-      }
-      save();
-    }
-    go("session");
-  }
-
-  function viewSession() {
-    const d = S.draft;
-    if (!d) return go("today");
-    if (d.kind === "tread") return viewTread();
-
-    const p = setsDone(d);
-    const pct = p.total ? Math.round(p.done / p.total * 100) : 0;
-
-    const tone = (routineById(d.routineId) || {}).tone || "lime";
-    let html = '<div class="session-bar" style="--tone:var(--r-' + tone + ')"><div class="row">' +
-      "<div><strong>" + esc(d.routineName) + "</strong> " +
-      '<span class="bar-meta">· ' + duration(Date.now() - d.start) + "</span></div>" +
-      '<span class="bar-meta">' + p.done + "/" + p.total + " sets</span>" +
-      '</div><div class="progress"><i style="width:' + pct + '%"></i></div></div>';
-
-    html += '<div style="height:14px"></div>';
-
-    d.items.forEach(function (it, idx) {
-      const allDone = it.sets.every(s => s.done);
-      html += '<article class="card mv' + (allDone ? " done" : "") + '" data-mi="' + idx + '">' +
-        '<div class="mv-head"><h3>' + esc(it.name) + "</h3>" +
-        '<span class="mv-count">' + it.sets.filter(s => s.done).length + "/" + it.sets.length + "</span></div>";
-
-      if (it.setup) html += '<div class="mv-tags"><span class="chip setup">' + esc(it.setup) + "</span></div>";
-
-      html += '<div class="sets">';
-      it.sets.forEach(function (st, si) {
-        if (st.last && (Number(st.last.w) !== Number(st.w) || Number(st.last.r) !== Number(st.r))) {
-          html += '<div class="set-last">last time ' + weightLabel(st.last.w) + " × " + num(st.last.r) + "</div>";
-        }
-        html += '<div class="set' + (st.done ? " done" : "") + '">' +
-          '<span class="set-n">' + (si + 1) + "</span>" +
-          numField(idx, si, "w", st.w, it.step, UNIT) +
-          numField(idx, si, "r", st.r, 1, "reps") +
-          '<button class="check" data-act="toggle" data-mi="' + idx + '" data-si="' + si + '" aria-pressed="' + (st.done ? "true" : "false") + '" aria-label="Mark set ' + (si + 1) + ' done">' +
-          ICONS.check + "</button></div>";
-        if (st.note) html += '<div class="set-last">' + esc(st.note) + "</div>";
-      });
-      html += "</div>";
-
-      html += '<div class="mv-foot">' +
-        '<button class="btn quiet sm" data-act="addset" data-mi="' + idx + '">+ Set</button>' +
-        (it.sets.length > 1 ? '<button class="btn quiet sm" data-act="dropset" data-mi="' + idx + '">− Set</button>' : "") +
-        '<button class="btn quiet sm" data-act="alldone" data-mi="' + idx + '">' + (allDone ? "Clear" : "All done") + "</button>" +
-        "</div></article>";
-    });
-
-    html += '<div class="sec-title">A word about how it went</div>' +
-      '<textarea rows="3" data-act="notes" placeholder="Optional.">' + esc(d.notes || "") + "</textarea>";
-
-    html += '<div style="height:16px"></div>' +
-      '<button class="btn wide" data-act="finish">Finish session</button>' +
-      '<div style="height:8px"></div>' +
-      '<button class="btn ghost wide" data-act="discard">Discard</button>' +
-      '<div style="height:20px"></div>';
-
-    app.innerHTML = html;
-    setTopbar('<button class="icon-btn" data-act="home" aria-label="Leave open and go back">' + ICONS.x + "</button>");
-  }
-
-  function numField(mi, si, k, val, step, unit) {
+  function field(act, id, leg, k, val, step, unit) {
+    const at = ' data-id="' + id + '" data-leg="' + leg + '" data-k="' + k + '" data-step="' + step + '"';
     return '<div class="field">' +
-      '<button data-act="bump" data-mi="' + mi + '" data-si="' + si + '" data-k="' + k + '" data-d="-1" aria-label="Less">−</button>' +
+      '<button data-act="' + act + 'bump"' + at + ' data-d="-1" aria-label="Less">−</button>' +
       '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
-      '" data-act="num" data-mi="' + mi + '" data-si="' + si + '" data-k="' + k + '" data-step="' + step + '">' +
+      '" data-act="' + act + 'num"' + at + ">" +
       '<span class="unit">' + unit + "</span></span>" +
-      '<button data-act="bump" data-mi="' + mi + '" data-si="' + si + '" data-k="' + k + '" data-d="1" aria-label="More">+</button>' +
+      '<button data-act="' + act + 'bump"' + at + ' data-d="1" aria-label="More">+</button>' +
       "</div>";
   }
 
-  function finishSession() {
-    const d = S.draft;
-    if (!d) return;
-    if (d.kind === "tread") {
-      if (!allLegs(d.blocks).length) { toast("Add something to run first."); return; }
-    } else {
-      const p = setsDone(d);
-      if (!p.done) {
-        if (!confirm("Nothing is marked done. Save this session anyway?")) return;
-      }
-    }
-    d.end = Date.now();
-    if (d.kind === "tread") recordBests(d);
-    S.sessions.push(d);
-    // Kept only so the next session opens with what you actually did.
-    if (S.sessions.length > 200) S.sessions = S.sessions.slice(-200);
-    S.draft = null;
-    endRest();
-    save();
-    buzz([18, 60, 18]);
-    toast("Saved.");
-    go("today");
+  function stepOf(t) {
+    return Number(t.dataset.step) || 1;
   }
 
   /* ============================================================
-     Treadmill
-
-     A session is a list of blocks. A steady block is one stretch at
-     one speed; a repeat block is a fast leg and a slower leg, run
-     back to back a number of times. Times are in seconds, because
-     that is how the short ones are counted.
+     Movements
      ============================================================ */
 
-  function steady(label, secs, mph, incline) {
-    return { id: uid(), type: "steady", label: label, secs: secs, mph: mph, incline: incline || 0 };
-  }
-
-  function repeatBlock(label, reps, wSecs, wMph, rSecs, rMph, incline) {
-    return {
-      id: uid(), type: "repeat", label: label, reps: reps,
-      work: { secs: wSecs, mph: wMph },
-      rest: { secs: rSecs, mph: rMph },
-      incline: incline || 0
-    };
-  }
-
-  function clone(b) {
-    const c = JSON.parse(JSON.stringify(b));
-    c.id = uid();
-    return c;
-  }
-
-  // One block becomes the legs you actually run, in order.
-  function blockLegs(b) {
-    if (b.type !== "repeat") {
-      return [{ name: b.label || "Steady", sub: "", secs: Number(b.secs) || 0, mph: Number(b.mph) || 0, incline: Number(b.incline) || 0, fast: false }];
-    }
-    const legs = [];
-    const reps = Math.max(1, Math.round(Number(b.reps) || 1));
-    for (let i = 1; i <= reps; i++) {
-      legs.push({ name: b.label || "Fast", sub: i + " of " + reps, secs: Number(b.work.secs) || 0, mph: Number(b.work.mph) || 0, incline: Number(b.incline) || 0, fast: true });
-      legs.push({ name: "Slower", sub: i + " of " + reps, secs: Number(b.rest.secs) || 0, mph: Number(b.rest.mph) || 0, incline: Number(b.incline) || 0, fast: false });
-    }
-    return legs;
-  }
-
-  function allLegs(blocks) {
-    let out = [];
-    (blocks || []).forEach(function (b) { out = out.concat(blockLegs(b)); });
-    return out.filter(l => l.secs > 0);
-  }
-
-  function treadTotals(blocks) {
-    let secs = 0, dist = 0;
-    allLegs(blocks).forEach(function (l) {
-      secs += l.secs;
-      dist += l.mph * l.secs / 3600;
-    });
-    return { secs: secs, dist: dist, avg: secs ? dist / (secs / 3600) : 0 };
-  }
-
-  function clockOf(secs) {
-    const s = Math.max(0, Math.round(secs));
-    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
-  }
-
-  /* ---- where your speeds are, per interval shape ---- */
-
-  function comboKey(b) { return (Number(b.work.secs) || 0) + "/" + (Number(b.rest.secs) || 0); }
-
-  function recordBests(sn) {
-    if (!S.bests) S.bests = {};
-    (sn.blocks || []).forEach(function (b) {
-      if (b.type !== "repeat") return;
-      const w = Number(b.work.mph) || 0;
-      const reps = Math.max(1, Math.round(Number(b.reps) || 1));
-      if (!w) return;
-      const k = comboKey(b);
-      const cur = S.bests[k];
-      if (!cur || w > cur.mph || (w === cur.mph && reps > cur.reps)) {
-        S.bests[k] = { mph: w, rest: Number(b.rest.mph) || 0, reps: reps, at: sn.start };
-      }
-    });
-  }
-
-  function bestsCard(blocks) {
-    const keys = Object.keys(S.bests || {});
-    if (!keys.length) return "";
-    const here = {};
-    (blocks || []).forEach(function (b) { if (b.type === "repeat") here[comboKey(b)] = true; });
-    keys.sort(function (a, c) {
-      const pa = a.split("/").map(Number), pc = c.split("/").map(Number);
-      return pa[0] - pc[0] || pa[1] - pc[1];
-    });
-    let html = '<div class="sec-title">Where your speeds are</div>' +
-      '<article class="card" style="padding:4px 15px 12px">';
-    keys.forEach(function (k) {
-      const b = S.bests[k], p = k.split("/");
-      html += '<div class="best' + (here[k] ? " on" : "") + '">' +
-        "<b>" + p[0] + "s fast · " + p[1] + "s slower</b>" +
-        "<span>" + num(b.mph) + " mph · " + plural(b.reps, "block") + "</span></div>";
-    });
-    html += '<p class="tiny muted" style="margin:9px 0 0">Your quickest fast leg at each shape, and how many blocks you held it for.</p></article>';
+  function mvRow(r, it, i) {
+    const open = V.editing === it.id;
+    let html = '<div class="plan-mv">' +
+      '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b><span>" +
+      it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
+      (it.setup ? " · " + esc(it.setup) : "") + "</span></button>" +
+      '<button class="mini" data-act="mvup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
+      '<button class="mini" data-act="mvdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.items.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
+      '<button class="mini" data-act="edit" data-id="' + it.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
+      "</div>";
+    if (open) html += mvForm(r, it);
     return html;
   }
 
-  /* ---- setting up a session ---- */
-
-  function viewTread() {
-    const d = S.draft;
-    if (V.running) return viewRunner();
-
-    const t = treadTotals(d.blocks);
-    const tone = (routineById(d.routineId) || {}).tone || "amber";
-
-    let html = '<div class="session-bar" style="--tone:var(--r-' + tone + ')"><div class="row">' +
-      "<div><strong>" + esc(d.routineName) + "</strong></div>" +
-      '<span class="bar-meta">' + clockOf(t.secs) + "</span>" +
-      "</div></div><div style=\"height:14px\"></div>";
-
-    d.blocks.forEach(function (b, bi) {
-      html += '<article class="card blk">' +
-        '<div class="blk-head">' +
-        '<input type="text" value="' + esc(b.label || "") + '" placeholder="' +
-        (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="blabel" data-bi="' + bi + '">' +
-        '<button class="x-btn" data-act="delblk" data-bi="' + bi + '" aria-label="Remove block">' + ICONS.x + "</button>" +
-        "</div>";
-
-      if (b.type === "repeat") {
-        html += '<div class="leg"><span class="leg-tag">Blocks</span>' +
-          bField(bi, "", "reps", b.reps, 1, "×") +
-          '<span class="leg-note">' + clockOf((Number(b.work.secs) + Number(b.rest.secs)) * (Number(b.reps) || 0)) + " total</span></div>";
-        html += '<div class="leg"><span class="leg-tag">Fast</span>' +
-          bField(bi, "work", "secs", b.work.secs, 5, "sec") +
-          bField(bi, "work", "mph", b.work.mph, 0.1, "mph") + "</div>";
-        html += '<div class="leg"><span class="leg-tag">Slower</span>' +
-          bField(bi, "rest", "secs", b.rest.secs, 5, "sec") +
-          bField(bi, "rest", "mph", b.rest.mph, 0.1, "mph") + "</div>";
-      } else {
-        html += '<div class="leg"><span class="leg-tag">Run</span>' +
-          bField(bi, "", "secs", b.secs, 30, "sec") +
-          bField(bi, "", "mph", b.mph, 0.1, "mph") + "</div>";
-      }
-
-      html += '<div class="leg"><span class="leg-tag">Incline</span>' +
-        bField(bi, "", "incline", b.incline, 0.5, "%") +
-        '<span class="leg-note">' + (b.type === "repeat" ? "on both legs" : "") + "</span></div>";
-      html += "</article>";
-    });
-
-    html += '<div class="row" style="gap:8px;margin-top:12px">' +
-      '<button class="btn ghost sm" style="flex:1" data-act="addsteady">+ Steady</button>' +
-      '<button class="btn ghost sm" style="flex:1" data-act="addrepeat">+ Blocks</button>' +
-      "</div>";
-
-    html += '<div class="totals">' +
-      '<div class="stat"><b>' + clockOf(t.secs) + '</b><span>time</span></div>' +
-      '<div class="stat"><b>' + t.dist.toFixed(2) + '</b><span>miles</span></div>' +
-      '<div class="stat"><b>' + t.avg.toFixed(1) + '</b><span>avg mph</span></div>' +
-      "</div>";
-
-    html += '<div style="height:16px"></div>' +
-      '<button class="btn wide" data-act="run">Start the timer</button>';
-
-    html += bestsCard(d.blocks);
-
-    html += '<div class="sec-title">A word about how it went</div>' +
-      '<textarea rows="3" data-act="notes" placeholder="Optional.">' + esc(d.notes || "") + "</textarea>";
-
-    html += '<div style="height:16px"></div>' +
-      '<button class="btn ghost wide" data-act="finish">Save session</button>' +
-      '<div style="height:8px"></div>' +
-      '<button class="btn quiet wide" data-act="discard">Discard</button>' +
-      '<div style="height:20px"></div>';
-
-    app.innerHTML = html;
-    setTopbar('<button class="icon-btn" data-act="home" aria-label="Leave open and go back">' + ICONS.x + "</button>");
-  }
-
-  function bField(bi, leg, k, val, step, unit) {
-    const at = ' data-bi="' + bi + '" data-leg="' + leg + '" data-k="' + k + '"';
-    return '<div class="field">' +
-      '<button data-act="bbump"' + at + ' data-d="-1" aria-label="Less">−</button>' +
-      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
-      '" data-act="bnum"' + at + ' data-step="' + step + '">' +
-      '<span class="unit">' + unit + "</span></span>" +
-      '<button data-act="bbump"' + at + ' data-d="1" aria-label="More">+</button>' +
-      "</div>";
-  }
-
-  function blockField(b, leg, k) {
-    return leg ? b[leg] : b;
-  }
-
-  const B_STEPS = { reps: 1, mph: 0.1, incline: 0.5 };
-
-  function bStep(b, leg, k) {
-    if (k === "secs") return leg ? 5 : 30;
-    return B_STEPS[k] || 1;
-  }
-
-  /* ---- the timer ---- */
-
-  let runTimer = null;
-  let wakeLock = null;
-  let audioCtx = null;
-
-  // Safari only lets sound start from a tap, so the context is opened on one
-  // and kept warm for the timers that fire later.
-  function primeAudio() {
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") audioCtx.resume();
-    } catch (err) { /* ignore */ }
-  }
-
-  function beep(freq, ms) {
-    try {
-      primeAudio();
-      if (!audioCtx) return;
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = "sine"; o.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + ms / 1000);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(); o.stop(audioCtx.currentTime + ms / 1000 + 0.05);
-    } catch (err) { /* audio is a nicety, not a requirement */ }
-  }
-
-  async function keepAwake(on) {
-    try {
-      if (on && "wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen");
-      else if (wakeLock) { wakeLock.release(); wakeLock = null; }
-    } catch (err) { /* ignore */ }
-  }
-
-  function startRunner() {
-    const legs = allLegs(S.draft.blocks);
-    if (!legs.length) { toast("Add something to run first."); return; }
-    endRest();
-    V.running = { i: 0, endAt: Date.now() + legs[0].secs * 1000, paused: false, left: 0 };
-    beep(880, 140);
-    keepAwake(true);
-    tick();
-    runTimer = setInterval(tick, 250);
-    render();
-  }
-
-  function stopRunner() {
-    clearInterval(runTimer); runTimer = null;
-    V.running = null;
-    keepAwake(false);
-    render();
-  }
-
-  function tick() {
-    const R = V.running;
-    if (!R || R.paused) return;
-    const legs = allLegs(S.draft.blocks);
-    if (Date.now() >= R.endAt) {
-      R.i++;
-      if (R.i >= legs.length) {
-        beep(660, 200); setTimeout(() => beep(880, 300), 230);
-        buzz([120, 80, 120, 80, 200]);
-        toast("That is the lot.");
-        stopRunner();
-        return;
-      }
-      // A longer cue going into a fast leg, so it is unmistakable at speed.
-      if (legs[R.i].fast) {
-        beep(1100, 200); setTimeout(() => beep(1320, 220), 230);
-        buzz([140, 70, 140, 70, 140]);
-      } else {
-        beep(880, 150);
-        buzz([90, 70, 90]);
-      }
-      R.endAt = Date.now() + legs[R.i].secs * 1000;
-    }
-    paintRunner();
-  }
-
-  function viewRunner() {
-    const legs = allLegs(S.draft.blocks);
-    const R = V.running;
-    const leg = legs[R.i] || legs[0];
-    const next = legs[R.i + 1];
-
-    app.innerHTML = '<div style="height:18px"></div><article class="card runner' + (leg.fast ? " fast" : "") + '">' +
-      '<div class="now">' + esc(leg.name) + (leg.sub ? " · " + leg.sub : "") + "</div>" +
-      '<div class="clock" id="run-clock">0:00</div>' +
-      '<div class="speed">' + num(leg.mph) + " mph" + (Number(leg.incline) ? " · " + num(leg.incline) + "% incline" : "") + "</div>" +
-      '<div class="next">' + (next ? "Next: " + num(next.mph) + " mph for " + clockOf(next.secs) : "Last one.") + "</div>" +
-      '<div class="ring"><i id="run-ring" style="width:0%"></i></div>' +
-      '<div class="controls">' +
-      '<button class="btn ghost sm" data-act="pause">' + (R.paused ? "Resume" : "Pause") + "</button>" +
-      '<button class="btn ghost sm" data-act="skip">Skip</button>' +
-      '<button class="btn ghost sm" data-act="stoprun">Stop</button>' +
-      "</div></article>";
-
-    setTopbar("");
-    paintRunner();
-  }
-
-  function paintRunner() {
-    const R = V.running;
-    if (!R) return;
-    const el = document.getElementById("run-clock");
-    if (!el) return;
-    const legs = allLegs(S.draft.blocks);
-    const leg = legs[R.i];
-    if (!leg) return;
-    const total = leg.secs * 1000;
-    const left = R.paused ? R.left : Math.max(0, R.endAt - Date.now());
-    el.textContent = clock(left);
-    const ring = document.getElementById("run-ring");
-    if (ring) ring.style.width = Math.min(100, (1 - left / total) * 100) + "%";
-  }
-
-  /* ============================================================
-     Plan
-     ============================================================ */
-
-  function viewPlan() {
-    let html = '<section class="hero"><h1>Plan</h1><p>Your starting numbers. Change them any time—sessions always begin from what you did last.</p></section>';
-
-    S.routines.forEach(function (r) {
-      html += '<div class="routine-head" style="--tone:var(--r-' + r.tone + ')">' +
-        '<span class="sec-title">' + esc(r.name) + "</span>" +
-        '<button class="mini" data-act="rrename" data-rid="' + r.id + '" aria-label="Rename">' + ICONS.pencil + "</button>" +
-        (S.routines.length > 1 ? '<button class="mini" data-act="rdel" data-rid="' + r.id + '" aria-label="Delete">' + ICONS.trash + "</button>" : "") +
-        "</div>";
-      html += '<article class="card list-card">';
-      if (r.kind === "tread") {
-        (r.blocks || []).forEach(function (b, i) {
-          const sub = b.type === "repeat"
-            ? plural(b.reps, "block") + " · " + num(b.work.secs) + "s at " + num(b.work.mph) +
-              " / " + num(b.rest.secs) + "s at " + num(b.rest.mph)
-            : clockOf(b.secs) + " at " + num(b.mph) + " mph";
-          html += '<div class="plan-mv"><span class="grip"><b>' +
-            (b.label ? esc(b.label) : b.type === "repeat" ? "Blocks" : "Steady") + "</b><span>" + sub +
-            (Number(b.incline) ? " · " + num(b.incline) + "%" : "") + "</span></span></div>";
-        });
-        html += '<div class="plan-mv"><span class="tiny muted">Edit these while the session is open.</span></div>';
-      } else {
-        (r.items || []).forEach(function (it, i) {
-          const open = V.editing === it.id;
-          html += '<div class="plan-mv">' +
-            '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b><span>" +
-            it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
-            (it.setup ? " · " + esc(it.setup) : "") + "</span></button>" +
-            '<button class="mini" data-act="mvup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
-            '<button class="mini" data-act="mvdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.items.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
-            '<button class="mini" data-act="edit" data-id="' + it.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
-            "</div>";
-          if (open) html += editForm(r, it);
-        });
-        html += '<div class="plan-mv"><button class="btn quiet sm" data-act="addmv" data-rid="' + r.id + '">+ Add a movement</button></div>';
-      }
-      html += "</article>";
-    });
-
-    html += '<div style="height:16px"></div>' +
-      '<div class="row" style="gap:8px">' +
-      '<button class="btn ghost" style="flex:1" data-act="newroutine" data-k="lift">+ Movements</button>' +
-      '<button class="btn ghost" style="flex:1" data-act="newroutine" data-k="tread">+ Treadmill</button>' +
-      "</div>";
-
-    html += '<div class="sec-title">Rest timer</div><article class="card" style="padding:14px">' +
-      '<label class="lbl" for="rest-pref">Seconds between sets</label>' +
-      '<div><div class="field">' +
-      '<button data-act="restbump" data-d="-1" aria-label="Less">−</button>' +
-      '<span class="val"><input id="rest-pref" type="number" inputmode="numeric" step="15" value="' + Number(S.prefs.rest || 0) + '" data-act="restnum"><span class="unit">sec</span></span>' +
-      '<button data-act="restbump" data-d="1" aria-label="More">+</button></div></div>' +
-      '<p class="tiny muted" style="margin:9px 2px 0">Set it to 0 to turn the timer off.</p></article>';
-
-    html += '<div class="sec-title">Your data</div><article class="card" style="padding:14px">' +
-      '<p class="tiny muted" style="margin:0 0 12px">Everything lives in this browser only. Back it up before you switch phones or clear your history.</p>' +
-      '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="backup">Back up</button>' +
-      '<button class="btn ghost sm" data-act="restore">Restore</button>' +
-      '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
-
-    html += '<p class="foot">Movement Now—yours, on this phone.</p>';
-
-    app.innerHTML = html;
-    setTopbar("");
-  }
-
-  function editForm(r, it) {
+  function mvForm(r, it) {
     let html = '<div class="edit-grid">' +
       '<div><label class="lbl">Name</label><input type="text" value="' + esc(it.name) + '" data-act="mvname" data-id="' + it.id + '"></div>' +
       '<div><label class="lbl">Setup note</label><input type="text" value="' + esc(it.setup || "") + '" placeholder="Seat 8, leg part 2…" data-act="mvsetup" data-id="' + it.id + '"></div>' +
@@ -1255,10 +523,9 @@
 
     html += "</div></div>" +
       '<div><label class="lbl">− and + jump by</label>' +
-      '<input type="text" inputmode="decimal" style="text-align:center" value="' + num(it.step) +
-      '" data-act="mvstep" data-id="' + it.id + '">' +
+      '<input type="text" inputmode="decimal" style="text-align:center" value="' + num(it.step) + '" data-act="mvstep" data-id="' + it.id + '">' +
       '<p class="tiny muted" style="margin:7px 2px 0">How far one tap moves the weight—11 on the stacks numbered in elevens, 2.5 on dumbbells. The seat number goes in the setup note.</p></div>' +
-      '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addplanset" data-id="' + it.id + '">+ Set</button>' +
+      '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addset" data-id="' + it.id + '">+ Set</button>' +
       '<button class="btn quiet sm" data-act="edit" data-id="">Done</button>' +
       '<span style="flex:1"></span>' +
       '<button class="btn quiet sm" style="color:var(--danger)" data-act="delmv" data-rid="' + r.id + '" data-id="' + it.id + '">' + ICONS.trash + "</button></div>" +
@@ -1266,64 +533,77 @@
     return html;
   }
 
-  function findMv(id) {
-    for (const r of S.routines) {
-      const hit = (r.items || []).filter(x => x.id === id)[0];
-      if (hit) return hit;
-    }
-    return null;
-  }
-
   /* ============================================================
-     Rest timer
+     Treadmill blocks
+
+     A repeat block is one interval shape: a fast leg and a slower
+     leg, and how many times round. Keep one per combination you do.
      ============================================================ */
 
-  let rest = null, restTimer = null;
-
-  function startRest() {
-    const secs = Number(S.prefs.rest) || 0;
-    if (!secs) return;
-    rest = { endAt: Date.now() + secs * 1000 };
-    document.body.classList.add("resting");
-    clearInterval(restTimer);
-    restTimer = setInterval(paintRest, 250);
-    paintRest();
+  function blockSummary(b) {
+    return b.type === "repeat"
+      ? plural(b.reps, "block") + " · " + num(b.work.secs) + "s at " + num(b.work.mph) +
+        " / " + num(b.rest.secs) + "s at " + num(b.rest.mph)
+      : clockOf(b.secs) + " at " + num(b.mph) + " mph";
   }
 
-  function endRest() {
-    clearInterval(restTimer); restTimer = null; rest = null;
-    $("#rest-slot").innerHTML = "";
-    document.body.classList.remove("resting");
+  function blockName(b) {
+    return b.label ? esc(b.label) : b.type === "repeat" ? "Intervals" : "Steady";
   }
 
-  function paintRest() {
-    if (!rest) return;
-    const left = rest.endAt - Date.now();
-    const slot = $("#rest-slot");
-    if (left <= 0) {
-      beep(760, 180);
-      buzz([60, 50, 60]);
-      endRest();
-      return;
+  function blockTotal(b) {
+    return b.type === "repeat"
+      ? (Number(b.work.secs) + Number(b.rest.secs)) * (Number(b.reps) || 0)
+      : Number(b.secs) || 0;
+  }
+
+  function blockRow(r, b, i) {
+    const open = V.editing === b.id;
+    let html = '<div class="plan-mv">' +
+      '<button class="grip" data-act="bkedit" data-id="' + b.id + '"><b>' + blockName(b) + "</b><span>" +
+      blockSummary(b) + (Number(b.incline) ? " · " + num(b.incline) + "%" : "") +
+      " · " + clockOf(blockTotal(b)) + "</span></button>" +
+      '<button class="mini" data-act="bkup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
+      '<button class="mini" data-act="bkdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.blocks.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
+      '<button class="mini" data-act="bkedit" data-id="' + b.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
+      "</div>";
+    if (open) html += blockForm(r, b);
+    return html;
+  }
+
+  function blockForm(r, b) {
+    const f = (leg, k, val, step, unit) => field("bk", b.id, leg, k, val, step, unit);
+    let html = '<div class="edit-grid">' +
+      '<div><label class="lbl">Name</label><input type="text" value="' + esc(b.label || "") + '" placeholder="' +
+      (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="bklabel" data-id="' + b.id + '"></div>';
+
+    if (b.type === "repeat") {
+      html += '<div class="leg"><span class="leg-tag">Blocks</span>' + f("", "reps", b.reps, 1, "×") +
+        '<span class="leg-note">' + clockOf(blockTotal(b)) + " in all</span></div>" +
+        '<div class="leg"><span class="leg-tag">Fast</span>' + f("work", "secs", b.work.secs, 5, "sec") + f("work", "mph", b.work.mph, 0.5, "mph") + "</div>" +
+        '<div class="leg"><span class="leg-tag">Slower</span>' + f("rest", "secs", b.rest.secs, 5, "sec") + f("rest", "mph", b.rest.mph, 0.5, "mph") + "</div>";
+    } else {
+      html += '<div class="leg"><span class="leg-tag">Run</span>' + f("", "secs", b.secs, 30, "sec") + f("", "mph", b.mph, 0.5, "mph") + "</div>";
     }
-    slot.innerHTML = '<div class="rest"><div class="rest-in">' +
-      "<b>" + clock(left) + "</b>" +
-      '<button data-act="rest30">+30s</button>' +
-      '<button data-act="restskip">Skip</button>' +
-      "</div></div>";
+
+    html += '<div class="leg"><span class="leg-tag">Incline</span>' + f("", "incline", b.incline, 0.5, "%") + "<span></span></div>" +
+      '<div class="row" style="gap:8px"><button class="btn quiet sm" data-act="bkedit" data-id="">Done</button>' +
+      '<span style="flex:1"></span>' +
+      '<button class="btn quiet sm" style="color:var(--danger)" data-act="bkdel" data-rid="' + r.id + '" data-id="' + b.id + '">' + ICONS.trash + "</button></div>" +
+      "</div>";
+    return html;
   }
 
   /* ============================================================
-     Backup and restore
+     Backup
      ============================================================ */
 
   function backup() {
     const blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const d = new Date();
     a.href = url;
-    a.download = "movement-now-" + d.toISOString().slice(0, 10) + ".json";
+    a.download = "movement-now-" + new Date().toISOString().slice(0, 10) + ".json";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast("Backed up.");
@@ -1337,10 +617,8 @@
         if (!data || !data.routines) throw new Error("bad file");
         if (!confirm("Replace everything on this device with the backup?")) return;
         S = data;
-        if (!S.prefs) S.prefs = { rest: 75 };
-        if (!S.sessions) S.sessions = [];
-        save();
-        go("today");
+        ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete S[k]; });
+        save(); render();
         toast("Restored.");
       } catch (err) {
         toast("That file did not look right.");
@@ -1350,21 +628,49 @@
   }
 
   /* ============================================================
-     Adding a routine
+     The page
      ============================================================ */
 
-  const TONES = ["lime", "coral", "sky", "amber", "violet", "mint"];
+  function render() {
+    let html = '<section class="hero"><h1>Where you are</h1>' +
+      "<p>Every number here is what you can currently do. Tap one to change it.</p></section>";
 
-  function nextTone() {
-    const used = S.routines.map(r => r.tone);
-    return TONES.filter(t => used.indexOf(t) < 0)[0] || TONES[S.routines.length % TONES.length];
-  }
+    S.routines.forEach(function (r) {
+      html += '<div class="routine-head" style="--tone:var(--r-' + r.tone + ')">' +
+        '<span class="sec-title">' + esc(r.name) + "</span>" +
+        '<button class="mini" data-act="rrename" data-rid="' + r.id + '" aria-label="Rename">' + ICONS.pencil + "</button>" +
+        (S.routines.length > 1 ? '<button class="mini" data-act="rdel" data-rid="' + r.id + '" aria-label="Delete">' + ICONS.trash + "</button>" : "") +
+        "</div>";
 
-  function addRoutine(r) {
-    S.routines.push(r);
-    save();
-    go("plan");
-    toast("Added.");
+      html += '<article class="card list-card">';
+      if (r.kind === "tread") {
+        (r.blocks || []).forEach(function (b, i) { html += blockRow(r, b, i); });
+        html += '<div class="plan-mv" style="gap:6px">' +
+          '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="repeat">+ Intervals</button>' +
+          '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="steady">+ Steady</button>' +
+          "</div>";
+      } else {
+        (r.items || []).forEach(function (it, i) { html += mvRow(r, it, i); });
+        html += '<div class="plan-mv"><button class="btn quiet sm" data-act="addmv" data-rid="' + r.id + '">+ Add a movement</button></div>';
+      }
+      html += "</article>";
+    });
+
+    html += '<div style="height:18px"></div>' +
+      '<div class="row" style="gap:8px">' +
+      '<button class="btn ghost" style="flex:1" data-act="newroutine" data-k="lift">+ Movements</button>' +
+      '<button class="btn ghost" style="flex:1" data-act="newroutine" data-k="tread">+ Treadmill</button>' +
+      "</div>";
+
+    html += '<div class="sec-title">Your data</div><article class="card" style="padding:14px">' +
+      '<p class="tiny muted" style="margin:0 0 12px">Everything lives in this browser only. Back it up before you switch phones or clear your history.</p>' +
+      '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="backup">Back up</button>' +
+      '<button class="btn ghost sm" data-act="restore">Restore</button>' +
+      '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
+
+    html += '<p class="foot">Movement Now—yours, on this phone.</p>';
+
+    app.innerHTML = html;
   }
 
   /* ============================================================
@@ -1375,99 +681,10 @@
     const t = e.target.closest("[data-act]");
     if (!t) return;
     const act = t.dataset.act;
-    const mi = Number(t.dataset.mi), si = Number(t.dataset.si), i = Number(t.dataset.i);
-    primeAudio();
+    const i = Number(t.dataset.i), si = Number(t.dataset.si);
 
     switch (act) {
-      case "home": go("today"); break;
-      case "tab": go(t.dataset.view); break;
-      case "start": startSession(t.dataset.id); break;
-
-      case "toggle": {
-        const st = S.draft.items[mi].sets[si];
-        st.done = !st.done;
-        save();
-        if (st.done) { buzz(12); startRest(); } else endRest();
-        render();
-        break;
-      }
-      case "alldone": {
-        const it = S.draft.items[mi];
-        const all = it.sets.every(s => s.done);
-        it.sets.forEach(s => { s.done = !all; });
-        save(); render();
-        break;
-      }
-      case "addset": {
-        const it = S.draft.items[mi];
-        const last = it.sets[it.sets.length - 1];
-        it.sets.push({ w: last.w, r: last.r, note: "", last: null, done: false });
-        save(); render();
-        break;
-      }
-      case "dropset": {
-        const it = S.draft.items[mi];
-        if (it.sets.length > 1) it.sets.pop();
-        save(); render();
-        break;
-      }
-      case "bump": {
-        const st = S.draft.items[mi].sets[si];
-        const k = t.dataset.k;
-        const step = k === "w" ? (Number(S.draft.items[mi].step) || 5) : 1;
-        st[k] = Math.max(0, Math.round(((Number(st[k]) || 0) + Number(t.dataset.d) * step) * 100) / 100);
-        save(); render();
-        break;
-      }
-      case "finish": finishSession(); break;
-      case "discard":
-        if (confirm("Drop this session without saving?")) { S.draft = null; endRest(); save(); go("today"); }
-        break;
-
-      case "addsteady": S.draft.blocks.push(steady("", 300, 3)); save(); render(); break;
-      case "addrepeat": {
-        const last = S.draft.blocks.filter(b => b.type === "repeat").pop();
-        S.draft.blocks.push(last ? clone(last) : repeatBlock("", 8, 30, 10, 90, 3.5));
-        save(); render();
-        break;
-      }
-      case "delblk": S.draft.blocks.splice(Number(t.dataset.bi), 1); save(); render(); break;
-      case "bbump": {
-        const b = S.draft.blocks[Number(t.dataset.bi)];
-        const leg = t.dataset.leg, k = t.dataset.k;
-        const holder = leg ? b[leg] : b;
-        const step = bStep(b, leg, k);
-        holder[k] = Math.max(k === "reps" ? 1 : 0,
-          Math.round(((Number(holder[k]) || 0) + Number(t.dataset.d) * step) * 10) / 10);
-        save(); render();
-        break;
-      }
-      case "run": startRunner(); break;
-      case "stoprun": stopRunner(); break;
-      case "pause": {
-        const R = V.running;
-        if (R.paused) { R.endAt = Date.now() + R.left; R.paused = false; }
-        else { R.left = Math.max(0, R.endAt - Date.now()); R.paused = true; }
-        render();
-        break;
-      }
-      case "skip": {
-        V.running.endAt = Date.now();
-        V.running.paused = false;
-        tick();
-        render();
-        break;
-      }
-
-      case "rest30": rest.endAt += 30000; paintRest(); break;
-      case "restskip": endRest(); break;
-      case "restbump": {
-        S.prefs.rest = Math.max(0, (Number(S.prefs.rest) || 0) + Number(t.dataset.d) * 15);
-        save(); render();
-        break;
-      }
-
-
+      /* ---- movements ---- */
       case "edit": V.editing = (V.editing === t.dataset.id || !t.dataset.id) ? null : t.dataset.id; render(); break;
       case "mvup": case "mvdown": {
         const r = routineById(t.dataset.rid);
@@ -1487,14 +704,14 @@
       }
       case "delmv": {
         const r = routineById(t.dataset.rid);
-        if (confirm("Remove this movement from the plan? Past sessions keep it.")) {
+        if (confirm("Remove this movement?")) {
           r.items = r.items.filter(x => x.id !== t.dataset.id);
           V.editing = null;
           save(); render();
         }
         break;
       }
-      case "addplanset": {
+      case "addset": {
         const it = findMv(t.dataset.id);
         const last = it.sets[it.sets.length - 1];
         it.sets.push({ w: last.w, r: last.r, note: "" });
@@ -1508,13 +725,53 @@
         break;
       }
 
+      /* ---- treadmill blocks ---- */
+      case "bkedit": V.editing = (V.editing === t.dataset.id || !t.dataset.id) ? null : t.dataset.id; render(); break;
+      case "bkup": case "bkdown": {
+        const r = routineById(t.dataset.rid);
+        const j = act === "bkup" ? i - 1 : i + 1;
+        if (j < 0 || j >= r.blocks.length) break;
+        const tmp = r.blocks[i]; r.blocks[i] = r.blocks[j]; r.blocks[j] = tmp;
+        save(); render();
+        break;
+      }
+      case "addblk": {
+        const r = routineById(t.dataset.rid);
+        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 10, 30, 10, 90, 3.5) : steady("", 300, 3.5);
+        r.blocks.push(fresh);
+        V.editing = fresh.id;
+        save(); render();
+        break;
+      }
+      case "bkdel": {
+        const r = routineById(t.dataset.rid);
+        if ((r.blocks || []).length < 2) { toast("Keep at least one."); break; }
+        r.blocks = r.blocks.filter(b => b.id !== t.dataset.id);
+        V.editing = null;
+        save(); render();
+        break;
+      }
+      case "bkbump": {
+        const b = findBlock(t.dataset.id);
+        if (!b) break;
+        const holder = t.dataset.leg ? b[t.dataset.leg] : b;
+        const k = t.dataset.k;
+        holder[k] = Math.max(k === "reps" ? 1 : 0,
+          Math.round(((Number(holder[k]) || 0) + Number(t.dataset.d) * stepOf(t)) * 10) / 10);
+        save(); render();
+        break;
+      }
+
+      /* ---- routines ---- */
       case "newroutine": {
         const kind = t.dataset.k;
         const fresh = { id: uid(), name: kind === "tread" ? "New treadmill" : "New routine",
           tone: nextTone(), icon: kind === "tread" ? "tread" : "upper", kind: kind };
-        if (kind === "tread") fresh.blocks = [steady("Steady", 600, 3)];
+        if (kind === "tread") fresh.blocks = [repeatBlock("", 10, 30, 10, 90, 3.5)];
         else fresh.items = [mv(uid(), "New movement", [set(0, 10), set(0, 10), set(0, 10)])];
-        addRoutine(fresh);
+        S.routines.push(fresh);
+        save(); render();
+        toast("Added.");
         break;
       }
       case "rrename": {
@@ -1526,48 +783,40 @@
       case "rdel": {
         const r = routineById(t.dataset.rid);
         if (S.routines.length < 2) break;
-        if (confirm("Remove " + r.name + " from your plan? Sessions you already logged are kept.")) {
-          if (S.draft && S.draft.routineId === r.id) { S.draft = null; endRest(); }
+        if (confirm("Remove " + r.name + "?")) {
           S.routines = S.routines.filter(x => x.id !== r.id);
           save(); render();
         }
         break;
       }
+
+      /* ---- data ---- */
       case "backup": backup(); break;
       case "restore": $("#restore-file").click(); break;
     }
   });
 
-  // Live field edits: commit without a re-render so the keyboard stays put.
   document.addEventListener("input", function (e) {
     const t = e.target.closest("[data-act]");
     if (!t) return;
-    const act = t.dataset.act;
     const val = t.value;
 
-    switch (act) {
-      case "num": {
-        const st = S.draft.items[Number(t.dataset.mi)].sets[Number(t.dataset.si)];
-        st[t.dataset.k] = val === "" ? 0 : Math.max(0, Number(val) || 0);
-        save();
-        break;
-      }
-      case "bnum": {
-        const b = S.draft.blocks[Number(t.dataset.bi)];
+    switch (t.dataset.act) {
+      case "mvname": findMv(t.dataset.id).name = val; save(); break;
+      case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
+      case "mvstep": findMv(t.dataset.id).step = Math.max(0.5, Number(val) || 5); save(); break;
+      case "setw": findMv(t.dataset.id).sets[Number(t.dataset.si)].w = Math.max(0, Number(val) || 0); save(); break;
+      case "setr": findMv(t.dataset.id).sets[Number(t.dataset.si)].r = Math.max(0, Number(val) || 0); save(); break;
+      case "bklabel": findBlock(t.dataset.id).label = val.slice(0, 24); save(); break;
+      case "bknum": {
+        const b = findBlock(t.dataset.id);
+        if (!b) break;
         const holder = t.dataset.leg ? b[t.dataset.leg] : b;
         const k = t.dataset.k;
         holder[k] = val === "" ? (k === "reps" ? 1 : 0) : Math.max(k === "reps" ? 1 : 0, Number(val) || 0);
         save();
         break;
       }
-      case "blabel": S.draft.blocks[Number(t.dataset.bi)].label = val.slice(0, 24); save(); break;
-      case "notes": S.draft.notes = val; save(); break;
-      case "restnum": S.prefs.rest = Math.max(0, Number(val) || 0); save(); break;
-      case "mvname": findMv(t.dataset.id).name = val; save(); break;
-      case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
-      case "mvstep": findMv(t.dataset.id).step = Math.max(0.5, Number(val) || 5); save(); break;
-      case "setw": findMv(t.dataset.id).sets[Number(t.dataset.si)].w = Math.max(0, Number(val) || 0); save(); break;
-      case "setr": findMv(t.dataset.id).sets[Number(t.dataset.si)].r = Math.max(0, Number(val) || 0); save(); break;
     }
   });
 
@@ -1575,9 +824,9 @@
     if (e.target.id === "restore-file" && e.target.files[0]) restore(e.target.files[0]);
   });
 
-  // Select the whole number when a field is tapped, so typing replaces it.
+  // Tapping a number selects it, so typing replaces rather than appends.
   document.addEventListener("focusin", function (e) {
-    if (e.target.matches('.field input, .edit-set input')) e.target.select();
+    if (e.target.matches(".field input, .edit-set input")) e.target.select();
   });
 
   window.addEventListener("scroll", function () {
@@ -1587,39 +836,7 @@
   window.addEventListener("beforeunload", saveNow);
   window.addEventListener("pagehide", saveNow);
 
-  document.addEventListener("visibilitychange", function () {
-    if (!document.hidden && V.running) { keepAwake(true); paintRunner(); }
-  });
-
-  /* ============================================================
-     Render
-     ============================================================ */
-
-  function setTopbar(html) {
-    $("#topbar-slot").innerHTML = html;
-    $("#brand-name").textContent = "Movement Now";
-  }
-
-  function render() {
-    document.querySelectorAll(".tab").forEach(function (b) {
-      const on = b.dataset.view === V.name;
-      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
-    });
-
-    if (V.name === "session") viewSession();
-    else if (V.name === "plan") viewPlan();
-    else viewToday();
-  }
-
   render();
-
-  // Keep the elapsed clock honest while a session is open.
-  setInterval(function () {
-    if (V.name === "session" && S.draft && S.draft.kind !== "tread" && !V.running) {
-      const el = document.querySelector(".session-bar .bar-meta");
-      if (el) el.textContent = "· " + duration(Date.now() - S.draft.start);
-    }
-  }, 20000);
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -1628,5 +845,6 @@
   }
 })();
 </script>
+
 </body>
 </html>
