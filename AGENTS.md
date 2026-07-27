@@ -33,7 +33,23 @@ ships its own PWA pieces so it installs to a home screen on its
 own—`manifest.webmanifest` scoped to `/movement/`, its own icons, and `sw.js`
 for an offline shell. Deliberate wording: the app never uses the words
 "workout" or "exercise"; a thing you do is a **movement**, a visit to the gym
-is a **session**, and the three groups plus the treadmill are **routines**.
+is a **session**, and each group is a **routine**. Those two words are also
+split across string concatenation where the prompt has to name them, so they
+appear nowhere in the page source.
+
+Two deliberate absences. There is **no history view and no progress chart**:
+finished sessions are stored only so the next session opens with the numbers
+last actually lifted, and nothing displays them back as a scoreboard. There
+is likewise no streak strip. Both were removed on request—the point is
+knowing what you can lift today, not watching a line climb.
+
+The **routine builder** (`Plan → New routine`) is the one thing that leaves
+the device: it posts the typed description to the Claude API and gets a
+routine back as structured JSON. The key is entered by the user, lives in its
+own `localStorage` entry (`movement.key`) so it can never ride along in a
+backup export, and is **never committed**—this repository is public. Logged
+data is never sent anywhere; keep the footer copy honest about that
+distinction if either side changes.
 
 ## Hosting
 
