@@ -32,14 +32,12 @@
     --on-accent: #F4FAF7;
     --danger: #A3402F;
     --danger-soft: #F4E3DE;
-    --r-upper: #33685A;
-    --r-core: #AC5B33;
-    --r-lower: #47657F;
-    --r-tread: #8A6C3E;
-    --r-upper-soft: #E0EBE5;
-    --r-core-soft: #F4E3DE;
-    --r-lower-soft: #E1E8EF;
-    --r-tread-soft: #F3E7CD;
+    --r-lime: #33685A;
+    --r-coral: #AC5B33;
+    --r-sky: #47657F;
+    --r-amber: #8A6C3E;
+    --r-violet: #6B5578;
+    --r-mint: #3F7A6B;
     --shadow: 0 1px 2px rgba(34, 48, 42, 0.05), 0 8px 24px -12px rgba(34, 48, 42, 0.14);
     --serif: 'Iowan Old Style', 'Newsreader', Georgia, 'Times New Roman', serif;
     --sans: system-ui, -apple-system, 'Segoe UI', 'Albert Sans', sans-serif;
@@ -62,14 +60,12 @@
       --on-accent: #0F211B;
       --danger: #E08D77;
       --danger-soft: #3A2620;
-      --r-upper: #7FC0A8;
-      --r-core: #E0A481;
-      --r-lower: #97B2CD;
-      --r-tread: #D8BC7A;
-      --r-upper-soft: #24352E;
-      --r-core-soft: #33241E;
-      --r-lower-soft: #1F2833;
-      --r-tread-soft: #302A1D;
+      --r-lime: #7FC0A8;
+      --r-coral: #E0A481;
+      --r-sky: #97B2CD;
+      --r-amber: #D8BC7A;
+      --r-violet: #BCA3CB;
+      --r-mint: #86C8B6;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
       color-scheme: dark;
     }
@@ -141,7 +137,6 @@
   .btn.ghost:hover { border-color: var(--accent); }
   .btn.quiet { background: transparent; color: var(--ink2); border-color: transparent; padding: 0 10px; }
   .btn.quiet:hover { color: var(--ink); }
-  .btn.danger { background: transparent; color: var(--danger); border-color: var(--line); }
   .btn.sm { min-height: 36px; padding: 0 13px; font-size: 14px; border-radius: 10px; }
   .btn.wide { width: 100%; }
   .btn:disabled { opacity: 0.45; cursor: default; }
@@ -183,31 +178,12 @@
   .tile-mark {
     flex: none; width: 42px; height: 42px; border-radius: 13px;
     display: grid; place-items: center;
-    background: var(--tone-soft); color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 15%, transparent); color: var(--tone);
   }
   .tile-body { flex: 1; min-width: 0; }
   .tile-body strong { display: block; font-family: var(--serif); font-size: 18px; font-weight: 600; }
   .tile-body span { display: block; font-size: 13.5px; color: var(--ink2); margin-top: 1px; }
   .tile .go { flex: none; color: var(--ink3); }
-
-  .resume {
-    display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
-    padding: 14px 16px; border-radius: var(--radius);
-    background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent);
-    box-shadow: var(--shadow);
-  }
-  .resume strong { display: block; font-size: 15.5px; }
-  .resume span { display: block; font-size: 13px; opacity: 0.85; }
-  .resume .go { margin-left: auto; }
-
-  .streak { display: flex; gap: 6px; margin-top: 14px; }
-  .streak i {
-    flex: 1; height: 34px; border-radius: 9px; background: var(--surface2);
-    display: grid; place-items: center; font-style: normal; font-size: 11px;
-    color: var(--ink3); font-weight: 700; letter-spacing: 0.04em;
-  }
-  .streak i.on { background: var(--accent-soft); color: var(--accent-strong); }
-  @media (prefers-color-scheme: dark) { .streak i.on { color: var(--accent); } }
 
   /* ---------- session ---------- */
   .session-bar {
@@ -277,6 +253,7 @@
   .mv-foot { display: flex; gap: 4px; margin-top: 9px; }
 
   /* ---------- rest timer ---------- */
+  body.resting { padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
   .rest {
     position: fixed; left: 0; right: 0; z-index: 45;
     bottom: calc(72px + env(safe-area-inset-bottom));
@@ -320,21 +297,6 @@
   .runner .ring { height: 6px; border-radius: 999px; background: var(--surface2); margin-top: 16px; overflow: hidden; }
   .runner .ring > i { display: block; height: 100%; background: var(--r-tread); border-radius: 999px; }
 
-  /* ---------- history ---------- */
-  .log { width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 13px 15px; }
-  .log + .log { border-top: 1px solid var(--line); }
-  .log .dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--tone); }
-  .log b { display: block; font-size: 15px; font-weight: 600; }
-  .log span { display: block; font-size: 13px; color: var(--ink2); }
-  .log .when { margin-left: auto; font-size: 12.5px; color: var(--ink3); text-align: right; flex: none; }
-
-  .list-card { padding: 0; overflow: hidden; }
-
-  .detail-mv { padding: 11px 0; border-top: 1px solid var(--line); }
-  .detail-mv:first-child { border-top: none; }
-  .detail-mv b { font-size: 15px; font-weight: 600; }
-  .detail-mv p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
-
   select {
     width: 100%; height: 44px; padding: 0 12px; border-radius: 12px;
     background: var(--surface); border: 1px solid var(--line); appearance: none;
@@ -342,19 +304,52 @@
     background-position: calc(100% - 17px) 20px, calc(100% - 12px) 20px;
     background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
   }
-  textarea, input[type="text"] {
+  textarea, input[type="text"], input[type="password"] {
     width: 100%; padding: 11px 13px; border-radius: 12px;
     background: var(--surface); border: 1px solid var(--line); outline: none; resize: vertical;
   }
-  textarea:focus, input[type="text"]:focus { border-color: var(--accent); }
+  textarea:focus, input[type="text"]:focus, input[type="password"]:focus { border-color: var(--accent); }
   label.lbl { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin-bottom: 5px; }
 
-  .chart { width: 100%; height: auto; display: block; overflow: visible; margin-top: 12px; }
-  .chart .area { fill: var(--accent); opacity: 0.12; }
-  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-  .chart .pt { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
-  .chart .gl { stroke: var(--line); stroke-width: 1; }
-  .chart text { font-size: 10px; fill: var(--ink3); font-weight: 600; }
+
+  /* ---------- plan: routine headers ---------- */
+  .routine-head { display: flex; align-items: center; gap: 8px; margin: 26px 0 10px; }
+  .routine-head .sec-title { margin: 0; flex: 1; min-width: 0; color: var(--tone); }
+
+  /* ---------- building a routine ---------- */
+  .howto { border-top: 1px solid var(--line); margin-top: 13px; padding-top: 12px; }
+  .howto summary {
+    cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent);
+    list-style: none; padding: 2px 0;
+  }
+  .howto summary::-webkit-details-marker { display: none; }
+  .howto summary::after { content: " ›"; display: inline-block; transition: transform 0.15s ease; }
+  .howto[open] summary::after { transform: rotate(90deg); }
+  .howto ol { margin: 10px 0 2px; padding-left: 19px; font-size: 13.5px; color: var(--ink2); line-height: 1.65; }
+  .howto li { margin-bottom: 8px; }
+  .howto li:last-child { margin-bottom: 0; }
+  .howto b { color: var(--ink); font-weight: 600; }
+  .howto a { color: var(--accent); }
+  .howto code {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px;
+    background: var(--surface2); padding: 1px 5px; border-radius: 5px;
+  }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface2); border-radius: 13px; }
+  .seg button { height: 38px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--ink2); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+  .idea-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .idea {
+    padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink2); font-size: 13px; text-align: left;
+  }
+  .idea:hover { border-color: var(--accent); color: var(--accent); }
+
+  .preview-mv { display: flex; align-items: baseline; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .preview-mv:first-child { border-top: none; }
+  .preview-mv b { flex: 1; font-size: 15px; font-weight: 600; }
+  .preview-mv span { font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
 
   /* ---------- plan ---------- */
   .plan-mv { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
@@ -435,10 +430,6 @@
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V20h13V9.5"></path></svg>
       Today
     </button>
-    <button class="tab" data-act="tab" data-view="history">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V6"></path><path d="M4 19h16"></path><path d="M8 19v-6"></path><path d="M13 19V9"></path><path d="M18 19v-9"></path></svg>
-      History
-    </button>
     <button class="tab" data-act="tab" data-view="plan">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14"></path><path d="M5 12h14"></path><path d="M5 19h9"></path><circle cx="18.5" cy="19" r="2.2"></circle></svg>
       Plan
@@ -481,7 +472,7 @@
       prefs: { rest: 75 },
       routines: [
         {
-          id: "upper", name: "Upper Body", tone: "upper", kind: "lift",
+          id: "upper", name: "Upper Body", tone: "lime", icon: "upper", kind: "lift",
           items: [
             mv("u-chest-press", "Chest Press", [set(65, 10), set(65, 10, "Drop to 55 halfway."), set(55, 10)], { step: 5 }),
             mv("u-lat-pulldown", "Lat Pulldown", [set(77, 10), set(66, 10), set(66, 10)], { step: 11 }),
@@ -496,7 +487,7 @@
           ]
         },
         {
-          id: "core", name: "Core", tone: "core", kind: "lift",
+          id: "core", name: "Core", tone: "coral", icon: "core", kind: "lift",
           items: [
             mv("c-kneeling-crunch", "Cable Kneeling Crunch", [set(40, 12), set(40, 12), set(40, 12)], { step: 5 }),
             mv("c-knee-raise", "Captain's Chair Knee Raise", [set(0, 8), set(0, 8), set(0, 8)], { step: 5 }),
@@ -507,7 +498,7 @@
           ]
         },
         {
-          id: "lower", name: "Lower Body", tone: "lower", kind: "lift",
+          id: "lower", name: "Lower Body", tone: "sky", icon: "lower", kind: "lift",
           items: [
             mv("l-leg-press", "Seated Leg Press", [set(100, 10), set(100, 10), set(100, 10)], { step: 10, setup: "Seat 5" }),
             mv("l-ham-curl", "Seated Hamstring Curl", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Leg part 5" }),
@@ -518,7 +509,7 @@
           ]
         },
         {
-          id: "tread", name: "Treadmill", tone: "tread", kind: "tread",
+          id: "tread", name: "Treadmill", tone: "amber", icon: "tread", kind: "tread",
           intervals: [
             { id: uid(), label: "Warm up", min: 5, mph: 3, incline: 0 },
             { id: uid(), label: "Steady", min: 10, mph: 3.5, incline: 1 },
@@ -540,6 +531,15 @@
   if (!S.routines || !S.routines.length) S = seed();
   if (!S.prefs) S.prefs = { rest: 75 };
   if (!S.sessions) S.sessions = [];
+
+  // Early builds keyed the colour off the body area; colour and glyph are now
+  // separate so a routine you make yourself can pick either.
+  const OLD_TONES = { upper: "lime", core: "coral", lower: "sky", tread: "amber" };
+  S.routines.forEach(function (r) {
+    if (!r.icon) r.icon = OLD_TONES[r.tone] ? r.tone : (r.kind === "tread" ? "tread" : "upper");
+    if (OLD_TONES[r.tone]) r.tone = OLD_TONES[r.tone];
+    if (!r.tone) r.tone = "lime";
+  });
 
   let saveTimer = null;
   function saveNow() {
@@ -627,16 +627,6 @@
     return found[0] || null;
   }
 
-  function sessionVolume(sn) {
-    let v = 0;
-    (sn.items || []).forEach(function (it) {
-      it.sets.forEach(function (st) {
-        if (st.done) v += (Number(st.w) || 0) * (Number(st.r) || 0);
-      });
-    });
-    return v;
-  }
-
   function setsDone(sn) {
     let d = 0, t = 0;
     (sn.items || []).forEach(function (it) {
@@ -677,10 +667,11 @@
      View state
      ============================================================ */
 
-  const V = { name: "today", routineId: null, sessionId: null, movementId: null, editing: null, running: null };
+  const V = { name: "today", routineId: null, editing: null, running: null, build: null };
 
   function go(name, extra) {
-    Object.assign(V, { routineId: null, sessionId: null, movementId: null, editing: null }, extra || {}, { name: name });
+    if (name !== "create") V.build = null;
+    Object.assign(V, { routineId: null, editing: null }, extra || {}, { name: name });
     window.scrollTo(0, 0);
     render();
   }
@@ -696,68 +687,25 @@
 
     let html = '<section class="hero"><h1>' + greet + '.</h1><p>' + esc(fullDate(now)) + "</p></section>";
 
-    if (S.draft) {
-      const r = routineById(S.draft.routineId);
-      const label = S.draft.kind === "tread"
-        ? plural((S.draft.intervals || []).length, "interval")
-        : setsDone(S.draft).done + " of " + setsDone(S.draft).total + " sets";
-      html += '<button class="resume" data-act="resume" style="margin-bottom:14px">' +
-        "<div><strong>Pick up where you left off</strong><span>" +
-        esc(r ? r.name : S.draft.routineName) + "—" + label + "</span></div>" +
-        '<span class="go">' + ICONS.chevron + "</span></button>";
-    }
-
     html += '<div class="tiles">';
     S.routines.forEach(function (r) {
       const last = lastSessionFor(r.id);
       const count = r.kind === "tread"
         ? plural((r.intervals || []).length, "interval")
         : plural((r.items || []).length, "movement");
-      const when = last ? "last " + dayLabel(last.start).toLowerCase() : "not logged yet";
-      html += '<button class="tile" data-act="start" data-id="' + r.id + '" style="--tone:var(--r-' + r.tone + ');--tone-soft:var(--r-' + r.tone + '-soft)">' +
-        '<span class="tile-mark">' + (ICONS[r.tone] || ICONS.upper) + "</span>" +
+      const open = S.draft && S.draft.routineId === r.id;
+      const when = open ? "in progress" : last ? dayLabel(last.start) : "not yet";
+      html += '<button class="tile" data-act="start" data-id="' + r.id + '" style="--tone:var(--r-' + r.tone + ')">' +
+        '<span class="tile-mark">' + (ICONS[r.icon] || ICONS.upper) + "</span>" +
         '<span class="tile-body"><strong>' + esc(r.name) + "</strong><span>" + count + " · " + when + "</span></span>" +
         '<span class="go">' + ICONS.chevron + "</span></button>";
     });
     html += "</div>";
 
-    // Last seven days.
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = startOfDay(now - i * DAY);
-      const hit = S.sessions.some(sn => startOfDay(sn.start) === d);
-      days.push('<i class="' + (hit ? "on" : "") + '">' +
-        new Date(d).toLocaleDateString(undefined, { weekday: "narrow" }) + "</i>");
-    }
-    html += '<div class="sec-title">This week</div><div class="streak">' + days.join("") + "</div>";
-
-    const recent = S.sessions.slice().sort((a, b) => b.start - a.start).slice(0, 4);
-    if (recent.length) {
-      html += '<div class="sec-title">Recent</div><div class="card list-card">' +
-        recent.map(logRow).join("") + "</div>";
-    }
-
-    html += '<p class="foot">Everything you enter stays in this browser—nothing is sent anywhere.</p>';
+    html += '<p class="foot">Your log stays in this browser.<br>Only a routine description you type is ever sent out.</p>';
 
     app.innerHTML = html;
     setTopbar("");
-  }
-
-  function logRow(sn) {
-    const r = routineById(sn.routineId);
-    const tone = r ? r.tone : "upper";
-    let sub;
-    if (sn.kind === "tread") {
-      const t = treadTotals(sn.intervals);
-      sub = Math.round(t.min) + " min · " + t.dist.toFixed(2) + " mi";
-    } else {
-      const d = setsDone(sn);
-      sub = plural(d.done, "set") + " · " + Math.round(sessionVolume(sn)).toLocaleString() + " " + UNIT;
-    }
-    return '<button class="log" data-act="detail" data-id="' + sn.id + '" style="--tone:var(--r-' + tone + ')">' +
-      '<span class="dot"></span>' +
-      "<span><b>" + esc(sn.routineName) + "</b><span>" + sub + "</span></span>" +
-      '<span class="when">' + esc(dayLabel(sn.start)) + "</span></button>";
   }
 
   /* ============================================================
@@ -815,7 +763,8 @@
     const p = setsDone(d);
     const pct = p.total ? Math.round(p.done / p.total * 100) : 0;
 
-    let html = '<div class="session-bar"><div class="row">' +
+    const tone = (routineById(d.routineId) || {}).tone || "lime";
+    let html = '<div class="session-bar" style="--tone:var(--r-' + tone + ')"><div class="row">' +
       "<div><strong>" + esc(d.routineName) + "</strong> " +
       '<span class="bar-meta">· ' + duration(Date.now() - d.start) + "</span></div>" +
       '<span class="bar-meta">' + p.done + "/" + p.total + " sets</span>" +
@@ -889,12 +838,14 @@
     }
     d.end = Date.now();
     S.sessions.push(d);
+    // Kept only so the next session opens with what you actually did.
+    if (S.sessions.length > 200) S.sessions = S.sessions.slice(-200);
     S.draft = null;
     endRest();
     save();
     buzz([18, 60, 18]);
     toast("Saved.");
-    go("detail", { sessionId: d.id });
+    go("today");
   }
 
   /* ============================================================
@@ -907,7 +858,8 @@
 
     if (V.running) return viewRunner();
 
-    let html = '<div class="session-bar"><div class="row">' +
+    const tone = (routineById(d.routineId) || {}).tone || "amber";
+    let html = '<div class="session-bar" style="--tone:var(--r-' + tone + ')"><div class="row">' +
       "<div><strong>" + esc(d.routineName) + "</strong></div>" +
       '<span class="bar-meta">' + Math.round(t.min) + " min</span>" +
       "</div></div><div style=\"height:14px\"></div>";
@@ -1071,147 +1023,6 @@
   }
 
   /* ============================================================
-     History
-     ============================================================ */
-
-  function viewHistory() {
-    const list = S.sessions.slice().sort((a, b) => b.start - a.start);
-
-    let html = '<section class="hero"><h1>History</h1><p>' +
-      (list.length ? plural(list.length, "session") + " logged." : "Nothing here yet.") + "</p></section>";
-
-    if (list.length) {
-      const lifts = S.routines.filter(r => r.kind !== "tread");
-      let opts = "";
-      lifts.forEach(function (r) {
-        (r.items || []).forEach(function (it) {
-          if (S.sessions.some(sn => (sn.items || []).some(x => x.mid === it.id && x.sets.some(s => s.done)))) {
-            opts += '<option value="' + it.id + '"' + (V.movementId === it.id ? " selected" : "") + ">" + esc(it.name) + "</option>";
-          }
-        });
-      });
-      if (opts) {
-        html += '<div class="sec-title">Progress</div>' +
-          '<article class="card" style="padding:14px">' +
-          '<select data-act="pickmv"><option value="">Pick a movement</option>' + opts + "</select>" +
-          (V.movementId ? progressBlock(V.movementId) : '<p class="tiny muted" style="margin:10px 2px 2px">Choose one to see how the weight has moved.</p>') +
-          "</article>";
-      }
-
-      html += '<div class="sec-title">All sessions</div><div class="card list-card">' +
-        list.map(logRow).join("") + "</div>";
-    } else {
-      html += '<div class="card empty">Finish a session and it will show up here—with every set you logged.</div>';
-    }
-
-    html += '<div style="height:20px"></div>';
-    app.innerHTML = html;
-    setTopbar("");
-  }
-
-  function progressBlock(mid) {
-    const pts = [];
-    S.sessions.slice().sort((a, b) => a.start - b.start).forEach(function (sn) {
-      (sn.items || []).forEach(function (it) {
-        if (it.mid !== mid) return;
-        const done = it.sets.filter(s => s.done);
-        if (!done.length) return;
-        const top = Math.max.apply(null, done.map(s => Number(s.w) || 0));
-        const vol = done.reduce((a, s) => a + (Number(s.w) || 0) * (Number(s.r) || 0), 0);
-        pts.push({ t: sn.start, top: top, vol: vol, sets: done.length });
-      });
-    });
-
-    if (pts.length < 1) return '<p class="tiny muted" style="margin:10px 2px 2px">No finished sets yet.</p>';
-
-    const last = pts[pts.length - 1];
-    const first = pts[0];
-    const delta = last.top - first.top;
-
-    let html = pts.length > 1
-      ? chartSVG(pts)
-      : '<p class="tiny muted" style="margin:12px 2px 0">One session so far—the shape shows up after the next one.</p>';
-    html += '<div class="totals" style="margin-top:12px">' +
-      '<div class="stat"><b>' + weightLabel(last.top).replace(" " + UNIT, "") + '</b><span>top set</span></div>' +
-      '<div class="stat"><b>' + (delta > 0 ? "+" : "") + num(delta) + '</b><span>change</span></div>' +
-      '<div class="stat"><b>' + pts.length + '</b><span>sessions</span></div>' +
-      "</div>";
-    return html;
-  }
-
-  function chartSVG(pts) {
-    const W = 300, H = 120, pad = 14;
-    const vals = pts.map(p => p.top);
-    const peak = Math.max.apply(null, vals);
-    let lo = Math.min.apply(null, vals), hi = peak;
-    if (hi === lo) { hi = lo + 1; lo = Math.max(0, lo - 1); }
-    const span = hi - lo;
-    const x = i => pts.length === 1 ? W / 2 : pad + i * (W - pad * 2) / (pts.length - 1);
-    const y = v => H - pad - (v - lo) / span * (H - pad * 2);
-
-    const line = pts.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.top).toFixed(1)).join(" ");
-    const area = line + " L" + x(pts.length - 1).toFixed(1) + " " + (H - pad) + " L" + x(0).toFixed(1) + " " + (H - pad) + " Z";
-    const dots = pts.map((p, i) => '<circle class="pt" cx="' + x(i).toFixed(1) + '" cy="' + y(p.top).toFixed(1) + '" r="3.4"></circle>').join("");
-
-    return '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Top set over time">' +
-      '<line class="gl" x1="' + pad + '" y1="' + (H - pad) + '" x2="' + (W - pad) + '" y2="' + (H - pad) + '"></line>' +
-      '<path class="area" d="' + area + '"></path>' +
-      '<path class="line" d="' + line + '"></path>' + dots +
-      "</svg>" +
-      '<div class="row tiny muted" style="justify-content:space-between;margin-top:4px">' +
-      "<span>" + esc(dayLabel(pts[0].t)) + "</span><span>" + num(peak) + " " + UNIT + " high</span>" +
-      "<span>" + esc(dayLabel(pts[pts.length - 1].t)) + "</span></div>";
-  }
-
-  function viewDetail() {
-    const sn = S.sessions.filter(x => x.id === V.sessionId)[0];
-    if (!sn) return go("history");
-
-    let html = '<section class="hero"><h1>' + esc(sn.routineName) + "</h1><p>" +
-      esc(fullDate(sn.start)) + (sn.end ? " · " + duration(sn.end - sn.start) : "") + "</p></section>";
-
-    if (sn.kind === "tread") {
-      const t = treadTotals(sn.intervals);
-      html += '<div class="totals" style="margin-top:6px">' +
-        '<div class="stat"><b>' + Math.round(t.min) + '</b><span>minutes</span></div>' +
-        '<div class="stat"><b>' + t.dist.toFixed(2) + '</b><span>miles</span></div>' +
-        '<div class="stat"><b>' + t.avg.toFixed(1) + '</b><span>avg mph</span></div></div>';
-      html += '<div class="sec-title">Intervals</div><article class="card" style="padding:4px 15px 12px">';
-      (sn.intervals || []).forEach(function (iv, i) {
-        html += '<div class="detail-mv"><b>' + (iv.label ? esc(iv.label) : "Interval " + (i + 1)) + "</b>" +
-          "<p>" + num(iv.min) + " min at " + num(iv.mph) + " mph" +
-          (Number(iv.incline) ? " · " + num(iv.incline) + "% incline" : "") + "</p></div>";
-      });
-      html += "</article>";
-    } else {
-      const p = setsDone(sn);
-      html += '<div class="totals" style="margin-top:6px">' +
-        '<div class="stat"><b>' + p.done + '</b><span>sets</span></div>' +
-        '<div class="stat"><b>' + Math.round(sessionVolume(sn)).toLocaleString() + '</b><span>' + UNIT + ' lifted</span></div>' +
-        '<div class="stat"><b>' + (sn.end ? Math.round((sn.end - sn.start) / 60000) : "—") + '</b><span>minutes</span></div></div>';
-
-      html += '<div class="sec-title">What you did</div><article class="card" style="padding:4px 15px 12px">';
-      (sn.items || []).forEach(function (it) {
-        const done = it.sets.filter(s => s.done);
-        html += '<div class="detail-mv"><b>' + esc(it.name) + "</b><p>" +
-          (done.length ? done.map(s => weightLabel(s.w) + " × " + num(s.r)).join(" · ") : "skipped") +
-          (it.setup ? " · " + esc(it.setup) : "") + "</p></div>";
-      });
-      html += "</article>";
-    }
-
-    if (sn.notes) {
-      html += '<div class="sec-title">Note</div><article class="card" style="padding:14px"><p style="margin:0;font-size:14.5px">' +
-        esc(sn.notes) + "</p></article>";
-    }
-
-    html += '<div style="height:18px"></div><button class="btn danger wide" data-act="delsession" data-id="' + sn.id + '">Delete this session</button><div style="height:20px"></div>';
-
-    app.innerHTML = html;
-    setTopbar('<button class="icon-btn" data-act="back-history" aria-label="Back">' + ICONS.back + "</button>");
-  }
-
-  /* ============================================================
      Plan
      ============================================================ */
 
@@ -1219,7 +1030,11 @@
     let html = '<section class="hero"><h1>Plan</h1><p>Your starting numbers. Change them any time—sessions always begin from what you did last.</p></section>';
 
     S.routines.forEach(function (r) {
-      html += '<div class="sec-title">' + esc(r.name) + "</div>";
+      html += '<div class="routine-head" style="--tone:var(--r-' + r.tone + ')">' +
+        '<span class="sec-title">' + esc(r.name) + "</span>" +
+        '<button class="mini" data-act="rrename" data-rid="' + r.id + '" aria-label="Rename">' + ICONS.pencil + "</button>" +
+        (S.routines.length > 1 ? '<button class="mini" data-act="rdel" data-rid="' + r.id + '" aria-label="Delete">' + ICONS.trash + "</button>" : "") +
+        "</div>";
       html += '<article class="card list-card">';
       if (r.kind === "tread") {
         (r.intervals || []).forEach(function (iv, i) {
@@ -1246,6 +1061,9 @@
       html += "</article>";
     });
 
+    html += '<div style="height:16px"></div>' +
+      '<button class="btn wide" data-act="newroutine">+ New routine</button>';
+
     html += '<div class="sec-title">Rest timer</div><article class="card" style="padding:14px">' +
       '<label class="lbl" for="rest-pref">Seconds between sets</label>' +
       '<div class="ivl" style="grid-template-columns:1fr"><div class="field">' +
@@ -1254,13 +1072,25 @@
       '<button data-act="restbump" data-d="1" aria-label="More">+</button></div></div>' +
       '<p class="tiny muted" style="margin:9px 2px 0">Set it to 0 to turn the timer off.</p></article>';
 
+    html += '<div class="sec-title">Building with Claude</div><article class="card" style="padding:14px">' +
+      '<label class="lbl" for="ai-key">Claude API key</label>' +
+      '<input id="ai-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" value="' + esc(apiKey()) + '" data-act="aikey">' +
+      '<p class="tiny muted" style="margin:10px 2px 0">Only needed to build a routine from a description. The key is kept on this phone, is left out of backups, and goes to Anthropic and nowhere else.</p>' +
+      '<details class="howto"><summary>Where do I get a key?</summary><ol>' +
+      '<li>Open <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> and sign in. The login you already use for Claude works.</li>' +
+      '<li>Put a few dollars of credit on the account under <b>Billing</b>. This part is pay-as-you-go and a Claude subscription does not cover it. Building one routine costs a few cents, so a small top-up lasts a long time here.</li>' +
+      '<li>Go to <b>API keys</b>, tap <b>Create key</b>, and copy the line starting <code>sk-ant-</code>. Copy it while it is on screen—it is only shown the once.</li>' +
+      '<li>Paste it in the box above. That is it; the box will hold it for next time.</li>' +
+      "</ol></details>" +
+      (apiKey() ? '<div style="height:11px"></div><button class="btn quiet sm" style="color:var(--danger);padding:0" data-act="aiforget">Forget the key</button>' : "") +
+      "</article>";
+
     html += '<div class="sec-title">Your data</div><article class="card" style="padding:14px">' +
-      '<p class="tiny muted" style="margin:0 0 12px">Everything lives in this browser only. Back it up before you switch phones or clear your history.</p>' +
+      '<p class="tiny muted" style="margin:0 0 12px">Your log lives in this browser only—it is never sent anywhere. Back it up before you switch phones or clear your history.</p>' +
       '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="backup">Back up</button>' +
       '<button class="btn ghost sm" data-act="restore">Restore</button>' +
       '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
 
-    html += '<div style="height:16px"></div><button class="btn danger wide" data-act="reset">Reset to the starting numbers</button>';
     html += '<p class="foot">Movement—yours, on this phone.</p>';
 
     app.innerHTML = html;
@@ -1281,8 +1111,10 @@
     });
 
     html += "</div></div>" +
-      '<div><label class="lbl">Step size</label>' +
-      '<div class="edit-set" style="grid-template-columns:1fr"><span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(it.step) + '" data-act="mvstep" data-id="' + it.id + '"><i>' + UNIT + "</i></span></div></div>" +
+      '<div><label class="lbl">− and + jump by</label>' +
+      '<input type="text" inputmode="decimal" style="text-align:center" value="' + num(it.step) +
+      '" data-act="mvstep" data-id="' + it.id + '">' +
+      '<p class="tiny muted" style="margin:7px 2px 0">How far one tap moves the weight—11 on the stacks numbered in elevens, 2.5 on dumbbells. The seat number goes in the setup note.</p></div>' +
       '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addplanset" data-id="' + it.id + '">+ Set</button>' +
       '<button class="btn quiet sm" data-act="edit" data-id="">Done</button>' +
       '<span style="flex:1"></span>' +
@@ -1309,6 +1141,7 @@
     const secs = Number(S.prefs.rest) || 0;
     if (!secs) return;
     rest = { endAt: Date.now() + secs * 1000 };
+    document.body.classList.add("resting");
     clearInterval(restTimer);
     restTimer = setInterval(paintRest, 250);
     paintRest();
@@ -1317,6 +1150,7 @@
   function endRest() {
     clearInterval(restTimer); restTimer = null; rest = null;
     $("#rest-slot").innerHTML = "";
+    document.body.classList.remove("resting");
   }
 
   function paintRest() {
@@ -1373,6 +1207,288 @@
   }
 
   /* ============================================================
+     Building a routine with Claude
+
+     The key lives in its own localStorage entry, never inside the
+     data blob—so it can't ride along in a backup file. It is sent
+     to api.anthropic.com and nowhere else.
+     ============================================================ */
+
+  const KEY_AI = "movement.key";
+
+  function apiKey() {
+    try { return localStorage.getItem(KEY_AI) || ""; } catch (err) { return ""; }
+  }
+
+  function setApiKey(v) {
+    try {
+      if (v) localStorage.setItem(KEY_AI, v); else localStorage.removeItem(KEY_AI);
+    } catch (err) { /* ignore */ }
+  }
+
+  const TONES = ["lime", "coral", "sky", "amber", "violet", "mint"];
+
+  function nextTone() {
+    const used = S.routines.map(r => r.tone);
+    return TONES.filter(t => used.indexOf(t) < 0)[0] || TONES[S.routines.length % TONES.length];
+  }
+
+  const SET_SCHEMA = {
+    type: "object",
+    properties: {
+      weight: { type: "number" },
+      reps: { type: "number" },
+      note: { type: "string" }
+    },
+    required: ["weight", "reps", "note"],
+    additionalProperties: false
+  };
+
+  const ROUTINE_SCHEMA = {
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      movements: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            setup: { type: "string" },
+            step: { type: "number" },
+            sets: { type: "array", items: SET_SCHEMA }
+          },
+          required: ["name", "setup", "step", "sets"],
+          additionalProperties: false
+        }
+      },
+      intervals: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            label: { type: "string" },
+            minutes: { type: "number" },
+            mph: { type: "number" },
+            incline: { type: "number" }
+          },
+          required: ["label", "minutes", "mph", "incline"],
+          additionalProperties: false
+        }
+      }
+    },
+    required: ["name", "movements", "intervals"],
+    additionalProperties: false
+  };
+
+  // What they already lift, so Claude reuses real numbers instead of guessing.
+  function planSummary() {
+    const lines = [];
+    S.routines.forEach(function (r) {
+      if (r.kind === "tread") return;
+      (r.items || []).forEach(function (it) {
+        lines.push("- " + it.name + ": " +
+          it.sets.map(s => num(s.w) + " lb x " + num(s.r)).join(", ") +
+          " (step " + num(it.step) + (it.setup ? "; setup: " + it.setup : "") + ")");
+      });
+    });
+    return lines.length ? lines.join("\n") : "(nothing logged yet)";
+  }
+
+  function systemPrompt(kind) {
+    return [
+      "You build gym routines for one person, from a short description they write.",
+      "",
+      // Split so the two banned words appear nowhere in this page's source either.
+      'Two words are banned from your output: "' + "work" + 'out" and "' + "exer" + 'cise". A thing they do is a "movement"; a trip to the gym is a "session".',
+      "",
+      kind === "tread"
+        ? "Return treadmill intervals in `intervals` and leave `movements` empty. Speeds are mph, incline is a percentage, and every interval needs a short label like \"Warm up\" or \"Push\"."
+        : "Return movements in `movements` and leave `intervals` empty. Weights are pounds. `step` is the increment that stack or dumbbell pair moves in: 11 for pin stacks numbered in elevens, 5 for most machines, 2.5 for dumbbells, 10 for a leg press. `setup` is a short machine note like \"Seat 5\" or \"Leg part 2\"—leave it an empty string when there is nothing to set. Use 0 for the weight on anything done at bodyweight. `note` is an empty string unless one set needs a word of its own, like a drop partway through.",
+      "",
+      "Reuse their exact weights, reps, step and setup note for any movement already in their plan. For anything new, pick a conservative starting weight in the same range as the numbers below.",
+      "",
+      "Give the routine a short name—two or three words.",
+      "",
+      "What they already do:",
+      planSummary()
+    ].join("\n");
+  }
+
+  async function askClaude(desc, kind) {
+    const key = apiKey();
+    if (!key) throw new Error("Add your Claude key under Plan first.");
+
+    let res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-opus-5",
+          max_tokens: 8000,
+          system: systemPrompt(kind),
+          output_config: { effort: "low", format: { type: "json_schema", schema: ROUTINE_SCHEMA } },
+          messages: [{ role: "user", content: desc }]
+        })
+      });
+    } catch (err) {
+      throw new Error("Could not reach Claude. Check your connection.");
+    }
+
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) throw new Error("That key was not accepted.");
+      if (res.status === 429) throw new Error("Too many requests just now. Give it a minute.");
+      if (res.status >= 500) throw new Error("Claude is busy. Try again in a moment.");
+      throw new Error("Claude sent back an error (" + res.status + ").");
+    }
+
+    const data = await res.json();
+    if (data.stop_reason === "refusal") throw new Error("Claude declined that one. Try describing it differently.");
+
+    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+    let out;
+    try { out = JSON.parse(text); } catch (err) { throw new Error("Claude's answer did not come back as a routine."); }
+    if (!out || (!(out.movements || []).length && !(out.intervals || []).length)) {
+      throw new Error("Claude came back empty. Try saying a bit more.");
+    }
+    return out;
+  }
+
+  // Turn Claude's JSON into a routine this app can run.
+  function toRoutine(out, kind) {
+    const r = {
+      id: uid(),
+      name: String(out.name || "New routine").slice(0, 40),
+      tone: nextTone(),
+      icon: kind === "tread" ? "tread" : "upper",
+      kind: kind
+    };
+    if (kind === "tread") {
+      r.intervals = (out.intervals || []).slice(0, 20).map(iv => ({
+        id: uid(),
+        label: String(iv.label || "").slice(0, 24),
+        min: Math.max(0, Number(iv.minutes) || 0),
+        mph: Math.max(0, Number(iv.mph) || 0),
+        incline: Math.max(0, Number(iv.incline) || 0)
+      }));
+    } else {
+      r.items = (out.movements || []).slice(0, 20).map(m => mv(
+        uid(),
+        String(m.name || "Movement").slice(0, 48),
+        (m.sets || []).slice(0, 8).map(s => set(
+          Math.max(0, Number(s.weight) || 0),
+          Math.max(0, Number(s.reps) || 0),
+          String(s.note || "").slice(0, 60)
+        )),
+        { step: Math.max(0.5, Number(m.step) || 5), setup: String(m.setup || "").slice(0, 40) }
+      ));
+      r.items.forEach(function (it) { if (!it.sets.length) it.sets.push(set(0, 10)); });
+    }
+    return r;
+  }
+
+  const IDEAS = [
+    "45 minutes, push day, dumbbells and machines",
+    "Quick core finisher, 15 minutes",
+    "Pull day—back and biceps, 5 movements",
+    "Legs, heavy, 40 minutes"
+  ];
+
+  const TREAD_IDEAS = [
+    "30 minutes, walking intervals, nothing too fast",
+    "20 minute easy steady walk with a bit of incline",
+    "25 minutes alternating brisk and easy"
+  ];
+
+  function viewCreate() {
+    const B = V.build || (V.build = { kind: "lift", desc: "", busy: false, error: "", result: null });
+
+    let html = '<section class="hero"><h1>New routine</h1><p>Describe it, or start from a blank one</p></section>';
+
+    html += '<div class="seg" style="margin-bottom:14px">' +
+      '<button data-act="bkind" data-k="lift" aria-pressed="' + (B.kind === "lift") + '">Movements</button>' +
+      '<button data-act="bkind" data-k="tread" aria-pressed="' + (B.kind === "tread") + '">Treadmill</button>' +
+      "</div>";
+
+    html += '<article class="card" style="padding:14px">' +
+      '<label class="lbl" for="build-desc">What do you want</label>' +
+      '<textarea id="build-desc" rows="3" data-act="bdesc" placeholder="' +
+      (B.kind === "tread" ? "30 minutes, walking intervals, nothing too fast." : "45 minutes, push day, dumbbells and machines.") +
+      '">' + esc(B.desc) + "</textarea>" +
+      '<div class="idea-row">' +
+      (B.kind === "tread" ? TREAD_IDEAS : IDEAS).map(s =>
+        '<button class="idea" data-act="bidea" data-s="' + esc(s) + '">' + esc(s) + "</button>").join("") +
+      "</div>" +
+      '<div style="height:13px"></div>' +
+      '<button class="btn wide" data-act="bgo"' + (B.busy ? " disabled" : "") + ">" +
+      (B.busy ? "Thinking…" : "Build it with Claude") + "</button>" +
+      (apiKey() ? "" : '<p class="tiny muted" style="margin:10px 2px 0">Add your Claude key under Plan to use this.</p>') +
+      (B.error ? '<p class="tiny" style="margin:10px 2px 0;color:var(--danger)">' + esc(B.error) + "</p>" : "") +
+      "</article>";
+
+    if (B.result) {
+      const r = B.result;
+      html += '<div class="sec-title">' + esc(r.name) + "</div>" +
+        '<article class="card" style="padding:4px 15px 12px">';
+      if (r.kind === "tread") {
+        (r.intervals || []).forEach(function (iv, i) {
+          html += '<div class="preview-mv"><b>' + (iv.label ? esc(iv.label) : "Interval " + (i + 1)) + "</b>" +
+            "<span>" + num(iv.min) + " min · " + num(iv.mph) + " mph" +
+            (Number(iv.incline) ? " · " + num(iv.incline) + "%" : "") + "</span></div>";
+        });
+      } else {
+        (r.items || []).forEach(function (it) {
+          html += '<div class="preview-mv"><b>' + esc(it.name) + (it.setup ? " · " + esc(it.setup) : "") + "</b>" +
+            "<span>" + it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") +
+            " × " + num(it.sets[0].r) + "</span></div>";
+        });
+      }
+      html += "</article>" +
+        '<div style="height:12px"></div>' +
+        '<button class="btn wide" data-act="bkeep">Add it to my plan</button>' +
+        '<div style="height:8px"></div>' +
+        '<button class="btn ghost wide" data-act="bgo">Build another</button>';
+    }
+
+    html += '<div class="sec-title">Or</div>' +
+      '<button class="btn ghost wide" data-act="bempty">Start with a blank routine</button>' +
+      '<div style="height:20px"></div>';
+
+    app.innerHTML = html;
+    setTopbar('<button class="icon-btn" data-act="tab" data-view="plan" aria-label="Back">' + ICONS.back + "</button>");
+  }
+
+  async function runBuild() {
+    const B = V.build;
+    const desc = (B.desc || "").trim();
+    if (!desc) { B.error = "Say what you want first."; render(); return; }
+    B.busy = true; B.error = ""; B.result = null;
+    render();
+    try {
+      const out = await askClaude(desc, B.kind);
+      B.result = toRoutine(out, B.kind);
+    } catch (err) {
+      B.error = err.message || "That did not work.";
+    }
+    B.busy = false;
+    render();
+  }
+
+  function addRoutine(r) {
+    S.routines.push(r);
+    save();
+    V.build = null;
+    go("plan");
+    toast("Added.");
+  }
+
+  /* ============================================================
      Events
      ============================================================ */
 
@@ -1387,9 +1503,6 @@
       case "home": go("today"); break;
       case "tab": go(t.dataset.view); break;
       case "start": startSession(t.dataset.id); break;
-      case "resume": go("session"); break;
-      case "detail": go("detail", { sessionId: t.dataset.id }); break;
-      case "back-history": go("history"); break;
 
       case "toggle": {
         const st = S.draft.items[mi].sets[si];
@@ -1473,13 +1586,6 @@
         break;
       }
 
-      case "pickmv": break;
-      case "delsession":
-        if (confirm("Delete this session for good?")) {
-          S.sessions = S.sessions.filter(x => x.id !== t.dataset.id);
-          save(); go("history");
-        }
-        break;
 
       case "edit": V.editing = (V.editing === t.dataset.id || !t.dataset.id) ? null : t.dataset.id; render(); break;
       case "mvup": case "mvdown": {
@@ -1521,18 +1627,41 @@
         break;
       }
 
-      case "backup": backup(); break;
-      case "restore": $("#restore-file").click(); break;
-      case "reset":
-        if (confirm("Put the plan back to its starting numbers? Your logged sessions are kept.")) {
-          const keptSessions = S.sessions, keptDraft = S.draft, keptPrefs = S.prefs;
-          S = seed();
-          S.sessions = keptSessions;
-          S.draft = keptDraft;
-          S.prefs = keptPrefs;
-          save(); go("plan");
+      case "newroutine": V.build = null; go("create"); break;
+      case "bkind": V.build.kind = t.dataset.k; V.build.result = null; V.build.error = ""; render(); break;
+      case "bidea": V.build.desc = t.dataset.s; render(); break;
+      case "bgo": runBuild(); break;
+      case "bkeep": addRoutine(V.build.result); break;
+      case "bempty": {
+        const kind = V.build ? V.build.kind : "lift";
+        const fresh = { id: uid(), name: "New routine", tone: nextTone(), icon: kind === "tread" ? "tread" : "upper", kind: kind };
+        if (kind === "tread") fresh.intervals = [{ id: uid(), label: "", min: 10, mph: 3, incline: 0 }];
+        else fresh.items = [mv(uid(), "New movement", [set(0, 10), set(0, 10), set(0, 10)])];
+        addRoutine(fresh);
+        break;
+      }
+      case "rrename": {
+        const r = routineById(t.dataset.rid);
+        const name = prompt("Name for this routine", r.name);
+        if (name && name.trim()) { r.name = name.trim().slice(0, 40); save(); render(); }
+        break;
+      }
+      case "rdel": {
+        const r = routineById(t.dataset.rid);
+        if (S.routines.length < 2) break;
+        if (confirm("Remove " + r.name + " from your plan? Sessions you already logged are kept.")) {
+          if (S.draft && S.draft.routineId === r.id) { S.draft = null; endRest(); }
+          S.routines = S.routines.filter(x => x.id !== r.id);
+          save(); render();
         }
         break;
+      }
+      case "aiforget":
+        if (confirm("Forget the Claude key on this phone?")) { setApiKey(""); render(); }
+        break;
+
+      case "backup": backup(); break;
+      case "restore": $("#restore-file").click(); break;
     }
   });
 
@@ -1556,6 +1685,8 @@
         break;
       }
       case "notes": S.draft.notes = val; save(); break;
+      case "bdesc": V.build.desc = val; break;
+      case "aikey": setApiKey(val.trim()); break;
       case "restnum": S.prefs.rest = Math.max(0, Number(val) || 0); save(); break;
       case "mvname": findMv(t.dataset.id).name = val; save(); break;
       case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
@@ -1566,8 +1697,6 @@
   });
 
   document.addEventListener("change", function (e) {
-    const t = e.target.closest("[data-act]");
-    if (t && t.dataset.act === "pickmv") { V.movementId = t.value || null; render(); return; }
     if (e.target.id === "restore-file" && e.target.files[0]) restore(e.target.files[0]);
   });
 
@@ -1593,19 +1722,18 @@
 
   function setTopbar(html) {
     $("#topbar-slot").innerHTML = html;
-    $("#brand-name").textContent = V.name === "session" && S.draft ? S.draft.routineName : "Movement";
+    $("#brand-name").textContent = "Movement";
   }
 
   function render() {
     document.querySelectorAll(".tab").forEach(function (b) {
-      const on = b.dataset.view === V.name || (V.name === "detail" && b.dataset.view === "history");
+      const on = b.dataset.view === V.name || (V.name === "create" && b.dataset.view === "plan");
       if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
     });
 
     if (V.name === "session") viewSession();
-    else if (V.name === "history") viewHistory();
-    else if (V.name === "detail") viewDetail();
     else if (V.name === "plan") viewPlan();
+    else if (V.name === "create") viewCreate();
     else viewToday();
   }
 

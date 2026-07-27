@@ -33,7 +33,23 @@ ships its own PWA pieces so it installs to a home screen on its
 own—`manifest.webmanifest` scoped to `/movement/`, its own icons, and `sw.js`
 for an offline shell. Deliberate wording: the app never uses the words
 "workout" or "exercise"; a thing you do is a **movement**, a visit to the gym
-is a **session**, and the three groups plus the treadmill are **routines**.
+is a **session**, and each group is a **routine**. Those two words are also
+split across string concatenation where the prompt has to name them, so they
+appear nowhere in the page source.
+
+Two deliberate absences. There is **no history view and no progress chart**:
+finished sessions are stored only so the next session opens with the numbers
+last actually lifted, and nothing displays them back as a scoreboard. There
+is likewise no streak strip. Both were removed on request—the point is
+knowing what you can lift today, not watching a line climb.
+
+The **routine builder** (`Plan → New routine`) is the one thing that leaves
+the device: it posts the typed description to the Claude API and gets a
+routine back as structured JSON. The key is entered by the user, lives in its
+own `localStorage` entry (`movement.key`) so it can never ride along in a
+backup export, and is **never committed**—this repository is public. Logged
+data is never sent anywhere; keep the footer copy honest about that
+distinction if either side changes.
 
 ## No AI at runtime
 
@@ -50,8 +66,18 @@ here, often OCD and anxiety content—to a server, quietly breaking that promise
 If an AI feature is ever genuinely wanted, the privacy page has to be rewritten
 first, with the owner's explicit go-ahead.
 
-This restriction covers everything served from this origin, `movement/`
-included. Other artifacts and projects are free to use the feature.
+This restriction covers every Foothold Now page served from this origin. Other
+artifacts and projects are free to use the feature.
+
+**`movement/` is the one exemption, granted by the owner** after this rule was
+written, and only for its routine builder. What makes it a different case: it
+is a private personal tool rather than part of Foothold Now, it holds sets and
+weights rather than ladder text, the key is the owner's own and stays on the
+device, and the only thing that ever leaves is a routine description typed on
+purpose—the log itself is never sent. Foothold Now's own pages are unchanged
+and still call nothing. Do not read this exemption as loosening the rule above:
+anything else, on any Foothold page, still needs the privacy page rewritten
+first and the owner's explicit go-ahead.
 
 ## Hosting
 
