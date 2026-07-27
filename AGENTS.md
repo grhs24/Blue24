@@ -24,9 +24,11 @@ diagnosis is needed.
 
 ## Movement
 
-`movement/` is a separate single-file app in the same palette: a private log
-for sets, weights, and treadmill intervals, stored in `localStorage` under
-`movement.v1`. It shares the origin and nothing else. Keep it that way: no
+`movement/` is **Movement Now**, a separate single-file app in the same
+palette: a private log for sets, weights, and treadmill intervals, stored in
+`localStorage` under `movement.v1`. The path stays `/movement/` even though the
+name gained a word—changing it would break the home-screen icon already
+installed on the owner's phone. It shares the origin and nothing else. Keep it that way: no
 link from any Foothold page in, no link back out, no entry in `sitemap.xml`,
 `llms.txt`, or the site menu, and `noindex, nofollow` on the page itself. It
 ships its own PWA pieces so it installs to a home screen on its
@@ -43,13 +45,16 @@ last actually lifted, and nothing displays them back as a scoreboard. There
 is likewise no streak strip. Both were removed on request—the point is
 knowing what you can lift today, not watching a line climb.
 
-The **routine builder** (`Plan → New routine`) is the one thing that leaves
-the device: it posts the typed description to the Claude API and gets a
-routine back as structured JSON. The key is entered by the user, lives in its
-own `localStorage` entry (`movement.key`) so it can never ride along in a
-backup export, and is **never committed**—this repository is public. Logged
-data is never sent anywhere; keep the footer copy honest about that
-distinction if either side changes.
+A treadmill routine is a list of **blocks**, not a flat list of intervals. A
+steady block is one stretch at one speed; a repeat block is a fast leg and an
+easy leg run back to back N times (30s at 12.5 / 90s at 3.5, twelve times over).
+Times are held in **seconds**, because that is how the short ones are counted.
+`allLegs()` flattens blocks into what the timer actually runs.
+
+`S.bests` keys the fastest recorded fast leg by interval shape—`"30/90"` maps
+to the quickest mph held at that shape and how many blocks it lasted. It is a
+reference table shown while setting up a session, deliberately not a chart:
+same reasoning as the missing history.
 
 ## No AI at runtime
 
@@ -66,18 +71,12 @@ here, often OCD and anxiety content—to a server, quietly breaking that promise
 If an AI feature is ever genuinely wanted, the privacy page has to be rewritten
 first, with the owner's explicit go-ahead.
 
-This restriction covers every Foothold Now page served from this origin. Other
-artifacts and projects are free to use the feature.
+This restriction covers everything served from this origin, `movement/`
+included. Other artifacts and projects are free to use the feature.
 
-**`movement/` is the one exemption, granted by the owner** after this rule was
-written, and only for its routine builder. What makes it a different case: it
-is a private personal tool rather than part of Foothold Now, it holds sets and
-weights rather than ladder text, the key is the owner's own and stays on the
-device, and the only thing that ever leaves is a routine description typed on
-purpose—the log itself is never sent. Foothold Now's own pages are unchanged
-and still call nothing. Do not read this exemption as loosening the rule above:
-anything else, on any Foothold page, still needs the privacy page rewritten
-first and the owner's explicit go-ahead.
+A routine builder that called the Claude API briefly lived in `movement/`; it
+was removed at the owner's request once it was clear API billing is separate
+from a Claude subscription. Nothing on this origin calls a model again.
 
 ## Hosting
 

@@ -1,6 +1,6 @@
 {
-  "name": "Movement",
-  "short_name": "Movement",
+  "name": "Movement Now",
+  "short_name": "Movement Now",
   "description": "A quiet, private log for sets, weights, and treadmill intervals.",
   "id": "/movement/",
   "start_url": "/movement/",
