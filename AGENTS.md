@@ -8,9 +8,9 @@ The app is **fully local**: there are no accounts, no sign-in, and no network
 calls—nothing a user writes ever leaves their browser. The **Backup** button
 exports the data as a JSON file and restores from one, which is also how a user
 moves their ladders to another device or browser (localStorage is per-origin,
-so data does not follow the user across domains on its own). Cloudflare Web
-Analytics provides anonymous, cookie-free page counts and is the only
-third-party script on the page.
+so data does not follow the user across domains on its own). There are no
+third-party scripts and no analytics of any kind: the pages load nothing from
+another host and make no network requests at all.
 
 Alongside the app live static pages in the same voice and palette, each a
 self-contained HTML file: SEO guides (`fear-ladder/`, `erp/`, `ocd-notes/`,
@@ -34,6 +34,24 @@ own—`manifest.webmanifest` scoped to `/movement/`, its own icons, and `sw.js`
 for an offline shell. Deliberate wording: the app never uses the words
 "workout" or "exercise"; a thing you do is a **movement**, a visit to the gym
 is a **session**, and the three groups plus the treadmill are **routines**.
+
+## No AI at runtime
+
+Foothold Now never calls a model. Do not add Claude, or any other AI, to this
+site at runtime: no `window.claude.*` calls, no artifact runtime capabilities
+declared, no API keys, no model requests of any kind, on any page. This holds
+even when "Claude can run in artifacts" is switched on for the account. That
+setting is global; this exemption is deliberate and stays put.
+
+The reason is the promise the site makes, not preference. Every page tells the
+user that nothing they write leaves their browser, and `privacy/` says it in as
+many words. One model call would send ladder text—the most personal thing
+here, often OCD and anxiety content—to a server, quietly breaking that promise.
+If an AI feature is ever genuinely wanted, the privacy page has to be rewritten
+first, with the owner's explicit go-ahead.
+
+This restriction covers everything served from this origin, `movement/`
+included. Other artifacts and projects are free to use the feature.
 
 ## Hosting
 
