@@ -186,16 +186,6 @@
   .tile-body span { display: block; font-size: 13.5px; color: var(--ink2); margin-top: 1px; }
   .tile .go { flex: none; color: var(--ink3); }
 
-  .resume {
-    display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
-    padding: 14px 16px; border-radius: var(--radius);
-    background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent);
-    box-shadow: var(--shadow);
-  }
-  .resume strong { display: block; font-size: 15.5px; }
-  .resume span { display: block; font-size: 13px; opacity: 0.85; }
-  .resume .go { margin-left: auto; }
-
   /* ---------- session ---------- */
   .session-bar {
     position: sticky; z-index: 30;
@@ -680,24 +670,14 @@
 
     let html = '<section class="hero"><h1>' + greet + '.</h1><p>' + esc(fullDate(now)) + "</p></section>";
 
-    if (S.draft) {
-      const r = routineById(S.draft.routineId);
-      const label = S.draft.kind === "tread"
-        ? plural((S.draft.intervals || []).length, "interval")
-        : setsDone(S.draft).done + " of " + setsDone(S.draft).total + " sets";
-      html += '<button class="resume" data-act="resume" style="margin-bottom:14px">' +
-        "<div><strong>Pick up where you left off</strong><span>" +
-        esc(r ? r.name : S.draft.routineName) + "—" + label + "</span></div>" +
-        '<span class="go">' + ICONS.chevron + "</span></button>";
-    }
-
     html += '<div class="tiles">';
     S.routines.forEach(function (r) {
       const last = lastSessionFor(r.id);
       const count = r.kind === "tread"
         ? plural((r.intervals || []).length, "interval")
         : plural((r.items || []).length, "movement");
-      const when = last ? dayLabel(last.start) : "not yet";
+      const open = S.draft && S.draft.routineId === r.id;
+      const when = open ? "in progress" : last ? dayLabel(last.start) : "not yet";
       html += '<button class="tile" data-act="start" data-id="' + r.id + '" style="--tone:var(--r-' + r.tone + ')">' +
         '<span class="tile-mark">' + (ICONS[r.icon] || ICONS.upper) + "</span>" +
         '<span class="tile-body"><strong>' + esc(r.name) + "</strong><span>" + count + " · " + when + "</span></span>" +
@@ -1499,7 +1479,6 @@
       case "home": go("today"); break;
       case "tab": go(t.dataset.view); break;
       case "start": startSession(t.dataset.id); break;
-      case "resume": go("session"); break;
 
       case "toggle": {
         const st = S.draft.items[mi].sets[si];
