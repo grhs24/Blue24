@@ -137,7 +137,6 @@
   .btn.ghost:hover { border-color: var(--accent); }
   .btn.quiet { background: transparent; color: var(--ink2); border-color: transparent; padding: 0 10px; }
   .btn.quiet:hover { color: var(--ink); }
-  .btn.danger { background: transparent; color: var(--danger); border-color: var(--line); }
   .btn.sm { min-height: 36px; padding: 0 13px; font-size: 14px; border-radius: 10px; }
   .btn.wide { width: 100%; }
   .btn:disabled { opacity: 0.45; cursor: default; }
@@ -1068,7 +1067,6 @@
       '<button class="btn ghost sm" data-act="restore">Restore</button>' +
       '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
 
-    html += '<div style="height:16px"></div><button class="btn danger wide" data-act="reset">Reset to the starting numbers</button>';
     html += '<p class="foot">Movement—yours, on this phone.</p>';
 
     app.innerHTML = html;
@@ -1089,8 +1087,10 @@
     });
 
     html += "</div></div>" +
-      '<div><label class="lbl">Step size</label>' +
-      '<div class="edit-set" style="grid-template-columns:1fr"><span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(it.step) + '" data-act="mvstep" data-id="' + it.id + '"><i>' + UNIT + "</i></span></div></div>" +
+      '<div><label class="lbl">− and + jump by</label>' +
+      '<input type="text" inputmode="decimal" style="text-align:center" value="' + num(it.step) +
+      '" data-act="mvstep" data-id="' + it.id + '">' +
+      '<p class="tiny muted" style="margin:7px 2px 0">How far one tap moves the weight—11 on the stacks numbered in elevens, 2.5 on dumbbells. The seat number goes in the setup note.</p></div>' +
       '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addplanset" data-id="' + it.id + '">+ Set</button>' +
       '<button class="btn quiet sm" data-act="edit" data-id="">Done</button>' +
       '<span style="flex:1"></span>' +
@@ -1638,16 +1638,6 @@
 
       case "backup": backup(); break;
       case "restore": $("#restore-file").click(); break;
-      case "reset":
-        if (confirm("Put the plan back to its starting numbers? Your logged sessions are kept.")) {
-          const keptSessions = S.sessions, keptDraft = S.draft, keptPrefs = S.prefs;
-          S = seed();
-          S.sessions = keptSessions;
-          S.draft = keptDraft;
-          S.prefs = keptPrefs;
-          save(); go("plan");
-        }
-        break;
     }
   });
 
