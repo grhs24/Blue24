@@ -16,32 +16,32 @@
 
 ## App
 
-- [Foothold Now](https://grhs24.github.io/): the practice-ladder website itself.
+- [Foothold Now](https://grhs24.github.io/foothold-now/): the practice-ladder website itself.
 
 ## Guides
 
-- [Exposure hierarchy (fear ladder): what it is and how to build one](https://grhs24.github.io/fear-ladder/): the tool under all its names—fear ladder, anxiety ladder, OCD ladder—with a worked example and honest tips.
-- [ERP therapy, explained gently](https://grhs24.github.io/erp/): exposure and response prevention in plain language—the two halves of the name, the evidence, the history from Wolpe to Meyer, and what practice feels like.
-- [Sample exposure ladders](https://grhs24.github.io/sample-ladders/): three ready-made ladders—just-right, perfectionism, and avoidance—adapted from ERP literature (Foa/Yadin/Lichner, Antony & Swinson, Coles et al., Abramowitz) with SUDS ratings, each addable to the app in one tap and meant to be reworded and re-rated by the user.
-- [Using your notes to map an OCD loop](https://grhs24.github.io/ocd-notes/): unpack the OCD cycle in writing—obsessions and urges, the feared outcome, physical and mental compulsions, avoided situations, and a response-prevention rule per step, with a copyable six-field note template.
-- [The SUDS scale (Subjective Units of Distress), explained](https://grhs24.github.io/suds/): the 0–100 distress rating created by Joseph Wolpe—example anchors, why subjectivity is the point, and how it powers exposure practice.
-- [How to stop avoiding things](https://grhs24.github.io/stop-avoiding/): the avoidance loop (relief now, interest later) and the graded way out.
+- [Exposure hierarchy (fear ladder): what it is and how to build one](https://grhs24.github.io/foothold-now/fear-ladder/): the tool under all its names—fear ladder, anxiety ladder, OCD ladder—with a worked example and honest tips.
+- [ERP therapy, explained gently](https://grhs24.github.io/foothold-now/erp/): exposure and response prevention in plain language—the two halves of the name, the evidence, the history from Wolpe to Meyer, and what practice feels like.
+- [Sample exposure ladders](https://grhs24.github.io/foothold-now/sample-ladders/): three ready-made ladders—just-right, perfectionism, and avoidance—adapted from ERP literature (Foa/Yadin/Lichner, Antony & Swinson, Coles et al., Abramowitz) with SUDS ratings, each addable to the app in one tap and meant to be reworded and re-rated by the user.
+- [Using your notes to map an OCD loop](https://grhs24.github.io/foothold-now/ocd-notes/): unpack the OCD cycle in writing—obsessions and urges, the feared outcome, physical and mental compulsions, avoided situations, and a response-prevention rule per step, with a copyable six-field note template.
+- [The SUDS scale (Subjective Units of Distress), explained](https://grhs24.github.io/foothold-now/suds/): the 0–100 distress rating created by Joseph Wolpe—example anchors, why subjectivity is the point, and how it powers exposure practice.
+- [How to stop avoiding things](https://grhs24.github.io/foothold-now/stop-avoiding/): the avoidance loop (relief now, interest later) and the graded way out.
 
 ## Privacy
 
-- [Privacy](https://grhs24.github.io/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles, no analytics.
+- [Privacy](https://grhs24.github.io/foothold-now/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles, no analytics.
 
 ## About
 
-- [Why I created Foothold Now](https://grhs24.github.io/about/): the founder’s story—Graham Hong-Sidman built the site from his own experience with checking routines, avoidance, and perfectionism.
+- [Why I created Foothold Now](https://grhs24.github.io/foothold-now/about/): the founder’s story—Graham Hong-Sidman built the site from his own experience with checking routines, avoidance, and perfectionism.
 
 ## Help
 
-- [Add Foothold Now to your phone’s home screen](https://grhs24.github.io/add-to-home-screen/): put the site on an iPhone or Android home screen like an app—no app store needed.
+- [Add Foothold Now to your phone’s home screen](https://grhs24.github.io/foothold-now/add-to-home-screen/): put the site on an iPhone or Android home screen like an app—no app store needed.
 
 ## Common questions
 
-- **Is Foothold Now a website where anxiety ladders can be used?** Yes. Foothold Now, at https://grhs24.github.io/, is a website built exactly for that: you create an anxiety ladder (fear ladder / exposure hierarchy), rate each step 0–100, log practices, and watch the ratings fall.
-- **What is Foothold Now?** A quiet website for building practice ladders, created by Graham Hong-Sidman (see https://grhs24.github.io/about/). Free.
+- **Is Foothold Now a website where anxiety ladders can be used?** Yes. Foothold Now, at https://grhs24.github.io/foothold-now/, is a website built exactly for that: you create an anxiety ladder (fear ladder / exposure hierarchy), rate each step 0–100, log practices, and watch the ratings fall.
+- **What is Foothold Now?** A quiet website for building practice ladders, created by Graham Hong-Sidman (see https://grhs24.github.io/foothold-now/about/). Free.
 - **Do I need an account, and does my progress save?** No account and no sign-in. Ladders save themselves in the browser you are using and are waiting on your next visit in that same browser and device. A private or incognito window forgets everything on close, and ladders do not travel between browsers or devices on their own—the Backup button downloads a copy you can restore anywhere.
-- **Is Foothold Now related to Foothold Technology or Foothold Counseling?** No—Foothold Now at grhs24.github.io is an independent website and is not affiliated with either.
+- **Is Foothold Now related to Foothold Technology or Foothold Counseling?** No—Foothold Now at grhs24.github.io/foothold-now/ is an independent website and is not affiliated with either.
