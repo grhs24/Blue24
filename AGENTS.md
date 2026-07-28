@@ -37,34 +37,39 @@ card; `robots.txt` and `sitemap.xml` cover the app plus the guides. The site
 deliberately names ERP, OCD, and anxiety for search while emphasizing that no
 diagnosis is needed.
 
-## Movement
+## Movement Now
 
-`movement/` is a separate single-file app in the same palette: a private log
-for sets, weights, and treadmill intervals, stored in `localStorage` under
-`movement.v1`. It shares the origin and nothing else. Keep it that way: no
+`movement/` is **Movement Now**: one page, and a logger only. Every number on
+it is what the owner can currently do, edited in place—there are no sessions
+to start or finish, no timers, no history, and no charts. Routines are written
+in the Claude app and timed with a phone timer; this holds the numbers and
+nothing else. Resist adding any of that back without being asked: each absence
+was requested, in this order—history and streaks, then the resume card, then
+the reset button, then the Today page, then the timers and the whole
+start-and-finish flow.
+
+The path stays `/movement/` even though the name gained a word—changing it
+would break the home-screen icon already installed on the owner's phone.
+
+It shares the origin with Foothold Now and nothing else. Keep it that way: no
 link from any Foothold page in, no link back out, no entry in `sitemap.xml`,
 `llms.txt`, or the site menu, and `noindex, nofollow` on the page itself. It
 ships its own PWA pieces so it installs to a home screen on its
 own—`manifest.webmanifest` scoped to `/movement/`, its own icons, and `sw.js`
-for an offline shell. Deliberate wording: the app never uses the words
-"workout" or "exercise"; a thing you do is a **movement**, a visit to the gym
-is a **session**, and each group is a **routine**. Those two words are also
-split across string concatenation where the prompt has to name them, so they
-appear nowhere in the page source.
+for an offline shell.
 
-Two deliberate absences. There is **no history view and no progress chart**:
-finished sessions are stored only so the next session opens with the numbers
-last actually lifted, and nothing displays them back as a scoreboard. There
-is likewise no streak strip. Both were removed on request—the point is
-knowing what you can lift today, not watching a line climb.
+Deliberate wording: the app never uses the words "workout" or "exercise"; a
+thing you do is a **movement** and each group is a **routine**. Storage is
+`localStorage` under `movement.v1`; the loader strips `sessions`, `draft`,
+`bests` and `prefs` from anything older, since those belonged to the
+start-and-finish version.
 
-The **routine builder** (`Plan → New routine`) is the one thing that leaves
-the device: it posts the typed description to the Claude API and gets a
-routine back as structured JSON. The key is entered by the user, lives in its
-own `localStorage` entry (`movement.key`) so it can never ride along in a
-backup export, and is **never committed**—this repository is public. Logged
-data is never sent anywhere; keep the footer copy honest about that
-distinction if either side changes.
+A treadmill routine is a list of **blocks**. A *steady* block is one stretch at
+one speed; a *repeat* block is one interval shape—a fast leg, a slower leg, and
+how many times round (30s at 12.5 against 90s at 3.5, ten times over). Keep one
+repeat block per combination the owner can do; that list is the record of where
+their speeds are. Times are held in **seconds**, because that is how the short
+ones are counted.
 
 ## No AI at runtime
 
@@ -81,18 +86,12 @@ here, often OCD and anxiety content—to a server, quietly breaking that promise
 If an AI feature is ever genuinely wanted, the privacy page has to be rewritten
 first, with the owner's explicit go-ahead.
 
-This restriction covers every Foothold Now page served from this origin. Other
-artifacts and projects are free to use the feature.
+This restriction covers everything served from this origin, `movement/`
+included. Other artifacts and projects are free to use the feature.
 
-**`movement/` is the one exemption, granted by the owner** after this rule was
-written, and only for its routine builder. What makes it a different case: it
-is a private personal tool rather than part of Foothold Now, it holds sets and
-weights rather than ladder text, the key is the owner's own and stays on the
-device, and the only thing that ever leaves is a routine description typed on
-purpose—the log itself is never sent. Foothold Now's own pages are unchanged
-and still call nothing. Do not read this exemption as loosening the rule above:
-anything else, on any Foothold page, still needs the privacy page rewritten
-first and the owner's explicit go-ahead.
+A routine builder that called the Claude API briefly lived in `movement/`; it
+was removed at the owner's request once it was clear API billing is separate
+from a Claude subscription. Nothing on this origin calls a model again.
 
 ## Hosting
 
