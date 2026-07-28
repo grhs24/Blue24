@@ -476,6 +476,13 @@
   details.howto summary::after { content: "+"; font-size: 18px; color: var(--ink3); }
   details.howto[open] summary::after { content: "−"; }
   details.howto .body { padding: 2px 20px 20px; }
+  figure.demo { margin: 4px 0 20px; }
+  figure.demo video {
+    display: block; width: 100%; height: auto; max-height: 70vh;
+    border-radius: 12px; border: 1px solid var(--line);
+    background: #141B17; /* matches the video's own letterboxing */
+  }
+  figure.demo figcaption { margin-top: 9px; font-size: 13.5px; line-height: 1.55; }
   details.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
   details.howto .body > p { margin-top: 14px; font-size: 14.5px; }
   details.howto li::marker { color: var(--accent); font-weight: 600; }
@@ -1313,7 +1320,17 @@
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
       '<summary>How Foothold Now works</summary>' +
-      '<div class="body"><ol>' +
+      '<div class="body">' +
+      /* preload="none" so the video costs nothing until someone presses play */
+      '<figure class="demo">' +
+        '<video controls preload="none" playsinline poster="/foothold-now/demo-poster.png" ' +
+               'aria-describedby="demo-cap" width="1280" height="720">' +
+          '<source src="/foothold-now/demo.mp4" type="video/mp4">' +
+          'Your browser can’t play this video. The steps below describe the same thing in writing.' +
+        '</video>' +
+        '<figcaption id="demo-cap" class="quiet">A short walkthrough, start to finish, using a gentle example: getting more comfortable making phone calls. It has narration, so you may want sound on. Everything it shows is written out below.</figcaption>' +
+      '</figure>' +
+      '<ol>' +
         '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
