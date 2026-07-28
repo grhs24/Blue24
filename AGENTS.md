@@ -9,10 +9,10 @@ calls—nothing a user writes ever leaves their browser. The **Backup** button
 exports the data as a JSON file and restores from one, which is also how a user
 moves their ladders to another device or browser (localStorage is per-origin,
 so data does not follow the user across domains on its own). There are no
-third-party scripts and no analytics of any kind: the pages load nothing from
-another host, and the only request any page makes is for the demo video
-described below, from this same origin, and only once a visitor presses play.
-Nothing a user writes is ever uploaded.
+third-party scripts beyond a cookie-free page-count beacon, which records a
+visit and nothing else. The only other request any page makes is for the demo
+video described below, from this same origin, and only once a visitor presses
+play. Nothing a user writes is ever uploaded.
 
 ## The demonstration video
 
