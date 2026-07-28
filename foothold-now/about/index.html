@@ -98,6 +98,8 @@
 
     <p class="signature">—<b>Graham Hong-Sidman</b><br>Founder and Creator, Foothold Now<br>Date founded online: July 14th, 2026</p>
 
+    <p>Questions or other thoughts you want to share? Feel free to reach out: <button class="copy-email" type="button" title="Click to copy">footholdnowsupport@gmail.com</button>. It isn’t a crisis service—if you need urgent support, please contact a local crisis line or emergency service.</p>
+
     <div class="cta">
       <p><b>Take your first step.</b> Build a practice ladder, rate the steps 0–100, and face the hard things one small step at a time. Free.</p>
       <a class="btn" href="/foothold-now/">Start a ladder</a>
@@ -111,5 +113,34 @@
   </footer>
 </div>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e1b65969ccda4368bc55951624ac317b"}'></script><!-- End Cloudflare Web Analytics -->
+<script>
+(function () {
+  var b = document.querySelector('.copy-email');
+  if (!b) return;
+  var EMAIL = 'footholdnowsupport@gmail.com';
+  var t;
+  function done() {
+    b.classList.add('copied');
+    clearTimeout(t);
+    t = setTimeout(function () { b.classList.remove('copied'); }, 2200);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = EMAIL;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    done();
+  }
+  b.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(EMAIL).then(done, fallback);
+    else fallback();
+  });
+})();
+</script>
 </body>
 </html>
