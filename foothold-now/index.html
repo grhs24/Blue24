@@ -476,6 +476,13 @@
   details.howto summary::after { content: "+"; font-size: 18px; color: var(--ink3); }
   details.howto[open] summary::after { content: "−"; }
   details.howto .body { padding: 2px 20px 20px; }
+  figure.demo { margin: 4px 0 20px; }
+  figure.demo video {
+    display: block; width: 100%; height: auto; max-height: 70vh;
+    border-radius: 12px; border: 1px solid var(--line);
+    background: #141B17; /* matches the video's own letterboxing */
+  }
+  figure.demo figcaption { margin-top: 9px; font-size: 13.5px; line-height: 1.55; }
   details.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
   details.howto .body > p { margin-top: 14px; font-size: 14.5px; }
   details.howto li::marker { color: var(--accent); font-weight: 600; }
@@ -952,6 +959,7 @@
     Foothold Now is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
     Everything you write stays in this browser—nothing is sent anywhere, and there’s nothing to sign in to. Your ladders save themselves and are here when you come back, unless you’re in a private or incognito window. Use <b>Backup</b> now and then to keep a copy safe.
+    <div class="contact">Questions or other thoughts: <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
     <div class="guides">Guides: <a href="/foothold-now/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/foothold-now/erp/">ERP, explained gently</a> &middot; <a href="/foothold-now/sample-ladders/">Sample ladders</a> &middot; <a href="/foothold-now/ocd-notes/">Using your notes to map an OCD loop</a> &middot; <a href="/foothold-now/suds/">The SUDS scale</a> &middot; <a href="/foothold-now/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/foothold-now/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
     <div class="guides">About: <a href="/foothold-now/about/">Why I created Foothold Now</a> &middot; <a href="/foothold-now/privacy/">Privacy</a></div>
     <div class="guides">© 2026 Graham Hong-Sidman. All rights reserved.</div>
@@ -1313,7 +1321,17 @@
   function howtoHTML(open) {
     return '<details class="howto"' + (open ? ' open' : '') + '>' +
       '<summary>How Foothold Now works</summary>' +
-      '<div class="body"><ol>' +
+      '<div class="body">' +
+      /* preload="none" so the video costs nothing until someone presses play */
+      '<figure class="demo">' +
+        '<video controls preload="none" playsinline poster="/foothold-now/demo-poster.png" ' +
+               'aria-describedby="demo-cap" width="1280" height="720">' +
+          '<source src="/foothold-now/demo.mp4" type="video/mp4">' +
+          'Your browser can’t play this video. The steps below describe the same thing in writing.' +
+        '</video>' +
+        '<figcaption id="demo-cap" class="quiet">A short walkthrough, start to finish, using a gentle example: getting more comfortable making phone calls. It has narration, so you may want sound on. Everything it shows is written out below.</figcaption>' +
+      '</figure>' +
+      '<ol>' +
         '<li><b>Name what you’re working toward</b>, and list whatever is part of it for you—tasks, situations, moments, anything you’d like to practice. Each one is a step on the ladder, written in your own words.</li>' +
         '<li><b>Rate each step 0–100</b> by how hard it feels right now—not how hard it <i>should</i> feel. The ladder orders itself, gentlest first.</li>' +
         '<li><b>Start low.</b> Pick something around 30–40: uncomfortable, but doable.</li>' +
@@ -1946,6 +1964,25 @@
 
       case 'open-backup': openBackup(); break;
 
+      case 'copy-email': (function () {
+        var EMAIL = 'footholdnowsupport@gmail.com';
+        function done() { toast('Email address copied.'); }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = EMAIL;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (er) {}
+          ta.remove();
+          done();
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(EMAIL).then(done, fallback);
+        else fallback();
+      })(); break;
+
 
       case 'new-ladder': state.addingLadder = true; render(); break;
       case 'cancel-new-ladder': state.addingLadder = false; render(); break;
@@ -2311,5 +2348,6 @@
   }})();
 </script>
 
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e1b65969ccda4368bc55951624ac317b"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

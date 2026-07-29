@@ -9,8 +9,23 @@ calls—nothing a user writes ever leaves their browser. The **Backup** button
 exports the data as a JSON file and restores from one, which is also how a user
 moves their ladders to another device or browser (localStorage is per-origin,
 so data does not follow the user across domains on its own). There are no
-third-party scripts and no analytics of any kind: the pages load nothing from
-another host and make no network requests at all.
+third-party scripts beyond a cookie-free page-count beacon, which records a
+visit and nothing else. The only other request any page makes is for the demo
+video described below, from this same origin, and only once a visitor presses
+play. Nothing a user writes is ever uploaded.
+
+## The demonstration video
+
+`foothold-now/demo.mp4` is a narrated walkthrough, shown at the top of the "How
+Foothold Now works" section on the home page, with `foothold-now/demo-poster.png`
+as its poster frame. It is **self-hosted on purpose**: a YouTube or Vimeo embed
+would load third-party scripts and report every viewer back to that company,
+which would break the promise the rest of the site makes. Keep it self-hosted.
+
+The `<video>` tag carries `preload="none"`, so the file is not fetched at all
+until a visitor presses play; do not change that, or every visit would pull
+roughly 18 MB. The numbered steps underneath say the same thing in writing,
+which is what makes the video safe to skip for anyone who cannot watch it.
 
 Alongside the app live static pages in the same voice and palette, each a
 self-contained HTML file: SEO guides (`fear-ladder/`, `erp/`, `ocd-notes/`,

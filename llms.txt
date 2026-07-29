@@ -29,7 +29,7 @@
 
 ## Privacy
 
-- [Privacy](https://grhs24.github.io/foothold-now/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles, no analytics.
+- [Privacy](https://grhs24.github.io/foothold-now/privacy/): ladders stay in the browser and nothing is uploaded. No accounts, no data selling, no profiles; anonymous cookie-free page counts only.
 
 ## About
 
