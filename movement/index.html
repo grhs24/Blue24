@@ -191,6 +191,7 @@
   .leg .field { grid-template-columns: 28px minmax(0, 1fr) 28px; }
   .leg.pace { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) 32px; }
   .leg.add > button { justify-content: flex-start; padding: 0; white-space: nowrap; }
+  .leg.apart { margin-top: 15px; }
   @media (max-width: 359px) {
     .leg { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
     .leg.pace { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr) 28px; }
@@ -307,17 +308,26 @@
     return { id: uid(), type: "steady", label: label, secs: secs, mph: mph, incline: incline || 0 };
   }
 
-  // `paces` is the fast leg's speed steps: two blocks at 9, then six at 8.
-  function repeatBlock(label, paces, wSecs, rSecs, rMph, incline) {
+  // Each leg carries `paces`, its speed steps: two blocks at 9, then six at 8.
+  function leg(secs, paces) {
+    return { secs: secs, paces: paces.map(p => ({ reps: p[0], mph: p[1] })) };
+  }
+
+  function repeatBlock(label, wSecs, wPaces, rSecs, rPaces, incline) {
     return {
       id: uid(), type: "repeat", label: label,
-      paces: paces.map(p => ({ reps: p[0], mph: p[1] })),
-      work: { secs: wSecs }, rest: { secs: rSecs, mph: rMph }, incline: incline || 0
+      work: leg(wSecs, wPaces), rest: leg(rSecs, rPaces), incline: incline || 0
     };
   }
 
+  function legReps(lg) {
+    return (lg.paces || []).reduce((n, p) => n + Math.max(1, Math.round(Number(p.reps) || 1)), 0);
+  }
+
+  // The fast leg says how long the block runs; the slower leg's steps are
+  // shares of those same rounds.
   function blockReps(b) {
-    return (b.paces || []).reduce((n, p) => n + Math.max(1, Math.round(Number(p.reps) || 1)), 0);
+    return legReps(b.work);
   }
 
   function seed() {
@@ -363,7 +373,7 @@
         },
         {
           id: "tread", name: "Treadmill", tone: "amber", icon: "tread", kind: "tread",
-          blocks: [repeatBlock("Sprints", [[10, 12.5]], 30, 90, 3.5)]
+          blocks: [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])]
         }
       ]
     };
@@ -385,13 +395,29 @@
       r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
       delete r.intervals;
     }
-    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", [[10, 12.5]], 30, 90, 3.5)];
-    // A repeat block used to carry one speed for all its rounds.
+    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])];
     (r.blocks || []).forEach(function (b) {
-      if (b.type !== "repeat" || b.paces) return;
-      b.paces = [{ reps: Math.max(1, Number(b.reps) || 1), mph: Number(b.work && b.work.mph) || 0 }];
+      if (b.type !== "repeat") return;
+      b.work = b.work || {};
+      b.rest = b.rest || {};
+      // First shape: one speed for every round, counted on the block itself.
+      if (b.reps != null && !b.paces && !b.work.paces) {
+        b.paces = [{ reps: Math.max(1, Number(b.reps) || 1), mph: Number(b.work.mph) || 0 }];
+      }
       delete b.reps;
-      if (b.work) delete b.work.mph;
+      // Second shape: the fast leg's steps sat on the block, and the slower
+      // leg still held a single speed.
+      if (b.paces) { b.work.paces = b.paces; delete b.paces; }
+      if (b.work.mph != null) {
+        if (!b.work.paces) b.work.paces = [{ reps: 1, mph: Number(b.work.mph) || 0 }];
+        delete b.work.mph;
+      }
+      if (b.rest.mph != null) {
+        b.rest.paces = [{ reps: 1, mph: Number(b.rest.mph) || 0 }];
+        delete b.rest.mph;
+      }
+      if (!(b.work.paces || []).length) b.work.paces = [{ reps: 1, mph: 0 }];
+      if (!(b.rest.paces || []).length) b.rest.paces = [{ reps: 1, mph: 0 }];
     });
   });
   // Sessions, drafts, speed records and the rest-timer setting belonged to the
@@ -509,10 +535,12 @@
     return Number(t.dataset.step) || 1;
   }
 
-  // Where a field writes to: a speed step, one of the two legs, or the block.
-  function holderOf(b, leg, pi) {
-    if (leg === "pace") return (b.paces || [])[Number(pi)];
-    return leg ? b[leg] : b;
+  // Where a field writes to: one of the two legs, a speed step inside a leg,
+  // or the block itself.
+  function holderOf(b, which, pi) {
+    const h = which ? b[which] : b;
+    if (!h) return null;
+    return pi === "" || pi == null ? h : (h.paces || [])[Number(pi)];
   }
 
   /* ============================================================
@@ -569,16 +597,16 @@
      leg, and how many times round. Keep one per combination you do.
      ============================================================ */
 
-  function paceText(b) {
-    const p = b.paces || [];
+  function paceText(lg) {
+    const p = lg.paces || [];
     if (p.length === 1) return num(p[0].mph);
     return p.map(x => num(x.mph) + "×" + num(x.reps)).join(", ");
   }
 
   function blockSummary(b) {
     return b.type === "repeat"
-      ? plural(blockReps(b), "block") + " · " + num(b.work.secs) + "s at " + paceText(b) +
-        " / " + num(b.rest.secs) + "s at " + num(b.rest.mph)
+      ? plural(blockReps(b), "block") + " · " + num(b.work.secs) + "s at " + paceText(b.work) +
+        " / " + num(b.rest.secs) + "s at " + paceText(b.rest)
       : clockOf(b.secs) + " at " + num(b.mph) + " mph";
   }
 
@@ -610,8 +638,15 @@
     return html;
   }
 
-  function totalNote(b) {
-    return plural(blockReps(b), "block") + " · " + clockOf(blockTotal(b));
+  // What sits beside a leg's "+ Speed change": the fast leg counts the block
+  // out, so the slower leg can only report how much of it its steps cover.
+  function legNote(b, which) {
+    const all = blockReps(b), lg = b[which];
+    if (which === "work") return plural(all, "block") + " · " + clockOf(blockTotal(b));
+    if (lg.paces.length < 2) return "the whole block";
+    const n = legReps(lg);
+    if (n === all) return plural(n, "block");
+    return n + " of " + all + (n < all ? "—the last one holds" : "—the extra is ignored");
   }
 
   // Typing must not re-render the field under the cursor, so the row above the
@@ -624,34 +659,44 @@
     line.textContent = it ? mvLine(it) : blockLine(b);
     const name = line.previousElementSibling;
     if (name) name.textContent = it ? it.name : blockName(b);
-    const note = b && $('[data-total="' + id + '"]');
-    if (note) note.textContent = totalNote(b);
+    if (b) ["work", "rest"].forEach(function (which) {
+      const note = $('[data-total="' + id + "-" + which + '"]');
+      if (note) note.textContent = legNote(b, which);
+    });
+  }
+
+  // A leg: how long it lasts, then one row per speed step, then the button
+  // that adds another. Two blocks at 9, then six at 8.
+  function legRows(b, which, tag) {
+    const lg = b[which], many = lg.paces.length > 1;
+    let html = '<div class="leg' + (which === "rest" ? " apart" : "") + '"><span class="leg-tag">' + tag + "</span>" +
+      field("bk", b.id, which, "secs", lg.secs, 5, "sec") + '<span class="leg-note">each</span></div>';
+
+    lg.paces.forEach(function (pc, pi) {
+      // The fast leg's counts add up to the block, so they always show. On the
+      // slower leg a lone speed covers everything and needs no count.
+      const count = which === "work" || many
+        ? field("bk", b.id, which, "reps", pc.reps, 1, "blocks", pi)
+        : "<span></span>";
+      html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
+        field("bk", b.id, which, "mph", pc.mph, 0.5, "mph", pi) + count +
+        '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
+        '" aria-label="Remove speed"' + (many ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+    });
+
+    return html + '<div class="leg add"><span class="leg-tag"></span>' +
+      '<button class="btn quiet sm" data-act="addpace" data-id="' + b.id + '" data-leg="' + which + '">+ Speed change</button>' +
+      '<span class="leg-note" data-total="' + b.id + "-" + which + '">' + legNote(b, which) + "</span></div>";
   }
 
   function blockForm(r, b) {
-    const f = (leg, k, val, step, unit) => field("bk", b.id, leg, k, val, step, unit);
+    const f = (which, k, val, step, unit) => field("bk", b.id, which, k, val, step, unit);
     let html = '<div class="edit-grid">' +
       '<div><label class="lbl">Name</label><input type="text" value="' + esc(b.label || "") + '" placeholder="' +
       (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="bklabel" data-id="' + b.id + '"></div>';
 
     if (b.type === "repeat") {
-      html += '<div class="leg"><span class="leg-tag">Fast</span>' + f("work", "secs", b.work.secs, 5, "sec") +
-        '<span class="leg-note">each</span></div>';
-
-      // One row per speed step: two blocks at 9, then six at 8.
-      (b.paces || []).forEach(function (pc, pi) {
-        html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
-          field("bk", b.id, "pace", "mph", pc.mph, 0.5, "mph", pi) +
-          field("bk", b.id, "pace", "reps", pc.reps, 1, "blocks", pi) +
-          '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-pi="' + pi + '" aria-label="Remove speed"' +
-          ((b.paces || []).length < 2 ? " disabled" : "") + ">" + ICONS.x + "</button></div>";
-      });
-
-      html += '<div class="leg add"><span class="leg-tag"></span>' +
-        '<button class="btn quiet sm" data-act="addpace" data-id="' + b.id + '">+ Speed change</button>' +
-        '<span class="leg-note" data-total="' + b.id + '">' + totalNote(b) + "</span></div>";
-
-      html += '<div class="leg"><span class="leg-tag">Slower</span>' + f("rest", "secs", b.rest.secs, 5, "sec") + f("rest", "mph", b.rest.mph, 0.5, "mph") + "</div>";
+      html += legRows(b, "work", "Fast") + legRows(b, "rest", "Slower");
     } else {
       html += '<div class="leg"><span class="leg-tag">Run</span>' + f("", "secs", b.secs, 30, "sec") + f("", "mph", b.mph, 0.5, "mph") + "</div>";
     }
@@ -807,7 +852,7 @@
       }
       case "addblk": {
         const r = routineById(t.dataset.rid);
-        const fresh = t.dataset.k === "repeat" ? repeatBlock("", [[10, 10]], 30, 90, 3.5) : steady("", 300, 3.5);
+        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]]) : steady("", 300, 3.5);
         r.blocks.push(fresh);
         V.editing = fresh.id;
         save(); render();
@@ -823,14 +868,21 @@
       }
       case "addpace": {
         const b = findBlock(t.dataset.id);
-        const last = b.paces[b.paces.length - 1];
-        b.paces.push({ reps: last.reps, mph: Math.max(0, Number(last.mph) - 1) });
+        const lg = b && b[t.dataset.leg];
+        if (!lg) break;
+        // Split the last step rather than adding rounds, so the block stays
+        // the length it was.
+        const last = lg.paces[lg.paces.length - 1];
+        const n = lg.paces.length > 1 ? Math.max(1, Math.round(Number(last.reps) || 1)) : blockReps(b);
+        const keep = Math.ceil(n / 2);
+        last.reps = keep;
+        lg.paces.push({ reps: Math.max(1, n - keep), mph: Math.max(0, Number(last.mph) - 0.5) });
         save(); render();
         break;
       }
       case "delpace": {
-        const b = findBlock(t.dataset.id);
-        if (b.paces.length > 1) b.paces.splice(Number(t.dataset.pi), 1);
+        const lg = (findBlock(t.dataset.id) || {})[t.dataset.leg];
+        if (lg && lg.paces.length > 1) lg.paces.splice(Number(t.dataset.pi), 1);
         save(); render();
         break;
       }
@@ -851,7 +903,7 @@
         const kind = t.dataset.k;
         const fresh = { id: uid(), name: kind === "tread" ? "New treadmill" : "New routine",
           tone: nextTone(), icon: kind === "tread" ? "tread" : "upper", kind: kind };
-        if (kind === "tread") fresh.blocks = [repeatBlock("", [[10, 10]], 30, 90, 3.5)];
+        if (kind === "tread") fresh.blocks = [repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]])];
         else fresh.items = [mv(uid(), "New movement", [set(0, 10), set(0, 10), set(0, 10)])];
         S.routines.push(fresh);
         save(); render();

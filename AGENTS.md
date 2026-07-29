@@ -71,13 +71,25 @@ repeat block per combination the owner can do; that list is the record of where
 their speeds are. Times are held in **seconds**, because that is how the short
 ones are counted.
 
-The fast leg holds `paces`, a list of `{reps, mph}` steps, so one block can
-ease down partway through—two rounds at 9 then six at 8. The duration of the
-fast leg, the slower leg, and the incline stay single values for the whole
-block; the round count is the sum of the steps' `reps`. Older data carried
-`reps` on the block and `mph` on `work`; the loader folds that into a
-one-entry `paces` and deletes both keys, so a block with `paces` is never
-migrated twice.
+Each leg holds `paces`, a list of `{reps, mph}` steps, so a block can change
+speed partway through—two rounds at 9 then six at 8. Only the legs' durations
+and the incline stay single values for the whole block.
+
+**The fast leg counts the block out**: `blockReps` is the sum of its steps'
+`reps`, and the slower leg's steps are shares of those same rounds. A slower
+leg that adds up short holds its last speed to the end; one that overshoots
+has the extra ignored. Nothing done to the slower leg can change how long the
+block is, which is the point—the round count has one owner. A slower leg with
+a single step therefore needs no count at all, so that field is hidden until
+it has two.
+
+Adding a step **splits the last one** rather than appending a fresh round
+(`n` becomes `ceil(n/2)` and the remainder), so the block stays the length it
+was. Appending would have doubled it.
+
+Two older shapes migrate on load: `reps` on the block with one `work.mph`, and
+then `paces` on the block with one `rest.mph`. The loader walks both to
+per-leg `paces` and deletes the old keys, so it is safe to run repeatedly.
 
 Typing in a number field saves but does not re-render—that would drop the
 cursor. `refreshRow(id)` patches the summary line above the open form
