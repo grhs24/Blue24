@@ -56,6 +56,19 @@ repeat block per combination the owner can do; that list is the record of where
 their speeds are. Times are held in **seconds**, because that is how the short
 ones are counted.
 
+The fast leg holds `paces`, a list of `{reps, mph}` steps, so one block can
+ease down partway through—two rounds at 9 then six at 8. The duration of the
+fast leg, the slower leg, and the incline stay single values for the whole
+block; the round count is the sum of the steps' `reps`. Older data carried
+`reps` on the block and `mph` on `work`; the loader folds that into a
+one-entry `paces` and deletes both keys, so a block with `paces` is never
+migrated twice.
+
+Typing in a number field saves but does not re-render—that would drop the
+cursor. `refreshRow(id)` patches the summary line above the open form
+instead, which is why every row's name and summary sit in their own
+elements (`data-line`, `data-total`) and are written with `textContent`.
+
 ## No AI at runtime
 
 Foothold Now never calls a model. Do not add Claude, or any other AI, to this

@@ -189,8 +189,13 @@
   .leg-tag { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; }
   .leg-note { font-size: 12px; color: var(--ink3); padding-left: 2px; }
   .leg .field { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+  .leg.pace { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) 32px; }
+  .leg.add > button { justify-content: flex-start; padding: 0; white-space: nowrap; }
   @media (max-width: 359px) {
-    .leg { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+    .leg { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+    .leg.pace { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr) 28px; }
+    /* The row's label cell is empty, so the button takes it and keeps one line. */
+    .leg.add { grid-template-columns: 0 auto minmax(0, 1fr); }
     .leg .field { grid-template-columns: minmax(0, 1fr); }
     .leg .field > button { display: none; }
   }
@@ -302,11 +307,17 @@
     return { id: uid(), type: "steady", label: label, secs: secs, mph: mph, incline: incline || 0 };
   }
 
-  function repeatBlock(label, reps, wSecs, wMph, rSecs, rMph, incline) {
+  // `paces` is the fast leg's speed steps: two blocks at 9, then six at 8.
+  function repeatBlock(label, paces, wSecs, rSecs, rMph, incline) {
     return {
-      id: uid(), type: "repeat", label: label, reps: reps,
-      work: { secs: wSecs, mph: wMph }, rest: { secs: rSecs, mph: rMph }, incline: incline || 0
+      id: uid(), type: "repeat", label: label,
+      paces: paces.map(p => ({ reps: p[0], mph: p[1] })),
+      work: { secs: wSecs }, rest: { secs: rSecs, mph: rMph }, incline: incline || 0
     };
+  }
+
+  function blockReps(b) {
+    return (b.paces || []).reduce((n, p) => n + Math.max(1, Math.round(Number(p.reps) || 1)), 0);
   }
 
   function seed() {
@@ -352,7 +363,7 @@
         },
         {
           id: "tread", name: "Treadmill", tone: "amber", icon: "tread", kind: "tread",
-          blocks: [repeatBlock("Sprints", 10, 30, 12.5, 90, 3.5)]
+          blocks: [repeatBlock("Sprints", [[10, 12.5]], 30, 90, 3.5)]
         }
       ]
     };
@@ -374,7 +385,14 @@
       r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
       delete r.intervals;
     }
-    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 10, 30, 12.5, 90, 3.5)];
+    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", [[10, 12.5]], 30, 90, 3.5)];
+    // A repeat block used to carry one speed for all its rounds.
+    (r.blocks || []).forEach(function (b) {
+      if (b.type !== "repeat" || b.paces) return;
+      b.paces = [{ reps: Math.max(1, Number(b.reps) || 1), mph: Number(b.work && b.work.mph) || 0 }];
+      delete b.reps;
+      if (b.work) delete b.work.mph;
+    });
   });
   // Sessions, drafts, speed records and the rest-timer setting belonged to the
   // old start-and-finish app. The plan itself is the record now.
@@ -475,8 +493,9 @@
      Number field
      ============================================================ */
 
-  function field(act, id, leg, k, val, step, unit) {
-    const at = ' data-id="' + id + '" data-leg="' + leg + '" data-k="' + k + '" data-step="' + step + '"';
+  function field(act, id, leg, k, val, step, unit, pi) {
+    const at = ' data-id="' + id + '" data-leg="' + leg + '" data-k="' + k + '" data-step="' + step +
+      '" data-pi="' + (pi == null ? "" : pi) + '"';
     return '<div class="field">' +
       '<button data-act="' + act + 'bump"' + at + ' data-d="-1" aria-label="Less">−</button>' +
       '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
@@ -490,16 +509,26 @@
     return Number(t.dataset.step) || 1;
   }
 
+  // Where a field writes to: a speed step, one of the two legs, or the block.
+  function holderOf(b, leg, pi) {
+    if (leg === "pace") return (b.paces || [])[Number(pi)];
+    return leg ? b[leg] : b;
+  }
+
   /* ============================================================
      Movements
      ============================================================ */
 
+  function mvLine(it) {
+    return it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
+      (it.setup ? " · " + it.setup : "");
+  }
+
   function mvRow(r, it, i) {
     const open = V.editing === it.id;
     let html = '<div class="plan-mv">' +
-      '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b><span>" +
-      it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
-      (it.setup ? " · " + esc(it.setup) : "") + "</span></button>" +
+      '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b>" +
+      '<span data-line="' + it.id + '">' + esc(mvLine(it)) + "</span></button>" +
       '<button class="mini" data-act="mvup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
       '<button class="mini" data-act="mvdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.items.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
       '<button class="mini" data-act="edit" data-id="' + it.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
@@ -540,35 +569,63 @@
      leg, and how many times round. Keep one per combination you do.
      ============================================================ */
 
+  function paceText(b) {
+    const p = b.paces || [];
+    if (p.length === 1) return num(p[0].mph);
+    return p.map(x => num(x.mph) + "×" + num(x.reps)).join(", ");
+  }
+
   function blockSummary(b) {
     return b.type === "repeat"
-      ? plural(b.reps, "block") + " · " + num(b.work.secs) + "s at " + num(b.work.mph) +
+      ? plural(blockReps(b), "block") + " · " + num(b.work.secs) + "s at " + paceText(b) +
         " / " + num(b.rest.secs) + "s at " + num(b.rest.mph)
       : clockOf(b.secs) + " at " + num(b.mph) + " mph";
   }
 
   function blockName(b) {
-    return b.label ? esc(b.label) : b.type === "repeat" ? "Intervals" : "Steady";
+    return b.label || (b.type === "repeat" ? "Intervals" : "Steady");
   }
 
   function blockTotal(b) {
     return b.type === "repeat"
-      ? (Number(b.work.secs) + Number(b.rest.secs)) * (Number(b.reps) || 0)
+      ? (Number(b.work.secs) + Number(b.rest.secs)) * blockReps(b)
       : Number(b.secs) || 0;
+  }
+
+  function blockLine(b) {
+    return blockSummary(b) + (Number(b.incline) ? " · " + num(b.incline) + "%" : "") +
+      " · " + clockOf(blockTotal(b));
   }
 
   function blockRow(r, b, i) {
     const open = V.editing === b.id;
     let html = '<div class="plan-mv">' +
-      '<button class="grip" data-act="bkedit" data-id="' + b.id + '"><b>' + blockName(b) + "</b><span>" +
-      blockSummary(b) + (Number(b.incline) ? " · " + num(b.incline) + "%" : "") +
-      " · " + clockOf(blockTotal(b)) + "</span></button>" +
+      '<button class="grip" data-act="bkedit" data-id="' + b.id + '"><b>' + esc(blockName(b)) + "</b>" +
+      '<span data-line="' + b.id + '">' + blockLine(b) + "</span></button>" +
       '<button class="mini" data-act="bkup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
       '<button class="mini" data-act="bkdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.blocks.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
       '<button class="mini" data-act="bkedit" data-id="' + b.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
       "</div>";
     if (open) html += blockForm(r, b);
     return html;
+  }
+
+  function totalNote(b) {
+    return plural(blockReps(b), "block") + " · " + clockOf(blockTotal(b));
+  }
+
+  // Typing must not re-render the field under the cursor, so the row above the
+  // open form is patched in place instead.
+  function refreshRow(id) {
+    const line = $('[data-line="' + id + '"]');
+    if (!line) return;
+    const it = findMv(id), b = it ? null : findBlock(id);
+    if (!it && !b) return;
+    line.textContent = it ? mvLine(it) : blockLine(b);
+    const name = line.previousElementSibling;
+    if (name) name.textContent = it ? it.name : blockName(b);
+    const note = b && $('[data-total="' + id + '"]');
+    if (note) note.textContent = totalNote(b);
   }
 
   function blockForm(r, b) {
@@ -578,10 +635,23 @@
       (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="bklabel" data-id="' + b.id + '"></div>';
 
     if (b.type === "repeat") {
-      html += '<div class="leg"><span class="leg-tag">Blocks</span>' + f("", "reps", b.reps, 1, "×") +
-        '<span class="leg-note">' + clockOf(blockTotal(b)) + " in all</span></div>" +
-        '<div class="leg"><span class="leg-tag">Fast</span>' + f("work", "secs", b.work.secs, 5, "sec") + f("work", "mph", b.work.mph, 0.5, "mph") + "</div>" +
-        '<div class="leg"><span class="leg-tag">Slower</span>' + f("rest", "secs", b.rest.secs, 5, "sec") + f("rest", "mph", b.rest.mph, 0.5, "mph") + "</div>";
+      html += '<div class="leg"><span class="leg-tag">Fast</span>' + f("work", "secs", b.work.secs, 5, "sec") +
+        '<span class="leg-note">each</span></div>';
+
+      // One row per speed step: two blocks at 9, then six at 8.
+      (b.paces || []).forEach(function (pc, pi) {
+        html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
+          field("bk", b.id, "pace", "mph", pc.mph, 0.5, "mph", pi) +
+          field("bk", b.id, "pace", "reps", pc.reps, 1, "blocks", pi) +
+          '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-pi="' + pi + '" aria-label="Remove speed"' +
+          ((b.paces || []).length < 2 ? " disabled" : "") + ">" + ICONS.x + "</button></div>";
+      });
+
+      html += '<div class="leg add"><span class="leg-tag"></span>' +
+        '<button class="btn quiet sm" data-act="addpace" data-id="' + b.id + '">+ Speed change</button>' +
+        '<span class="leg-note" data-total="' + b.id + '">' + totalNote(b) + "</span></div>";
+
+      html += '<div class="leg"><span class="leg-tag">Slower</span>' + f("rest", "secs", b.rest.secs, 5, "sec") + f("rest", "mph", b.rest.mph, 0.5, "mph") + "</div>";
     } else {
       html += '<div class="leg"><span class="leg-tag">Run</span>' + f("", "secs", b.secs, 30, "sec") + f("", "mph", b.mph, 0.5, "mph") + "</div>";
     }
@@ -737,7 +807,7 @@
       }
       case "addblk": {
         const r = routineById(t.dataset.rid);
-        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 10, 30, 10, 90, 3.5) : steady("", 300, 3.5);
+        const fresh = t.dataset.k === "repeat" ? repeatBlock("", [[10, 10]], 30, 90, 3.5) : steady("", 300, 3.5);
         r.blocks.push(fresh);
         V.editing = fresh.id;
         save(); render();
@@ -751,10 +821,24 @@
         save(); render();
         break;
       }
+      case "addpace": {
+        const b = findBlock(t.dataset.id);
+        const last = b.paces[b.paces.length - 1];
+        b.paces.push({ reps: last.reps, mph: Math.max(0, Number(last.mph) - 1) });
+        save(); render();
+        break;
+      }
+      case "delpace": {
+        const b = findBlock(t.dataset.id);
+        if (b.paces.length > 1) b.paces.splice(Number(t.dataset.pi), 1);
+        save(); render();
+        break;
+      }
       case "bkbump": {
         const b = findBlock(t.dataset.id);
         if (!b) break;
-        const holder = t.dataset.leg ? b[t.dataset.leg] : b;
+        const holder = holderOf(b, t.dataset.leg, t.dataset.pi);
+        if (!holder) break;
         const k = t.dataset.k;
         holder[k] = Math.max(k === "reps" ? 1 : 0,
           Math.round(((Number(holder[k]) || 0) + Number(t.dataset.d) * stepOf(t)) * 10) / 10);
@@ -767,7 +851,7 @@
         const kind = t.dataset.k;
         const fresh = { id: uid(), name: kind === "tread" ? "New treadmill" : "New routine",
           tone: nextTone(), icon: kind === "tread" ? "tread" : "upper", kind: kind };
-        if (kind === "tread") fresh.blocks = [repeatBlock("", 10, 30, 10, 90, 3.5)];
+        if (kind === "tread") fresh.blocks = [repeatBlock("", [[10, 10]], 30, 90, 3.5)];
         else fresh.items = [mv(uid(), "New movement", [set(0, 10), set(0, 10), set(0, 10)])];
         S.routines.push(fresh);
         save(); render();
@@ -811,13 +895,16 @@
       case "bknum": {
         const b = findBlock(t.dataset.id);
         if (!b) break;
-        const holder = t.dataset.leg ? b[t.dataset.leg] : b;
+        const holder = holderOf(b, t.dataset.leg, t.dataset.pi);
+        if (!holder) break;
         const k = t.dataset.k;
         holder[k] = val === "" ? (k === "reps" ? 1 : 0) : Math.max(k === "reps" ? 1 : 0, Number(val) || 0);
         save();
         break;
       }
+      default: return;
     }
+    refreshRow(t.dataset.id);
   });
 
   document.addEventListener("change", function (e) {
