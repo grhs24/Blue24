@@ -236,12 +236,17 @@
   .mini:disabled { opacity: 0.3; }
 
   .edit-grid { display: grid; gap: 10px; padding: 13px 14px 15px; border-top: 1px solid var(--line); background: var(--surface2); }
-  .edit-sets { display: grid; gap: 6px; }
+  /* Rows of one set sit tight together; the gap marks where the next begins. */
+  .edit-sets { display: grid; gap: 4px; }
   .edit-set { display: grid; grid-template-columns: 20px 1fr 1fr 32px; gap: 6px; align-items: center; }
+  .edit-set.opens:not(:first-child) { margin-top: 9px; }
   .edit-set input { text-align: center; }
   .edit-set .lbl-in { position: relative; }
   .edit-set .lbl-in i { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink3); font-weight: 700; }
   .edit-set input[type="text"] { padding-right: 34px; }
+  .edit-set.add { grid-template-columns: 20px auto minmax(0, 1fr); }
+  .edit-set.add > button { justify-content: flex-start; padding: 0; white-space: nowrap; min-height: 30px; }
+  .set-note { font-size: 12px; color: var(--ink3); }
 
   .toast {
     position: fixed; left: 50%; transform: translateX(-50%);
@@ -297,7 +302,13 @@
 
   const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 
-  function set(w, r, note) { return { w: w, r: r, note: note || "" }; }
+  // A set is a list of `steps`, so the weight can drop partway through:
+  // eight reps at 40, then seven at 30.
+  function set(w, r, note) { return { steps: [{ w: w, r: r }], note: note || "" }; }
+
+  function setReps(st) {
+    return (st.steps || []).reduce((n, s) => n + Math.max(0, Math.round(Number(s.r) || 0)), 0);
+  }
 
   function mv(id, name, sets, opts) {
     opts = opts || {};
@@ -386,44 +397,60 @@
   /* ---- carry older saves forward ---- */
 
   const OLD_TONES = { upper: "lime", core: "coral", lower: "sky", tread: "amber" };
-  S.routines.forEach(function (r) {
-    if (!r.icon) r.icon = OLD_TONES[r.tone] ? r.tone : (r.kind === "tread" ? "tread" : "upper");
-    if (OLD_TONES[r.tone]) r.tone = OLD_TONES[r.tone];
-    if (!r.tone) r.tone = "lime";
-    // Treadmill used to be a flat list of minute-long intervals.
-    if (r.intervals && !r.blocks) {
-      r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
-      delete r.intervals;
-    }
-    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])];
-    (r.blocks || []).forEach(function (b) {
-      if (b.type !== "repeat") return;
-      b.work = b.work || {};
-      b.rest = b.rest || {};
-      // First shape: one speed for every round, counted on the block itself.
-      if (b.reps != null && !b.paces && !b.work.paces) {
-        b.paces = [{ reps: Math.max(1, Number(b.reps) || 1), mph: Number(b.work.mph) || 0 }];
+
+  // Runs on load and on every restore, so a backup written by any earlier
+  // version opens. Each step is written to be safe to run again.
+  function carryForward(d) {
+    (d.routines || []).forEach(function (r) {
+      if (!r.icon) r.icon = OLD_TONES[r.tone] ? r.tone : (r.kind === "tread" ? "tread" : "upper");
+      if (OLD_TONES[r.tone]) r.tone = OLD_TONES[r.tone];
+      if (!r.tone) r.tone = "lime";
+      // Treadmill used to be a flat list of minute-long intervals.
+      if (r.intervals && !r.blocks) {
+        r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
+        delete r.intervals;
       }
-      delete b.reps;
-      // Second shape: the fast leg's steps sat on the block, and the slower
-      // leg still held a single speed.
-      if (b.paces) { b.work.paces = b.paces; delete b.paces; }
-      if (b.work.mph != null) {
-        if (!b.work.paces) b.work.paces = [{ reps: 1, mph: Number(b.work.mph) || 0 }];
-        delete b.work.mph;
-      }
-      if (b.rest.mph != null) {
-        b.rest.paces = [{ reps: 1, mph: Number(b.rest.mph) || 0 }];
-        delete b.rest.mph;
-      }
-      if (!(b.work.paces || []).length) b.work.paces = [{ reps: 1, mph: 0 }];
-      if (!(b.rest.paces || []).length) b.rest.paces = [{ reps: 1, mph: 0 }];
+      if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])];
+      // A set used to hold one weight and one rep count.
+      (r.items || []).forEach(function (it) {
+        (it.sets || []).forEach(function (st) {
+          if (!(st.steps || []).length) st.steps = [{ w: Number(st.w) || 0, r: Number(st.r) || 0 }];
+          delete st.w;
+          delete st.r;
+        });
+      });
+      (r.blocks || []).forEach(function (b) {
+        if (b.type !== "repeat") return;
+        b.work = b.work || {};
+        b.rest = b.rest || {};
+        // First shape: one speed for every round, counted on the block itself.
+        if (b.reps != null && !b.paces && !b.work.paces) {
+          b.paces = [{ reps: Math.max(1, Number(b.reps) || 1), mph: Number(b.work.mph) || 0 }];
+        }
+        delete b.reps;
+        // Second shape: the fast leg's steps sat on the block, and the slower
+        // leg still held a single speed.
+        if (b.paces) { b.work.paces = b.paces; delete b.paces; }
+        if (b.work.mph != null) {
+          if (!b.work.paces) b.work.paces = [{ reps: 1, mph: Number(b.work.mph) || 0 }];
+          delete b.work.mph;
+        }
+        if (b.rest.mph != null) {
+          b.rest.paces = [{ reps: 1, mph: Number(b.rest.mph) || 0 }];
+          delete b.rest.mph;
+        }
+        if (!(b.work.paces || []).length) b.work.paces = [{ reps: 1, mph: 0 }];
+        if (!(b.rest.paces || []).length) b.rest.paces = [{ reps: 1, mph: 0 }];
+      });
     });
-  });
-  // Sessions, drafts, speed records and the rest-timer setting belonged to the
-  // old start-and-finish app. The plan itself is the record now.
-  ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete S[k]; });
-  S.v = 2;
+    // Sessions, drafts, speed records and the rest-timer setting belonged to
+    // the old start-and-finish app. The plan itself is the record now.
+    ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete d[k]; });
+    d.v = 2;
+    return d;
+  }
+
+  carryForward(S);
   try { localStorage.removeItem("movement.key"); } catch (err) { /* ignore */ }
 
   let saveTimer = null;
@@ -547,9 +574,23 @@
      Movements
      ============================================================ */
 
+  const wShort = w => weightLabel(w).replace(" " + UNIT, "");
+
+  // Sets that are one weight for one rep count read as they always have—
+  // 65 · 65 · 55 × 10. Once a weight changes partway, each set spells itself
+  // out instead: 40×8, 30×7 · 40×8.
   function mvLine(it) {
-    return it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
-      (it.setup ? " · " + it.setup : "");
+    const sets = it.sets, first = sets[0].steps[0];
+    const plain = sets.every(s => s.steps.length === 1 && num(s.steps[0].r) === num(first.r));
+    const body = plain
+      ? sets.map(s => wShort(s.steps[0].w)).join(" · ") + " × " + num(first.r)
+      : sets.map(s => s.steps.map(x => wShort(x.w) + "×" + num(x.r)).join(", ")).join(" · ");
+    return body + (it.setup ? " · " + it.setup : "");
+  }
+
+  // Only worth stating once a set is split across weights.
+  function setNote(st) {
+    return st.steps.length > 1 ? plural(setReps(st), "rep") + " in all" : "";
   }
 
   function mvRow(r, it, i) {
@@ -572,10 +613,21 @@
       '<div><label class="lbl">Sets</label><div class="edit-sets">';
 
     it.sets.forEach(function (st, i) {
-      html += '<div class="edit-set"><span class="set-n">' + (i + 1) + "</span>" +
-        '<span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(st.w) + '" data-act="setw" data-id="' + it.id + '" data-si="' + i + '"><i>' + UNIT + "</i></span>" +
-        '<span class="lbl-in"><input type="text" inputmode="numeric" value="' + num(st.r) + '" data-act="setr" data-id="' + it.id + '" data-si="' + i + '"><i>reps</i></span>' +
-        '<button class="mini" data-act="delset" data-id="' + it.id + '" data-si="' + i + '" aria-label="Remove set"' + (it.sets.length < 2 ? " disabled" : "") + ">" + ICONS.x + "</button></div>";
+      const many = st.steps.length > 1;
+      st.steps.forEach(function (sp, si) {
+        // Only the first row of a set is numbered; the rest are the same set
+        // carrying on at a new weight.
+        const at = ' data-id="' + it.id + '" data-i="' + i + '" data-si="' + si + '"';
+        html += '<div class="edit-set' + (si ? "" : " opens") + '">' +
+          '<span class="set-n">' + (si ? "" : i + 1) + "</span>" +
+          '<span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(sp.w) + '" data-act="setw"' + at + "><i>" + UNIT + "</i></span>" +
+          '<span class="lbl-in"><input type="text" inputmode="numeric" value="' + num(sp.r) + '" data-act="setr"' + at + "><i>reps</i></span>" +
+          '<button class="mini" data-act="delstep"' + at + ' aria-label="' + (many ? "Remove weight" : "Remove set") + '"' +
+          (many || it.sets.length > 1 ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+      });
+      html += '<div class="edit-set add"><span class="set-n"></span>' +
+        '<button class="btn quiet sm" data-act="addstep" data-id="' + it.id + '" data-i="' + i + '">+ Weight change</button>' +
+        '<span class="set-note" data-reps="' + it.id + "-" + i + '">' + setNote(st) + "</span></div>";
     });
 
     html += "</div></div>" +
@@ -663,6 +715,10 @@
       const note = $('[data-total="' + id + "-" + which + '"]');
       if (note) note.textContent = legNote(b, which);
     });
+    if (it) it.sets.forEach(function (st, i) {
+      const note = $('[data-reps="' + id + "-" + i + '"]');
+      if (note) note.textContent = setNote(st);
+    });
   }
 
   // A leg: how long it lasts, then one row per speed step, then the button
@@ -731,8 +787,8 @@
         const data = JSON.parse(reader.result);
         if (!data || !data.routines) throw new Error("bad file");
         if (!confirm("Replace everything on this device with the backup?")) return;
-        S = data;
-        ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete S[k]; });
+        S = carryForward(data);
+        V.editing = null;
         save(); render();
         toast("Restored.");
       } catch (err) {
@@ -829,13 +885,30 @@
       case "addset": {
         const it = findMv(t.dataset.id);
         const last = it.sets[it.sets.length - 1];
-        it.sets.push({ w: last.w, r: last.r, note: "" });
+        it.sets.push({ steps: last.steps.map(s => ({ w: s.w, r: s.r })), note: "" });
         save(); render();
         break;
       }
-      case "delset": {
+      case "addstep": {
         const it = findMv(t.dataset.id);
-        if (it.sets.length > 1) it.sets.splice(si, 1);
+        const st = it.sets[Number(t.dataset.i)];
+        if (!st) break;
+        // Split the reps rather than adding more, so the set stays as long as
+        // it was: fifteen becomes eight and seven.
+        const last = st.steps[st.steps.length - 1];
+        const n = Math.max(2, Math.round(Number(last.r) || 0));
+        const keep = Math.ceil(n / 2);
+        last.r = keep;
+        st.steps.push({ w: Math.max(0, Number(last.w) - (Number(it.step) || 5)), r: n - keep });
+        save(); render();
+        break;
+      }
+      case "delstep": {
+        const it = findMv(t.dataset.id);
+        // The ✕ takes the weight off a set that has several, or the whole set
+        // when that weight is all it is.
+        if (it.sets[i].steps.length > 1) it.sets[i].steps.splice(si, 1);
+        else if (it.sets.length > 1) it.sets.splice(i, 1);
         save(); render();
         break;
       }
@@ -941,8 +1014,15 @@
       case "mvname": findMv(t.dataset.id).name = val; save(); break;
       case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
       case "mvstep": findMv(t.dataset.id).step = Math.max(0.5, Number(val) || 5); save(); break;
-      case "setw": findMv(t.dataset.id).sets[Number(t.dataset.si)].w = Math.max(0, Number(val) || 0); save(); break;
-      case "setr": findMv(t.dataset.id).sets[Number(t.dataset.si)].r = Math.max(0, Number(val) || 0); save(); break;
+      case "setw": case "setr": {
+        const it = findMv(t.dataset.id);
+        const st = it && it.sets[Number(t.dataset.i)];
+        const sp = st && st.steps[Number(t.dataset.si)];
+        if (!sp) break;
+        sp[t.dataset.act === "setw" ? "w" : "r"] = Math.max(0, Number(val) || 0);
+        save();
+        break;
+      }
       case "bklabel": findBlock(t.dataset.id).label = val.slice(0, 24); save(); break;
       case "bknum": {
         const b = findBlock(t.dataset.id);

@@ -60,9 +60,21 @@ for an offline shell.
 
 Deliberate wording: the app never uses the words "workout" or "exercise"; a
 thing you do is a **movement** and each group is a **routine**. Storage is
-`localStorage` under `movement.v1`; the loader strips `sessions`, `draft`,
-`bests` and `prefs` from anything older, since those belonged to the
-start-and-finish version.
+`localStorage` under `movement.v1`.
+
+`carryForward(data)` holds every shape migration and runs on load **and on
+restore**, so a backup file written by any earlier version opens. Keep both
+callers, and keep each step safe to run twice—restoring a file the current
+version wrote puts it through the same function. It also strips `sessions`,
+`draft`, `bests` and `prefs`, which belonged to the start-and-finish version.
+
+A **set** is a list of `steps`, each `{w, r}`, so the weight can drop partway
+through: eight reps at 40, then seven at 30. Its rep count is the sum. A set
+of one step is the ordinary case and reads as it always did—the movement's
+summary line only spells sets out (`40×8, 30×7 · 40×15`) once one of them is
+split or the sets disagree on reps; otherwise it stays `65 · 65 · 55 × 10`.
+The ✕ on a step row takes that weight off a split set, or removes the whole
+set when that weight is all it is.
 
 A treadmill routine is a list of **blocks**. A *steady* block is one stretch at
 one speed; a *repeat* block is one interval shape—a fast leg, a slower leg, and
@@ -85,16 +97,14 @@ it has two.
 
 Adding a step **splits the last one** rather than appending a fresh round
 (`n` becomes `ceil(n/2)` and the remainder), so the block stays the length it
-was. Appending would have doubled it.
-
-Two older shapes migrate on load: `reps` on the block with one `work.mph`, and
-then `paces` on the block with one `rest.mph`. The loader walks both to
-per-leg `paces` and deletes the old keys, so it is safe to run repeatedly.
+was. Appending would have doubled it. Splitting a set's reps works the same
+way, which is why fifteen reps divide into eight and seven.
 
 Typing in a number field saves but does not re-render—that would drop the
 cursor. `refreshRow(id)` patches the summary line above the open form
 instead, which is why every row's name and summary sit in their own
-elements (`data-line`, `data-total`) and are written with `textContent`.
+elements (`data-line`, `data-total`, `data-reps`) and are written with
+`textContent`.
 
 ## No AI at runtime
 
