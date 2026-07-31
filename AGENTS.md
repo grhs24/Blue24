@@ -88,6 +88,16 @@ slower leg, and how many times round (30s at 12.5 against 90s at 3.5, ten times
 over). Keep one repeat block per combination the owner can do; that list is the
 record of where their speeds are. Times are held in **seconds** everywhere.
 
+A treadmill routine offers three ways to add: **+ Warm up**, **+ Intervals**,
+**+ Steady**. Warm up and Steady both build a *steady* block—the difference is
+only what they start as. A warm up arrives already named and already split (two
+minutes at 4, then three at 5); a steady one arrives blank at a single speed.
+The owner asked for a warm up as its own labelled option after failing to find
+it behind "Steady", so keep it named in their words, not in the data model's.
+There is no separate warm-up type, and there should not be: a warm up is just a
+steady stretch that starts useful, and the ↑↓ arrows move it above the
+intervals.
+
 Both kinds carry `paces`, a list of speed steps, so a block can change speed
 partway through. A repeat leg counts its steps in rounds (`{reps, mph}`—two at
 9 then six at 8); a steady block counts its own in seconds (`{secs, mph}`—two

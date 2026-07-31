@@ -229,6 +229,9 @@
   .plan-mv { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
   .plan-mv + .plan-mv { border-top: 1px solid var(--line); }
   .plan-mv .grip { flex: 1; min-width: 0; text-align: left; }
+  /* Three ways to add a piece of a run: they wrap rather than overflow. */
+  .add-blocks { flex-wrap: wrap; gap: 4px 2px; }
+  .add-blocks .btn { padding: 0 8px; }
   .plan-mv b { display: block; font-size: 15px; font-weight: 600; }
   .plan-mv span { display: block; font-size: 12.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
   .mini { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; color: var(--ink3); border: 1px solid var(--line); }
@@ -869,7 +872,8 @@
       html += '<article class="card list-card">';
       if (r.kind === "tread") {
         (r.blocks || []).forEach(function (b, i) { html += blockRow(r, b, i); });
-        html += '<div class="plan-mv" style="gap:6px">' +
+        html += '<div class="plan-mv add-blocks">' +
+          '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="warm">+ Warm up</button>' +
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="repeat">+ Intervals</button>' +
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="steady">+ Steady</button>' +
           "</div>";
@@ -980,7 +984,11 @@
       }
       case "addblk": {
         const r = routineById(t.dataset.rid);
-        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]]) : steady("", [[120, 4], [180, 5]]);
+        // A warm up is a steady stretch that already changes speed partway;
+        // a plain steady one holds a single speed until you split it.
+        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]])
+          : t.dataset.k === "warm" ? steady("Warm up", [[120, 4], [180, 5]])
+          : steady("", [[300, 3.5]]);
         r.blocks.push(fresh);
         V.editing = fresh.id;
         save(); render();
