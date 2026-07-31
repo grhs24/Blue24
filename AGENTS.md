@@ -51,6 +51,12 @@ start-and-finish flow.
 The path stays `/movement/` even though the name gained a word—changing it
 would break the home-screen icon already installed on the owner's phone.
 
+The footer carries `BUILT`, a plain date. **Change it with every deploy**—it
+is the only way the owner can tell from the phone whether the home-screen app
+is showing the current copy or one it kept, and answering that question is
+otherwise guesswork. Bump `CACHE` in `sw.js` at the same time when the shell
+changes, since `activate` clears every cache but the current one.
+
 It shares the origin with Foothold Now and nothing else. Keep it that way: no
 link from any Foothold page in, no link back out, no entry in `sitemap.xml`,
 `llms.txt`, or the site menu, and `noindex, nofollow` on the page itself. It

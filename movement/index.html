@@ -299,6 +299,7 @@
 
   const KEY = "movement.v1";
   const UNIT = "lb";
+  const BUILT = "31 July 2026";
 
   const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 
@@ -891,7 +892,9 @@
       '<button class="btn ghost sm" data-act="restore">Restore</button>' +
       '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
 
-    html += '<p class="foot">Movement Now—yours, on this phone.</p>';
+    // Dated so it is obvious at a glance whether the phone is showing the
+    // current copy or one the home-screen app kept.
+    html += '<p class="foot">Movement Now—yours, on this phone.<br>Updated ' + BUILT + ".</p>";
 
     app.innerHTML = html;
   }
@@ -1114,7 +1117,17 @@
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/movement/sw.js").catch(function () { /* offline is a bonus */ });
+      navigator.serviceWorker.register("/movement/sw.js")
+        // Ask on every launch, so a home-screen app that has been sitting for
+        // weeks picks up a new version instead of keeping the one it installed.
+        .then(function (reg) { if (reg) reg.update(); })
+        .catch(function () { /* offline is a bonus */ });
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState !== "visible") return;
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        if (reg) reg.update();
+      }).catch(function () { /* ignore */ });
     });
   }
 })();
