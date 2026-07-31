@@ -76,16 +76,22 @@ split or the sets disagree on reps; otherwise it stays `65 · 65 · 55 × 10`.
 The ✕ on a step row takes that weight off a split set, or removes the whole
 set when that weight is all it is.
 
-A treadmill routine is a list of **blocks**. A *steady* block is one stretch at
-one speed; a *repeat* block is one interval shape—a fast leg, a slower leg, and
-how many times round (30s at 12.5 against 90s at 3.5, ten times over). Keep one
-repeat block per combination the owner can do; that list is the record of where
-their speeds are. Times are held in **seconds**, because that is how the short
-ones are counted.
+A treadmill routine is a list of **blocks**. A *steady* block is one stretch—a
+warm up, a cool down; a *repeat* block is one interval shape—a fast leg, a
+slower leg, and how many times round (30s at 12.5 against 90s at 3.5, ten times
+over). Keep one repeat block per combination the owner can do; that list is the
+record of where their speeds are. Times are held in **seconds** everywhere.
 
-Each leg holds `paces`, a list of `{reps, mph}` steps, so a block can change
-speed partway through—two rounds at 9 then six at 8. Only the legs' durations
-and the incline stay single values for the whole block.
+Both kinds carry `paces`, a list of speed steps, so a block can change speed
+partway through. A repeat leg counts its steps in rounds (`{reps, mph}`—two at
+9 then six at 8); a steady block counts its own in seconds (`{secs, mph}`—two
+minutes at 4 then three at 5). Only the repeat legs' durations and the incline
+stay single values for the whole block.
+
+Steady steps are **typed in minutes** and stored in seconds, via the `scale`
+argument to `field()`; a repeat leg's 30s and 90s stay in seconds, because that
+is how those are actually counted. Both units on screen at once is deliberate—
+match the unit to the thing rather than to the storage.
 
 **The fast leg counts the block out**: `blockReps` is the sum of its steps'
 `reps`, and the slower leg's steps are shares of those same rounds. A slower
@@ -97,8 +103,8 @@ it has two.
 
 Adding a step **splits the last one** rather than appending a fresh round
 (`n` becomes `ceil(n/2)` and the remainder), so the block stays the length it
-was. Appending would have doubled it. Splitting a set's reps works the same
-way, which is why fifteen reps divide into eight and seven.
+was. Appending would have doubled it. The same split runs on a set's reps
+(fifteen divide into eight and seven) and on a steady block's seconds.
 
 Typing in a number field saves but does not re-render—that would drop the
 cursor. `refreshRow(id)` patches the summary line above the open form

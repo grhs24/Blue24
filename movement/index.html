@@ -315,8 +315,13 @@
     return { id: id, name: name, setup: opts.setup || "", step: opts.step || 5, sets: sets };
   }
 
-  function steady(label, secs, mph, incline) {
-    return { id: uid(), type: "steady", label: label, secs: secs, mph: mph, incline: incline || 0 };
+  // A steady stretch is also a list of speed steps, counted in seconds rather
+  // than rounds: two minutes at 4, then three at 5.
+  function steady(label, paces, incline) {
+    return {
+      id: uid(), type: "steady", label: label,
+      paces: paces.map(p => ({ secs: p[0], mph: p[1] })), incline: incline || 0
+    };
   }
 
   // Each leg carries `paces`, its speed steps: two blocks at 9, then six at 8.
@@ -407,7 +412,7 @@
       if (!r.tone) r.tone = "lime";
       // Treadmill used to be a flat list of minute-long intervals.
       if (r.intervals && !r.blocks) {
-        r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
+        r.blocks = r.intervals.map(iv => steady(iv.label || "", [[Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0]], Number(iv.incline) || 0));
         delete r.intervals;
       }
       if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])];
@@ -420,6 +425,13 @@
         });
       });
       (r.blocks || []).forEach(function (b) {
+        // A steady stretch used to hold one duration and one speed.
+        if (b.type === "steady") {
+          if (!(b.paces || []).length) b.paces = [{ secs: Number(b.secs) || 0, mph: Number(b.mph) || 0 }];
+          delete b.secs;
+          delete b.mph;
+          return;
+        }
         if (b.type !== "repeat") return;
         b.work = b.work || {};
         b.rest = b.rest || {};
@@ -546,26 +558,43 @@
      Number field
      ============================================================ */
 
-  function field(act, id, leg, k, val, step, unit, pi) {
+  // `scale` lets a field read in one unit and store in another: warm-up
+  // stretches are typed in minutes but held in seconds like everything else.
+  function field(act, id, leg, k, val, step, unit, pi, scale) {
+    scale = scale || 1;
     const at = ' data-id="' + id + '" data-leg="' + leg + '" data-k="' + k + '" data-step="' + step +
-      '" data-pi="' + (pi == null ? "" : pi) + '"';
+      '" data-pi="' + (pi == null ? "" : pi) + '" data-scale="' + scale + '"';
     return '<div class="field">' +
       '<button data-act="' + act + 'bump"' + at + ' data-d="-1" aria-label="Less">−</button>' +
-      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
+      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val / scale) +
       '" data-act="' + act + 'num"' + at + ">" +
       '<span class="unit">' + unit + "</span></span>" +
       '<button data-act="' + act + 'bump"' + at + ' data-d="1" aria-label="More">+</button>' +
       "</div>";
   }
 
+  // Reading and writing through a field's scale.
+  function scaleOf(t) { return Number(t.dataset.scale) || 1; }
+  function writeField(holder, k, shown, sc) {
+    const floor = k === "reps" ? 1 : 0;
+    const v = Math.max(floor, Math.round(shown * 10) / 10);
+    holder[k] = sc === 1 ? v : Math.max(floor, Math.round(v * sc));
+  }
+
   function stepOf(t) {
     return Number(t.dataset.step) || 1;
+  }
+
+  // Whose speed steps a row belongs to: a named leg of a repeat block, or a
+  // steady block, which carries its own.
+  function paceHolder(b, which) {
+    return b ? (which ? b[which] : b) : null;
   }
 
   // Where a field writes to: one of the two legs, a speed step inside a leg,
   // or the block itself.
   function holderOf(b, which, pi) {
-    const h = which ? b[which] : b;
+    const h = paceHolder(b, which);
     if (!h) return null;
     return pi === "" || pi == null ? h : (h.paces || [])[Number(pi)];
   }
@@ -656,10 +685,13 @@
   }
 
   function blockSummary(b) {
-    return b.type === "repeat"
-      ? plural(blockReps(b), "block") + " · " + num(b.work.secs) + "s at " + paceText(b.work) +
-        " / " + num(b.rest.secs) + "s at " + paceText(b.rest)
-      : clockOf(b.secs) + " at " + num(b.mph) + " mph";
+    if (b.type === "repeat") {
+      return plural(blockReps(b), "block") + " · " + num(b.work.secs) + "s at " + paceText(b.work) +
+        " / " + num(b.rest.secs) + "s at " + paceText(b.rest);
+    }
+    return b.paces.length === 1
+      ? clockOf(b.paces[0].secs) + " at " + num(b.paces[0].mph) + " mph"
+      : b.paces.map(p => clockOf(p.secs) + " at " + num(p.mph)).join(", ");
   }
 
   function blockName(b) {
@@ -669,12 +701,14 @@
   function blockTotal(b) {
     return b.type === "repeat"
       ? (Number(b.work.secs) + Number(b.rest.secs)) * blockReps(b)
-      : Number(b.secs) || 0;
+      : b.paces.reduce((n, p) => n + (Number(p.secs) || 0), 0);
   }
 
   function blockLine(b) {
+    // A steady stretch at one speed already says how long it runs.
+    const total = b.type === "repeat" || b.paces.length > 1;
     return blockSummary(b) + (Number(b.incline) ? " · " + num(b.incline) + "%" : "") +
-      " · " + clockOf(blockTotal(b));
+      (total ? " · " + clockOf(blockTotal(b)) : "");
   }
 
   function blockRow(r, b, i) {
@@ -693,6 +727,7 @@
   // What sits beside a leg's "+ Speed change": the fast leg counts the block
   // out, so the slower leg can only report how much of it its steps cover.
   function legNote(b, which) {
+    if (which === "run") return clockOf(blockTotal(b)) + " in all";
     const all = blockReps(b), lg = b[which];
     if (which === "work") return plural(all, "block") + " · " + clockOf(blockTotal(b));
     if (lg.paces.length < 2) return "the whole block";
@@ -711,7 +746,7 @@
     line.textContent = it ? mvLine(it) : blockLine(b);
     const name = line.previousElementSibling;
     if (name) name.textContent = it ? it.name : blockName(b);
-    if (b) ["work", "rest"].forEach(function (which) {
+    if (b) ["work", "rest", "run"].forEach(function (which) {
       const note = $('[data-total="' + id + "-" + which + '"]');
       if (note) note.textContent = legNote(b, which);
     });
@@ -740,9 +775,28 @@
         '" aria-label="Remove speed"' + (many ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
     });
 
-    return html + '<div class="leg add"><span class="leg-tag"></span>' +
+    return html + addPaceRow(b, which, "run");
+  }
+
+  // A steady stretch: the same speed steps, counted in minutes rather than
+  // rounds. Two minutes at 4, then three at 5.
+  function steadyRows(b) {
+    const many = b.paces.length > 1;
+    let html = "";
+    b.paces.forEach(function (pc, pi) {
+      html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
+        field("bk", b.id, "", "mph", pc.mph, 0.5, "mph", pi) +
+        field("bk", b.id, "", "secs", pc.secs, 0.5, "min", pi, 60) +
+        '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="" data-pi="' + pi +
+        '" aria-label="Remove speed"' + (many ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+    });
+    return html + addPaceRow(b, "", "run");
+  }
+
+  function addPaceRow(b, which, note) {
+    return '<div class="leg add"><span class="leg-tag"></span>' +
       '<button class="btn quiet sm" data-act="addpace" data-id="' + b.id + '" data-leg="' + which + '">+ Speed change</button>' +
-      '<span class="leg-note" data-total="' + b.id + "-" + which + '">' + legNote(b, which) + "</span></div>";
+      '<span class="leg-note" data-total="' + b.id + "-" + (which || note) + '">' + legNote(b, which || note) + "</span></div>";
   }
 
   function blockForm(r, b) {
@@ -751,11 +805,9 @@
       '<div><label class="lbl">Name</label><input type="text" value="' + esc(b.label || "") + '" placeholder="' +
       (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="bklabel" data-id="' + b.id + '"></div>';
 
-    if (b.type === "repeat") {
-      html += legRows(b, "work", "Fast") + legRows(b, "rest", "Slower");
-    } else {
-      html += '<div class="leg"><span class="leg-tag">Run</span>' + f("", "secs", b.secs, 30, "sec") + f("", "mph", b.mph, 0.5, "mph") + "</div>";
-    }
+    html += b.type === "repeat"
+      ? legRows(b, "work", "Fast") + legRows(b, "rest", "Slower")
+      : steadyRows(b);
 
     html += '<div class="leg"><span class="leg-tag">Incline</span>' + f("", "incline", b.incline, 0.5, "%") + "<span></span></div>" +
       '<div class="row" style="gap:8px"><button class="btn quiet sm" data-act="bkedit" data-id="">Done</button>' +
@@ -925,7 +977,7 @@
       }
       case "addblk": {
         const r = routineById(t.dataset.rid);
-        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]]) : steady("", 300, 3.5);
+        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]]) : steady("", [[120, 4], [180, 5]]);
         r.blocks.push(fresh);
         V.editing = fresh.id;
         save(); render();
@@ -941,20 +993,25 @@
       }
       case "addpace": {
         const b = findBlock(t.dataset.id);
-        const lg = b && b[t.dataset.leg];
+        const lg = paceHolder(b, t.dataset.leg);
         if (!lg) break;
-        // Split the last step rather than adding rounds, so the block stays
-        // the length it was.
+        // Split what the last step covers rather than adding to it, so the
+        // block stays the length it was.
+        const k = b.type === "steady" ? "secs" : "reps";
         const last = lg.paces[lg.paces.length - 1];
-        const n = lg.paces.length > 1 ? Math.max(1, Math.round(Number(last.reps) || 1)) : blockReps(b);
+        const whole = k === "reps" && lg.paces.length === 1 ? blockReps(b) : Math.round(Number(last[k]) || 0);
+        const n = Math.max(2, whole);
         const keep = Math.ceil(n / 2);
-        last.reps = keep;
-        lg.paces.push({ reps: Math.max(1, n - keep), mph: Math.max(0, Number(last.mph) - 0.5) });
+        last[k] = keep;
+        const fresh = {};
+        fresh[k] = n - keep;
+        fresh.mph = Math.max(0, Number(last.mph) - 0.5);
+        lg.paces.push(fresh);
         save(); render();
         break;
       }
       case "delpace": {
-        const lg = (findBlock(t.dataset.id) || {})[t.dataset.leg];
+        const lg = paceHolder(findBlock(t.dataset.id), t.dataset.leg);
         if (lg && lg.paces.length > 1) lg.paces.splice(Number(t.dataset.pi), 1);
         save(); render();
         break;
@@ -964,9 +1021,8 @@
         if (!b) break;
         const holder = holderOf(b, t.dataset.leg, t.dataset.pi);
         if (!holder) break;
-        const k = t.dataset.k;
-        holder[k] = Math.max(k === "reps" ? 1 : 0,
-          Math.round(((Number(holder[k]) || 0) + Number(t.dataset.d) * stepOf(t)) * 10) / 10);
+        const k = t.dataset.k, sc = scaleOf(t);
+        writeField(holder, k, (Number(holder[k]) || 0) / sc + Number(t.dataset.d) * stepOf(t), sc);
         save(); render();
         break;
       }
@@ -1029,8 +1085,7 @@
         if (!b) break;
         const holder = holderOf(b, t.dataset.leg, t.dataset.pi);
         if (!holder) break;
-        const k = t.dataset.k;
-        holder[k] = val === "" ? (k === "reps" ? 1 : 0) : Math.max(k === "reps" ? 1 : 0, Number(val) || 0);
+        writeField(holder, t.dataset.k, val === "" ? 0 : Number(val) || 0, scaleOf(t));
         save();
         break;
       }
