@@ -94,9 +94,17 @@ only what they start as. A warm up arrives already named and already split (two
 minutes at 4, then three at 5); a steady one arrives blank at a single speed.
 The owner asked for a warm up as its own labelled option after failing to find
 it behind "Steady", so keep it named in their words, not in the data model's.
-There is no separate warm-up type, and there should not be: a warm up is just a
-steady stretch that starts useful, and the ↑↓ arrows move it above the
-intervals.
+There is no separate warm-up *type*: a warm up is a steady stretch that starts
+useful, and the ↑↓ arrows move it above the intervals.
+
+Separately, **any block can carry a lead-in**: `b.warm`, absent unless added,
+is `{paces: [{secs, mph}]}`—easy minutes the block runs once before its rounds
+or its stretch proper. It is counted in minutes like a steady block, it feeds
+`blockTotal`, and the summary prefixes `5:00 warm up · `. Taking the last speed
+off a lead-in deletes `b.warm` entirely, which is why its ✕ is never disabled
+where other holders keep their last row. Both ways of warming up exist on
+purpose and the owner asked for each in turn: a separate block when the warm up
+stands on its own, a lead-in when it belongs to the piece that follows.
 
 Both kinds carry `paces`, a list of speed steps, so a block can change speed
 partway through. A repeat leg counts its steps in rounds (`{reps, mph}`—two at
