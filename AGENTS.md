@@ -46,7 +46,7 @@ in the Claude app and timed with a phone timer; this holds the numbers and
 nothing else. Resist adding any of that back without being asked: each absence
 was requested, in this order—history and streaks, then the resume card, then
 the reset button, then the Today page, then the timers and the whole
-start-and-finish flow.
+start-and-finish flow, then the per-movement weight step.
 
 The path stays `/movement/` even though the name gained a word—changing it
 would break the home-screen icon already installed on the owner's phone.
@@ -80,7 +80,12 @@ of one step is the ordinary case and reads as it always did—the movement's
 summary line only spells sets out (`40×8, 30×7 · 40×15`) once one of them is
 split or the sets disagree on reps; otherwise it stays `65 · 65 · 55 × 10`.
 The ✕ on a step row takes that weight off a split set, or removes the whole
-set when that weight is all it is.
+set when that weight is all it is. Splitting a set **keeps the weight on both
+rows**: the stacks do not all count in the same size (elevens on some, 2.5 on
+dumbbells), so any guessed drop would be a weight that cannot be selected. A
+per-movement step size used to exist for this and was removed at the owner's
+request—the weight fields are plain inputs with no ± buttons, so it drove
+nothing else. Do not reintroduce it.
 
 A treadmill routine is a list of **blocks**. A *steady* block is one stretch—a
 warm up, a cool down; a *repeat* block is one interval shape—a fast leg, a

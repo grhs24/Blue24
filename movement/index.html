@@ -322,7 +322,7 @@
 
   function mv(id, name, sets, opts) {
     opts = opts || {};
-    return { id: id, name: name, setup: opts.setup || "", step: opts.step || 5, sets: sets };
+    return { id: id, name: name, setup: opts.setup || "", sets: sets };
   }
 
   // A steady stretch is also a list of speed steps, counted in seconds rather
@@ -363,38 +363,38 @@
         {
           id: "upper", name: "Upper Body", tone: "lime", icon: "upper", kind: "lift",
           items: [
-            mv("u-chest-press", "Chest Press", [set(65, 10), set(65, 10, "Drop to 55 halfway."), set(55, 10)], { step: 5 }),
-            mv("u-lat-pulldown", "Lat Pulldown", [set(77, 10), set(66, 10), set(66, 10)], { step: 11 }),
-            mv("u-row", "Seated Cable or Machine Row", [set(55, 10), set(55, 10), set(44, 10)], { step: 11 }),
-            mv("u-shoulder-press", "Machine Shoulder Press", [set(10, 10), set(10, 10), set(10, 10)], { step: 5 }),
-            mv("u-lateral-raise", "Dumbbell Lateral Raise", [set(7.5, 12), set(7.5, 12), set(5, 12)], { step: 2.5 }),
-            mv("u-rear-delts", "Reverse Pec Deck—Rear Delts", [set(30, 12), set(30, 12), set(20, 12)], { step: 5 }),
-            mv("u-triceps", "Cable Triceps Pulldown", [set(22, 12), set(11, 12), set(11, 12)], { step: 11 }),
-            mv("u-biceps", "Dumbbell or Cable Bicep Curls", [set(12.5, 10), set(10, 10), set(10, 10)], { step: 2.5 }),
-            mv("u-incline-press", "Incline Dumbbell Press", [set(17.5, 10), set(15, 10), set(15, 10)], { step: 2.5 }),
-            mv("u-preacher-curl", "Dumbbell Preacher Curl", [set(30, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Seat 8" })
+            mv("u-chest-press", "Chest Press", [set(65, 10), set(65, 10, "Drop to 55 halfway."), set(55, 10)]),
+            mv("u-lat-pulldown", "Lat Pulldown", [set(77, 10), set(66, 10), set(66, 10)]),
+            mv("u-row", "Seated Cable or Machine Row", [set(55, 10), set(55, 10), set(44, 10)]),
+            mv("u-shoulder-press", "Machine Shoulder Press", [set(10, 10), set(10, 10), set(10, 10)]),
+            mv("u-lateral-raise", "Dumbbell Lateral Raise", [set(7.5, 12), set(7.5, 12), set(5, 12)]),
+            mv("u-rear-delts", "Reverse Pec Deck—Rear Delts", [set(30, 12), set(30, 12), set(20, 12)]),
+            mv("u-triceps", "Cable Triceps Pulldown", [set(22, 12), set(11, 12), set(11, 12)]),
+            mv("u-biceps", "Dumbbell or Cable Bicep Curls", [set(12.5, 10), set(10, 10), set(10, 10)]),
+            mv("u-incline-press", "Incline Dumbbell Press", [set(17.5, 10), set(15, 10), set(15, 10)]),
+            mv("u-preacher-curl", "Dumbbell Preacher Curl", [set(30, 10), set(20, 10), set(20, 10)], { setup: "Seat 8" })
           ]
         },
         {
           id: "core", name: "Core", tone: "coral", icon: "core", kind: "lift",
           items: [
-            mv("c-kneeling-crunch", "Cable Kneeling Crunch", [set(40, 12), set(40, 12), set(40, 12)], { step: 5 }),
-            mv("c-knee-raise", "Captain's Chair Knee Raise", [set(0, 8), set(0, 8), set(0, 8)], { step: 5 }),
-            mv("c-pallof", "Pallof Press", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Each side" }),
-            mv("c-ab-crunch", "Abdominal Crunch", [set(0, 15), set(0, 15), set(0, 15)], { step: 5 }),
-            mv("c-wood-chop", "Cable Wood Chop", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Each side" }),
-            mv("c-dead-bug", "Weighted Dead Bug", [set(0, 8), set(0, 8), set(0, 8)], { step: 2.5 })
+            mv("c-kneeling-crunch", "Cable Kneeling Crunch", [set(40, 12), set(40, 12), set(40, 12)]),
+            mv("c-knee-raise", "Captain's Chair Knee Raise", [set(0, 8), set(0, 8), set(0, 8)]),
+            mv("c-pallof", "Pallof Press", [set(20, 10), set(20, 10), set(20, 10)], { setup: "Each side" }),
+            mv("c-ab-crunch", "Abdominal Crunch", [set(0, 15), set(0, 15), set(0, 15)]),
+            mv("c-wood-chop", "Cable Wood Chop", [set(20, 10), set(20, 10), set(20, 10)], { setup: "Each side" }),
+            mv("c-dead-bug", "Weighted Dead Bug", [set(0, 8), set(0, 8), set(0, 8)])
           ]
         },
         {
           id: "lower", name: "Lower Body", tone: "sky", icon: "lower", kind: "lift",
           items: [
-            mv("l-leg-press", "Seated Leg Press", [set(100, 10), set(100, 10), set(100, 10)], { step: 10, setup: "Seat 5" }),
-            mv("l-ham-curl", "Seated Hamstring Curl", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Leg part 5" }),
-            mv("l-leg-extension", "Leg Extension", [set(30, 10), set(30, 10), set(30, 10)], { step: 5, setup: "Leg part large, rotator standing up" }),
-            mv("l-abductor", "Hip Abductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { step: 5, setup: "Leg part 2" }),
-            mv("l-adductor", "Hip Adductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { step: 5, setup: "Leg part 7" }),
-            mv("l-calf", "Standing Calf Machine", [set(10, 12), set(0, 12), set(0, 12)], { step: 5, setup: "Top part 3" })
+            mv("l-leg-press", "Seated Leg Press", [set(100, 10), set(100, 10), set(100, 10)], { setup: "Seat 5" }),
+            mv("l-ham-curl", "Seated Hamstring Curl", [set(20, 10), set(20, 10), set(20, 10)], { setup: "Leg part 5" }),
+            mv("l-leg-extension", "Leg Extension", [set(30, 10), set(30, 10), set(30, 10)], { setup: "Leg part large, rotator standing up" }),
+            mv("l-abductor", "Hip Abductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { setup: "Leg part 2" }),
+            mv("l-adductor", "Hip Adductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { setup: "Leg part 7" }),
+            mv("l-calf", "Standing Calf Machine", [set(10, 12), set(0, 12), set(0, 12)], { setup: "Top part 3" })
           ]
         },
         {
@@ -426,8 +426,10 @@
         delete r.intervals;
       }
       if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])];
-      // A set used to hold one weight and one rep count.
+      // A set used to hold one weight and one rep count. A movement used to
+      // carry a step size for the ± buttons its weight fields no longer have.
       (r.items || []).forEach(function (it) {
+        delete it.step;
         (it.sets || []).forEach(function (st) {
           if (!(st.steps || []).length) st.steps = [{ w: Number(st.w) || 0, r: Number(st.r) || 0 }];
           delete st.w;
@@ -670,9 +672,6 @@
     });
 
     html += "</div></div>" +
-      '<div><label class="lbl">− and + jump by</label>' +
-      '<input type="text" inputmode="decimal" style="text-align:center" value="' + num(it.step) + '" data-act="mvstep" data-id="' + it.id + '">' +
-      '<p class="tiny muted" style="margin:7px 2px 0">How far one tap moves the weight—11 on the stacks numbered in elevens, 2.5 on dumbbells. The seat number goes in the setup note.</p></div>' +
       '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addset" data-id="' + it.id + '">+ Set</button>' +
       '<button class="btn quiet sm" data-act="edit" data-id="">Done</button>' +
       '<span style="flex:1"></span>' +
@@ -1013,7 +1012,9 @@
         const n = Math.max(2, Math.round(Number(last.r) || 0));
         const keep = Math.ceil(n / 2);
         last.r = keep;
-        st.steps.push({ w: Math.max(0, Number(last.w) - (Number(it.step) || 5)), r: n - keep });
+        // The new step keeps the weight; what it drops to is yours to type,
+        // since the stacks do not all count in the same size.
+        st.steps.push({ w: Number(last.w) || 0, r: n - keep });
         save(); render();
         break;
       }
@@ -1148,7 +1149,6 @@
     switch (t.dataset.act) {
       case "mvname": findMv(t.dataset.id).name = val; save(); break;
       case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
-      case "mvstep": findMv(t.dataset.id).step = Math.max(0.5, Number(val) || 5); save(); break;
       case "setw": case "setr": {
         const it = findMv(t.dataset.id);
         const st = it && it.sets[Number(t.dataset.i)];
