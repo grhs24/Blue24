@@ -189,8 +189,20 @@
   .leg-tag { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); font-weight: 700; }
   .leg-note { font-size: 12px; color: var(--ink3); padding-left: 2px; }
   .leg .field { grid-template-columns: 28px minmax(0, 1fr) 28px; }
+  .leg.pace { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) 32px; }
+  .leg.add > button { justify-content: flex-start; padding: 0; white-space: nowrap; }
+  .leg.apart { margin-top: 15px; }
+  .leg-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 8px; margin: 13px 0 -1px;
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 700;
+  }
+  .leg-head span { text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 12px; }
   @media (max-width: 359px) {
-    .leg { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+    .leg { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+    .leg.pace { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr) 28px; }
+    /* The row's label cell is empty, so the button takes it and keeps one line. */
+    .leg.add { grid-template-columns: 0 auto minmax(0, 1fr); }
     .leg .field { grid-template-columns: minmax(0, 1fr); }
     .leg .field > button { display: none; }
   }
@@ -223,6 +235,9 @@
   .plan-mv { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
   .plan-mv + .plan-mv { border-top: 1px solid var(--line); }
   .plan-mv .grip { flex: 1; min-width: 0; text-align: left; }
+  /* Three ways to add a piece of a run: they wrap rather than overflow. */
+  .add-blocks { flex-wrap: wrap; gap: 4px 2px; }
+  .add-blocks .btn { padding: 0 8px; }
   .plan-mv b { display: block; font-size: 15px; font-weight: 600; }
   .plan-mv span { display: block; font-size: 12.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
   .mini { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; color: var(--ink3); border: 1px solid var(--line); }
@@ -230,12 +245,17 @@
   .mini:disabled { opacity: 0.3; }
 
   .edit-grid { display: grid; gap: 10px; padding: 13px 14px 15px; border-top: 1px solid var(--line); background: var(--surface2); }
-  .edit-sets { display: grid; gap: 6px; }
+  /* Rows of one set sit tight together; the gap marks where the next begins. */
+  .edit-sets { display: grid; gap: 4px; }
   .edit-set { display: grid; grid-template-columns: 20px 1fr 1fr 32px; gap: 6px; align-items: center; }
+  .edit-set.opens:not(:first-child) { margin-top: 9px; }
   .edit-set input { text-align: center; }
   .edit-set .lbl-in { position: relative; }
   .edit-set .lbl-in i { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink3); font-weight: 700; }
   .edit-set input[type="text"] { padding-right: 34px; }
+  .edit-set.add { grid-template-columns: 20px auto minmax(0, 1fr); }
+  .edit-set.add > button { justify-content: flex-start; padding: 0; white-space: nowrap; min-height: 30px; }
+  .set-note { font-size: 12px; color: var(--ink3); }
 
   .toast {
     position: fixed; left: 50%; transform: translateX(-50%);
@@ -288,25 +308,52 @@
 
   const KEY = "movement.v1";
   const UNIT = "lb";
+  const BUILT = "31 July 2026";
 
   const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 
-  function set(w, r, note) { return { w: w, r: r, note: note || "" }; }
+  // A set is a list of `steps`, so the weight can drop partway through:
+  // eight reps at 40, then seven at 30.
+  function set(w, r, note) { return { steps: [{ w: w, r: r }], note: note || "" }; }
+
+  function setReps(st) {
+    return (st.steps || []).reduce((n, s) => n + Math.max(0, Math.round(Number(s.r) || 0)), 0);
+  }
 
   function mv(id, name, sets, opts) {
     opts = opts || {};
-    return { id: id, name: name, setup: opts.setup || "", step: opts.step || 5, sets: sets };
+    return { id: id, name: name, setup: opts.setup || "", sets: sets };
   }
 
-  function steady(label, secs, mph, incline) {
-    return { id: uid(), type: "steady", label: label, secs: secs, mph: mph, incline: incline || 0 };
-  }
-
-  function repeatBlock(label, reps, wSecs, wMph, rSecs, rMph, incline) {
+  // A steady stretch is also a list of speed steps, counted in seconds rather
+  // than rounds: two minutes at 4, then three at 5.
+  function steady(label, paces, incline) {
     return {
-      id: uid(), type: "repeat", label: label, reps: reps,
-      work: { secs: wSecs, mph: wMph }, rest: { secs: rSecs, mph: rMph }, incline: incline || 0
+      id: uid(), type: "steady", label: label,
+      paces: paces.map(p => ({ secs: p[0], mph: p[1] })), incline: incline || 0
     };
+  }
+
+  // Each leg carries `paces`, its speed steps: two blocks at 9, then six at 8.
+  function leg(secs, paces) {
+    return { secs: secs, paces: paces.map(p => ({ reps: p[0], mph: p[1] })) };
+  }
+
+  function repeatBlock(label, wSecs, wPaces, rSecs, rPaces, incline) {
+    return {
+      id: uid(), type: "repeat", label: label,
+      work: leg(wSecs, wPaces), rest: leg(rSecs, rPaces), incline: incline || 0
+    };
+  }
+
+  function legReps(lg) {
+    return (lg.paces || []).reduce((n, p) => n + Math.max(1, Math.round(Number(p.reps) || 1)), 0);
+  }
+
+  // The fast leg says how long the block runs; the slower leg's steps are
+  // shares of those same rounds.
+  function blockReps(b) {
+    return legReps(b.work);
   }
 
   function seed() {
@@ -316,43 +363,43 @@
         {
           id: "upper", name: "Upper Body", tone: "lime", icon: "upper", kind: "lift",
           items: [
-            mv("u-chest-press", "Chest Press", [set(65, 10), set(65, 10, "Drop to 55 halfway."), set(55, 10)], { step: 5 }),
-            mv("u-lat-pulldown", "Lat Pulldown", [set(77, 10), set(66, 10), set(66, 10)], { step: 11 }),
-            mv("u-row", "Seated Cable or Machine Row", [set(55, 10), set(55, 10), set(44, 10)], { step: 11 }),
-            mv("u-shoulder-press", "Machine Shoulder Press", [set(10, 10), set(10, 10), set(10, 10)], { step: 5 }),
-            mv("u-lateral-raise", "Dumbbell Lateral Raise", [set(7.5, 12), set(7.5, 12), set(5, 12)], { step: 2.5 }),
-            mv("u-rear-delts", "Reverse Pec Deck—Rear Delts", [set(30, 12), set(30, 12), set(20, 12)], { step: 5 }),
-            mv("u-triceps", "Cable Triceps Pulldown", [set(22, 12), set(11, 12), set(11, 12)], { step: 11 }),
-            mv("u-biceps", "Dumbbell or Cable Bicep Curls", [set(12.5, 10), set(10, 10), set(10, 10)], { step: 2.5 }),
-            mv("u-incline-press", "Incline Dumbbell Press", [set(17.5, 10), set(15, 10), set(15, 10)], { step: 2.5 }),
-            mv("u-preacher-curl", "Dumbbell Preacher Curl", [set(30, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Seat 8" })
+            mv("u-chest-press", "Chest Press", [set(65, 10), set(65, 10, "Drop to 55 halfway."), set(55, 10)]),
+            mv("u-lat-pulldown", "Lat Pulldown", [set(77, 10), set(66, 10), set(66, 10)]),
+            mv("u-row", "Seated Cable or Machine Row", [set(55, 10), set(55, 10), set(44, 10)]),
+            mv("u-shoulder-press", "Machine Shoulder Press", [set(10, 10), set(10, 10), set(10, 10)]),
+            mv("u-lateral-raise", "Dumbbell Lateral Raise", [set(7.5, 12), set(7.5, 12), set(5, 12)]),
+            mv("u-rear-delts", "Reverse Pec Deck—Rear Delts", [set(30, 12), set(30, 12), set(20, 12)]),
+            mv("u-triceps", "Cable Triceps Pulldown", [set(22, 12), set(11, 12), set(11, 12)]),
+            mv("u-biceps", "Dumbbell or Cable Bicep Curls", [set(12.5, 10), set(10, 10), set(10, 10)]),
+            mv("u-incline-press", "Incline Dumbbell Press", [set(17.5, 10), set(15, 10), set(15, 10)]),
+            mv("u-preacher-curl", "Dumbbell Preacher Curl", [set(30, 10), set(20, 10), set(20, 10)], { setup: "Seat 8" })
           ]
         },
         {
           id: "core", name: "Core", tone: "coral", icon: "core", kind: "lift",
           items: [
-            mv("c-kneeling-crunch", "Cable Kneeling Crunch", [set(40, 12), set(40, 12), set(40, 12)], { step: 5 }),
-            mv("c-knee-raise", "Captain's Chair Knee Raise", [set(0, 8), set(0, 8), set(0, 8)], { step: 5 }),
-            mv("c-pallof", "Pallof Press", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Each side" }),
-            mv("c-ab-crunch", "Abdominal Crunch", [set(0, 15), set(0, 15), set(0, 15)], { step: 5 }),
-            mv("c-wood-chop", "Cable Wood Chop", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Each side" }),
-            mv("c-dead-bug", "Weighted Dead Bug", [set(0, 8), set(0, 8), set(0, 8)], { step: 2.5 })
+            mv("c-kneeling-crunch", "Cable Kneeling Crunch", [set(40, 12), set(40, 12), set(40, 12)]),
+            mv("c-knee-raise", "Captain's Chair Knee Raise", [set(0, 8), set(0, 8), set(0, 8)]),
+            mv("c-pallof", "Pallof Press", [set(20, 10), set(20, 10), set(20, 10)], { setup: "Each side" }),
+            mv("c-ab-crunch", "Abdominal Crunch", [set(0, 15), set(0, 15), set(0, 15)]),
+            mv("c-wood-chop", "Cable Wood Chop", [set(20, 10), set(20, 10), set(20, 10)], { setup: "Each side" }),
+            mv("c-dead-bug", "Weighted Dead Bug", [set(0, 8), set(0, 8), set(0, 8)])
           ]
         },
         {
           id: "lower", name: "Lower Body", tone: "sky", icon: "lower", kind: "lift",
           items: [
-            mv("l-leg-press", "Seated Leg Press", [set(100, 10), set(100, 10), set(100, 10)], { step: 10, setup: "Seat 5" }),
-            mv("l-ham-curl", "Seated Hamstring Curl", [set(20, 10), set(20, 10), set(20, 10)], { step: 5, setup: "Leg part 5" }),
-            mv("l-leg-extension", "Leg Extension", [set(30, 10), set(30, 10), set(30, 10)], { step: 5, setup: "Leg part large, rotator standing up" }),
-            mv("l-abductor", "Hip Abductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { step: 5, setup: "Leg part 2" }),
-            mv("l-adductor", "Hip Adductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { step: 5, setup: "Leg part 7" }),
-            mv("l-calf", "Standing Calf Machine", [set(10, 12), set(0, 12), set(0, 12)], { step: 5, setup: "Top part 3" })
+            mv("l-leg-press", "Seated Leg Press", [set(100, 10), set(100, 10), set(100, 10)], { setup: "Seat 5" }),
+            mv("l-ham-curl", "Seated Hamstring Curl", [set(20, 10), set(20, 10), set(20, 10)], { setup: "Leg part 5" }),
+            mv("l-leg-extension", "Leg Extension", [set(30, 10), set(30, 10), set(30, 10)], { setup: "Leg part large, rotator standing up" }),
+            mv("l-abductor", "Hip Abductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { setup: "Leg part 2" }),
+            mv("l-adductor", "Hip Adductor Machine", [set(40, 12), set(30, 12), set(30, 12)], { setup: "Leg part 7" }),
+            mv("l-calf", "Standing Calf Machine", [set(10, 12), set(0, 12), set(0, 12)], { setup: "Top part 3" })
           ]
         },
         {
           id: "tread", name: "Treadmill", tone: "amber", icon: "tread", kind: "tread",
-          blocks: [repeatBlock("Sprints", 10, 30, 12.5, 90, 3.5)]
+          blocks: [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])]
         }
       ]
     };
@@ -365,21 +412,69 @@
   /* ---- carry older saves forward ---- */
 
   const OLD_TONES = { upper: "lime", core: "coral", lower: "sky", tread: "amber" };
-  S.routines.forEach(function (r) {
-    if (!r.icon) r.icon = OLD_TONES[r.tone] ? r.tone : (r.kind === "tread" ? "tread" : "upper");
-    if (OLD_TONES[r.tone]) r.tone = OLD_TONES[r.tone];
-    if (!r.tone) r.tone = "lime";
-    // Treadmill used to be a flat list of minute-long intervals.
-    if (r.intervals && !r.blocks) {
-      r.blocks = r.intervals.map(iv => steady(iv.label || "", Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0, Number(iv.incline) || 0));
-      delete r.intervals;
-    }
-    if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 10, 30, 12.5, 90, 3.5)];
-  });
-  // Sessions, drafts, speed records and the rest-timer setting belonged to the
-  // old start-and-finish app. The plan itself is the record now.
-  ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete S[k]; });
-  S.v = 2;
+
+  // Runs on load and on every restore, so a backup written by any earlier
+  // version opens. Each step is written to be safe to run again.
+  function carryForward(d) {
+    (d.routines || []).forEach(function (r) {
+      if (!r.icon) r.icon = OLD_TONES[r.tone] ? r.tone : (r.kind === "tread" ? "tread" : "upper");
+      if (OLD_TONES[r.tone]) r.tone = OLD_TONES[r.tone];
+      if (!r.tone) r.tone = "lime";
+      // Treadmill used to be a flat list of minute-long intervals.
+      if (r.intervals && !r.blocks) {
+        r.blocks = r.intervals.map(iv => steady(iv.label || "", [[Math.round((Number(iv.min) || 0) * 60), Number(iv.mph) || 0]], Number(iv.incline) || 0));
+        delete r.intervals;
+      }
+      if (r.kind === "tread" && !r.blocks) r.blocks = [repeatBlock("Sprints", 30, [[10, 12.5]], 90, [[10, 3.5]])];
+      // A set used to hold one weight and one rep count. A movement used to
+      // carry a step size for the ± buttons its weight fields no longer have.
+      (r.items || []).forEach(function (it) {
+        delete it.step;
+        (it.sets || []).forEach(function (st) {
+          if (!(st.steps || []).length) st.steps = [{ w: Number(st.w) || 0, r: Number(st.r) || 0 }];
+          delete st.w;
+          delete st.r;
+        });
+      });
+      (r.blocks || []).forEach(function (b) {
+        // A steady stretch used to hold one duration and one speed.
+        if (b.type === "steady") {
+          if (!(b.paces || []).length) b.paces = [{ secs: Number(b.secs) || 0, mph: Number(b.mph) || 0 }];
+          delete b.secs;
+          delete b.mph;
+          return;
+        }
+        if (b.type !== "repeat") return;
+        b.work = b.work || {};
+        b.rest = b.rest || {};
+        // First shape: one speed for every round, counted on the block itself.
+        if (b.reps != null && !b.paces && !b.work.paces) {
+          b.paces = [{ reps: Math.max(1, Number(b.reps) || 1), mph: Number(b.work.mph) || 0 }];
+        }
+        delete b.reps;
+        // Second shape: the fast leg's steps sat on the block, and the slower
+        // leg still held a single speed.
+        if (b.paces) { b.work.paces = b.paces; delete b.paces; }
+        if (b.work.mph != null) {
+          if (!b.work.paces) b.work.paces = [{ reps: 1, mph: Number(b.work.mph) || 0 }];
+          delete b.work.mph;
+        }
+        if (b.rest.mph != null) {
+          b.rest.paces = [{ reps: 1, mph: Number(b.rest.mph) || 0 }];
+          delete b.rest.mph;
+        }
+        if (!(b.work.paces || []).length) b.work.paces = [{ reps: 1, mph: 0 }];
+        if (!(b.rest.paces || []).length) b.rest.paces = [{ reps: 1, mph: 0 }];
+      });
+    });
+    // Sessions, drafts, speed records and the rest-timer setting belonged to
+    // the old start-and-finish app. The plan itself is the record now.
+    ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete d[k]; });
+    d.v = 2;
+    return d;
+  }
+
+  carryForward(S);
   try { localStorage.removeItem("movement.key"); } catch (err) { /* ignore */ }
 
   let saveTimer = null;
@@ -475,31 +570,75 @@
      Number field
      ============================================================ */
 
-  function field(act, id, leg, k, val, step, unit) {
-    const at = ' data-id="' + id + '" data-leg="' + leg + '" data-k="' + k + '" data-step="' + step + '"';
+  // `scale` lets a field read in one unit and store in another: warm-up
+  // stretches are typed in minutes but held in seconds like everything else.
+  function field(act, id, leg, k, val, step, unit, pi, scale) {
+    scale = scale || 1;
+    const at = ' data-id="' + id + '" data-leg="' + leg + '" data-k="' + k + '" data-step="' + step +
+      '" data-pi="' + (pi == null ? "" : pi) + '" data-scale="' + scale + '"';
     return '<div class="field">' +
       '<button data-act="' + act + 'bump"' + at + ' data-d="-1" aria-label="Less">−</button>' +
-      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val) +
+      '<span class="val"><input type="number" inputmode="decimal" step="any" value="' + num(val / scale) +
       '" data-act="' + act + 'num"' + at + ">" +
       '<span class="unit">' + unit + "</span></span>" +
       '<button data-act="' + act + 'bump"' + at + ' data-d="1" aria-label="More">+</button>' +
       "</div>";
   }
 
+  // Reading and writing through a field's scale.
+  function scaleOf(t) { return Number(t.dataset.scale) || 1; }
+  function writeField(holder, k, shown, sc) {
+    const floor = k === "reps" ? 1 : 0;
+    const v = Math.max(floor, Math.round(shown * 10) / 10);
+    holder[k] = sc === 1 ? v : Math.max(floor, Math.round(v * sc));
+  }
+
   function stepOf(t) {
     return Number(t.dataset.step) || 1;
+  }
+
+  // Whose speed steps a row belongs to: a named leg of a repeat block, or a
+  // steady block, which carries its own.
+  function paceHolder(b, which) {
+    return b ? (which ? b[which] : b) : null;
+  }
+
+  // Where a field writes to: one of the two legs, a speed step inside a leg,
+  // or the block itself.
+  function holderOf(b, which, pi) {
+    const h = paceHolder(b, which);
+    if (!h) return null;
+    return pi === "" || pi == null ? h : (h.paces || [])[Number(pi)];
   }
 
   /* ============================================================
      Movements
      ============================================================ */
 
+  const wShort = w => weightLabel(w).replace(" " + UNIT, "");
+
+  // Sets that are one weight for one rep count read as they always have—
+  // 65 · 65 · 55 × 10. Once a weight changes partway, each set spells itself
+  // out instead: 40×8, 30×7 · 40×8.
+  function mvLine(it) {
+    const sets = it.sets, first = sets[0].steps[0];
+    const plain = sets.every(s => s.steps.length === 1 && num(s.steps[0].r) === num(first.r));
+    const body = plain
+      ? sets.map(s => wShort(s.steps[0].w)).join(" · ") + " × " + num(first.r)
+      : sets.map(s => s.steps.map(x => wShort(x.w) + "×" + num(x.r)).join(", ")).join(" · ");
+    return body + (it.setup ? " · " + it.setup : "");
+  }
+
+  // Only worth stating once a set is split across weights.
+  function setNote(st) {
+    return st.steps.length > 1 ? plural(setReps(st), "rep") + " in all" : "";
+  }
+
   function mvRow(r, it, i) {
     const open = V.editing === it.id;
     let html = '<div class="plan-mv">' +
-      '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b><span>" +
-      it.sets.map(s => weightLabel(s.w).replace(" " + UNIT, "")).join(" · ") + " × " + num(it.sets[0].r) +
-      (it.setup ? " · " + esc(it.setup) : "") + "</span></button>" +
+      '<button class="grip" data-act="edit" data-id="' + it.id + '"><b>' + esc(it.name) + "</b>" +
+      '<span data-line="' + it.id + '">' + esc(mvLine(it)) + "</span></button>" +
       '<button class="mini" data-act="mvup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
       '<button class="mini" data-act="mvdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.items.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
       '<button class="mini" data-act="edit" data-id="' + it.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
@@ -515,16 +654,24 @@
       '<div><label class="lbl">Sets</label><div class="edit-sets">';
 
     it.sets.forEach(function (st, i) {
-      html += '<div class="edit-set"><span class="set-n">' + (i + 1) + "</span>" +
-        '<span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(st.w) + '" data-act="setw" data-id="' + it.id + '" data-si="' + i + '"><i>' + UNIT + "</i></span>" +
-        '<span class="lbl-in"><input type="text" inputmode="numeric" value="' + num(st.r) + '" data-act="setr" data-id="' + it.id + '" data-si="' + i + '"><i>reps</i></span>' +
-        '<button class="mini" data-act="delset" data-id="' + it.id + '" data-si="' + i + '" aria-label="Remove set"' + (it.sets.length < 2 ? " disabled" : "") + ">" + ICONS.x + "</button></div>";
+      const many = st.steps.length > 1;
+      st.steps.forEach(function (sp, si) {
+        // Only the first row of a set is numbered; the rest are the same set
+        // carrying on at a new weight.
+        const at = ' data-id="' + it.id + '" data-i="' + i + '" data-si="' + si + '"';
+        html += '<div class="edit-set' + (si ? "" : " opens") + '">' +
+          '<span class="set-n">' + (si ? "" : i + 1) + "</span>" +
+          '<span class="lbl-in"><input type="text" inputmode="decimal" value="' + num(sp.w) + '" data-act="setw"' + at + "><i>" + UNIT + "</i></span>" +
+          '<span class="lbl-in"><input type="text" inputmode="numeric" value="' + num(sp.r) + '" data-act="setr"' + at + "><i>reps</i></span>" +
+          '<button class="mini" data-act="delstep"' + at + ' aria-label="' + (many ? "Remove weight" : "Remove set") + '"' +
+          (many || it.sets.length > 1 ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+      });
+      html += '<div class="edit-set add"><span class="set-n"></span>' +
+        '<button class="btn quiet sm" data-act="addstep" data-id="' + it.id + '" data-i="' + i + '">+ Weight change</button>' +
+        '<span class="set-note" data-reps="' + it.id + "-" + i + '">' + setNote(st) + "</span></div>";
     });
 
     html += "</div></div>" +
-      '<div><label class="lbl">− and + jump by</label>' +
-      '<input type="text" inputmode="decimal" style="text-align:center" value="' + num(it.step) + '" data-act="mvstep" data-id="' + it.id + '">' +
-      '<p class="tiny muted" style="margin:7px 2px 0">How far one tap moves the weight—11 on the stacks numbered in elevens, 2.5 on dumbbells. The seat number goes in the setup note.</p></div>' +
       '<div class="row" style="gap:8px"><button class="btn ghost sm" data-act="addset" data-id="' + it.id + '">+ Set</button>' +
       '<button class="btn quiet sm" data-act="edit" data-id="">Done</button>' +
       '<span style="flex:1"></span>' +
@@ -540,29 +687,70 @@
      leg, and how many times round. Keep one per combination you do.
      ============================================================ */
 
+  function paceText(lg) {
+    const p = lg.paces || [];
+    if (p.length === 1) return num(p[0].mph);
+    return p.map(x => num(x.mph) + "×" + num(x.reps)).join(", ");
+  }
+
   function blockSummary(b) {
-    return b.type === "repeat"
-      ? plural(b.reps, "block") + " · " + num(b.work.secs) + "s at " + num(b.work.mph) +
-        " / " + num(b.rest.secs) + "s at " + num(b.rest.mph)
-      : clockOf(b.secs) + " at " + num(b.mph) + " mph";
+    if (b.type === "repeat") {
+      return plural(blockReps(b), "block") + " · " + num(b.work.secs) + "s at " + paceText(b.work) +
+        " / " + num(b.rest.secs) + "s at " + paceText(b.rest);
+    }
+    return b.paces.length === 1
+      ? clockOf(b.paces[0].secs) + " at " + num(b.paces[0].mph) + " mph"
+      : b.paces.map(p => clockOf(p.secs) + " at " + num(p.mph)).join(", ");
   }
 
   function blockName(b) {
-    return b.label ? esc(b.label) : b.type === "repeat" ? "Intervals" : "Steady";
+    return b.label || (b.type === "repeat" ? "Intervals" : "Steady");
+  }
+
+  function secsOf(paces) {
+    return (paces || []).reduce((n, p) => n + (Number(p.secs) || 0), 0);
+  }
+
+  // The two ends a log can carry: easy minutes it runs once before the rounds,
+  // and once after. Neither exists unless it has been added.
+  const ENDS = {
+    warm: { title: "Warm up", hint: "before anything else", note: "before the rest",
+      add: "+ Warm-up leg", addHint: "easy minutes first", said: "warm up",
+      start: [[120, 4], [180, 5]] },
+    cool: { title: "Cool down", hint: "after everything else", note: "after the rest",
+      add: "+ Cool-down leg", addHint: "easy minutes after", said: "cool down",
+      start: [[180, 4], [120, 3]] }
+  };
+
+  function endTotal(b, which) {
+    return b[which] ? secsOf(b[which].paces) : 0;
+  }
+
+  function coreTotal(b) {
+    return b.type === "repeat"
+      ? (Number(b.work.secs) + Number(b.rest.secs)) * blockReps(b)
+      : secsOf(b.paces);
   }
 
   function blockTotal(b) {
-    return b.type === "repeat"
-      ? (Number(b.work.secs) + Number(b.rest.secs)) * (Number(b.reps) || 0)
-      : Number(b.secs) || 0;
+    return endTotal(b, "warm") + coreTotal(b) + endTotal(b, "cool");
+  }
+
+  // Read in the order the log is run, with the total last.
+  function blockLine(b) {
+    // A steady stretch at one speed already says how long it runs.
+    const total = b.warm || b.cool || b.type === "repeat" || b.paces.length > 1;
+    const end = w => (b[w] ? clockOf(endTotal(b, w)) + " " + ENDS[w].said : "");
+    return [end("warm"), blockSummary(b), end("cool"),
+      Number(b.incline) ? num(b.incline) + "%" : "",
+      total ? clockOf(blockTotal(b)) : ""].filter(Boolean).join(" · ");
   }
 
   function blockRow(r, b, i) {
     const open = V.editing === b.id;
     let html = '<div class="plan-mv">' +
-      '<button class="grip" data-act="bkedit" data-id="' + b.id + '"><b>' + blockName(b) + "</b><span>" +
-      blockSummary(b) + (Number(b.incline) ? " · " + num(b.incline) + "%" : "") +
-      " · " + clockOf(blockTotal(b)) + "</span></button>" +
+      '<button class="grip" data-act="bkedit" data-id="' + b.id + '"><b>' + esc(blockName(b)) + "</b>" +
+      '<span data-line="' + b.id + '">' + blockLine(b) + "</span></button>" +
       '<button class="mini" data-act="bkup" data-rid="' + r.id + '" data-i="' + i + '"' + (i === 0 ? " disabled" : "") + ' aria-label="Move up">' + ICONS.up + "</button>" +
       '<button class="mini" data-act="bkdown" data-rid="' + r.id + '" data-i="' + i + '"' + (i === r.blocks.length - 1 ? " disabled" : "") + ' aria-label="Move down">' + ICONS.down + "</button>" +
       '<button class="mini" data-act="bkedit" data-id="' + b.id + '" aria-label="Edit">' + ICONS.pencil + "</button>" +
@@ -571,20 +759,112 @@
     return html;
   }
 
+  // What sits beside a leg's "+ Speed change": the fast leg counts the block
+  // out, so the slower leg can only report how much of it its steps cover.
+  function legNote(b, which) {
+    if (ENDS[which]) return clockOf(endTotal(b, which)) + " " + ENDS[which].note;
+    if (which === "run") return clockOf(blockTotal(b)) + " in all";
+    const all = blockReps(b), lg = b[which];
+    if (which === "work") return plural(all, "block") + " · " + clockOf(blockTotal(b));
+    if (lg.paces.length < 2) return "the whole block";
+    const n = legReps(lg);
+    if (n === all) return plural(n, "block");
+    return n + " of " + all + (n < all ? "—the last one holds" : "—the extra is ignored");
+  }
+
+  // Typing must not re-render the field under the cursor, so the row above the
+  // open form is patched in place instead.
+  function refreshRow(id) {
+    const line = $('[data-line="' + id + '"]');
+    if (!line) return;
+    const it = findMv(id), b = it ? null : findBlock(id);
+    if (!it && !b) return;
+    line.textContent = it ? mvLine(it) : blockLine(b);
+    const name = line.previousElementSibling;
+    if (name) name.textContent = it ? it.name : blockName(b);
+    if (b) ["work", "rest", "run", "warm", "cool"].forEach(function (which) {
+      const note = $('[data-total="' + id + "-" + which + '"]');
+      if (note) note.textContent = legNote(b, which);
+    });
+    if (it) it.sets.forEach(function (st, i) {
+      const note = $('[data-reps="' + id + "-" + i + '"]');
+      if (note) note.textContent = setNote(st);
+    });
+  }
+
+  // A leg: how long it lasts, then one row per speed step, then the button
+  // that adds another. Two blocks at 9, then six at 8.
+  function legRows(b, which, tag) {
+    const lg = b[which], many = lg.paces.length > 1;
+    let html = '<div class="leg' + (which === "rest" ? " apart" : "") + '"><span class="leg-tag">' + tag + "</span>" +
+      field("bk", b.id, which, "secs", lg.secs, 5, "sec") + '<span class="leg-note">each</span></div>';
+
+    lg.paces.forEach(function (pc, pi) {
+      // The fast leg's counts add up to the block, so they always show. On the
+      // slower leg a lone speed covers everything and needs no count.
+      const count = which === "work" || many
+        ? field("bk", b.id, which, "reps", pc.reps, 1, "blocks", pi)
+        : "<span></span>";
+      html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
+        field("bk", b.id, which, "mph", pc.mph, 0.5, "mph", pi) + count +
+        '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
+        '" aria-label="Remove speed"' + (many ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+    });
+
+    return html + addPaceRow(b, which, "run");
+  }
+
+  // Minutes-and-speed rows, used both for a steady stretch and for the
+  // lead-in a block can carry. Two minutes at 4, then three at 5.
+  function minuteRows(b, which, note) {
+    const holder = which ? b[which] : b, many = holder.paces.length > 1;
+    let html = "";
+    holder.paces.forEach(function (pc, pi) {
+      html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
+        field("bk", b.id, which, "mph", pc.mph, 0.5, "mph", pi) +
+        field("bk", b.id, which, "secs", pc.secs, 0.5, "min", pi, 60) +
+        '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
+        // On a lead-in the last ✕ takes the whole thing off, so it is never
+        // disabled the way a block's own last speed is.
+        '" aria-label="Remove speed"' + (many || ENDS[which] ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+    });
+    return html + addPaceRow(b, which, note);
+  }
+
+  // The lead-in, when a block has one: some easy minutes before the rounds
+  // or the stretch proper. Otherwise, the button that starts one.
+  function endRows(b, which) {
+    const e = ENDS[which];
+    if (!b[which]) {
+      return '<div class="leg add"><span class="leg-tag"></span>' +
+        '<button class="btn quiet sm" data-act="addend" data-id="' + b.id + '" data-k="' + which + '">' + e.add + "</button>" +
+        '<span class="leg-note">' + e.addHint + "</span></div>";
+    }
+    return legHead(e.title, e.hint) + minuteRows(b, which, which);
+  }
+
+  // A section heading inside the form. Full width, because two words do not
+  // fit the narrow column the row tags use.
+  function legHead(title, hint) {
+    return '<div class="leg-head">' + title + "<span>" + hint + "</span></div>";
+  }
+
+  function addPaceRow(b, which, note) {
+    return '<div class="leg add"><span class="leg-tag"></span>' +
+      '<button class="btn quiet sm" data-act="addpace" data-id="' + b.id + '" data-leg="' + which + '">+ Speed change</button>' +
+      '<span class="leg-note" data-total="' + b.id + "-" + (which || note) + '">' + legNote(b, which || note) + "</span></div>";
+  }
+
   function blockForm(r, b) {
-    const f = (leg, k, val, step, unit) => field("bk", b.id, leg, k, val, step, unit);
+    const f = (which, k, val, step, unit) => field("bk", b.id, which, k, val, step, unit);
     let html = '<div class="edit-grid">' +
       '<div><label class="lbl">Name</label><input type="text" value="' + esc(b.label || "") + '" placeholder="' +
       (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="bklabel" data-id="' + b.id + '"></div>';
 
-    if (b.type === "repeat") {
-      html += '<div class="leg"><span class="leg-tag">Blocks</span>' + f("", "reps", b.reps, 1, "×") +
-        '<span class="leg-note">' + clockOf(blockTotal(b)) + " in all</span></div>" +
-        '<div class="leg"><span class="leg-tag">Fast</span>' + f("work", "secs", b.work.secs, 5, "sec") + f("work", "mph", b.work.mph, 0.5, "mph") + "</div>" +
-        '<div class="leg"><span class="leg-tag">Slower</span>' + f("rest", "secs", b.rest.secs, 5, "sec") + f("rest", "mph", b.rest.mph, 0.5, "mph") + "</div>";
-    } else {
-      html += '<div class="leg"><span class="leg-tag">Run</span>' + f("", "secs", b.secs, 30, "sec") + f("", "mph", b.mph, 0.5, "mph") + "</div>";
-    }
+    html += endRows(b, "warm") + (b.type === "repeat"
+      ? legRows(b, "work", "Fast") + legRows(b, "rest", "Slower")
+      : legHead(b.warm ? "Then" : "Run", b.warm ? "the stretch itself" : "at one speed, or several") +
+        minuteRows(b, "", "run")) + endRows(b, "cool");
 
     html += '<div class="leg"><span class="leg-tag">Incline</span>' + f("", "incline", b.incline, 0.5, "%") + "<span></span></div>" +
       '<div class="row" style="gap:8px"><button class="btn quiet sm" data-act="bkedit" data-id="">Done</button>' +
@@ -616,8 +896,8 @@
         const data = JSON.parse(reader.result);
         if (!data || !data.routines) throw new Error("bad file");
         if (!confirm("Replace everything on this device with the backup?")) return;
-        S = data;
-        ["sessions", "draft", "bests", "prefs"].forEach(function (k) { delete S[k]; });
+        S = carryForward(data);
+        V.editing = null;
         save(); render();
         toast("Restored.");
       } catch (err) {
@@ -645,9 +925,11 @@
       html += '<article class="card list-card">';
       if (r.kind === "tread") {
         (r.blocks || []).forEach(function (b, i) { html += blockRow(r, b, i); });
-        html += '<div class="plan-mv" style="gap:6px">' +
+        html += '<div class="plan-mv add-blocks">' +
+          '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="warm">+ Warm up</button>' +
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="repeat">+ Intervals</button>' +
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="steady">+ Steady</button>' +
+          '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="cool">+ Cool down</button>' +
           "</div>";
       } else {
         (r.items || []).forEach(function (it, i) { html += mvRow(r, it, i); });
@@ -668,7 +950,9 @@
       '<button class="btn ghost sm" data-act="restore">Restore</button>' +
       '<input type="file" id="restore-file" accept="application/json,.json" hidden></div></article>';
 
-    html += '<p class="foot">Movement Now—yours, on this phone.</p>';
+    // Dated so it is obvious at a glance whether the phone is showing the
+    // current copy or one the home-screen app kept.
+    html += '<p class="foot">Movement Now—yours, on this phone.<br>Updated ' + BUILT + ".</p>";
 
     app.innerHTML = html;
   }
@@ -714,13 +998,32 @@
       case "addset": {
         const it = findMv(t.dataset.id);
         const last = it.sets[it.sets.length - 1];
-        it.sets.push({ w: last.w, r: last.r, note: "" });
+        it.sets.push({ steps: last.steps.map(s => ({ w: s.w, r: s.r })), note: "" });
         save(); render();
         break;
       }
-      case "delset": {
+      case "addstep": {
         const it = findMv(t.dataset.id);
-        if (it.sets.length > 1) it.sets.splice(si, 1);
+        const st = it.sets[Number(t.dataset.i)];
+        if (!st) break;
+        // Split the reps rather than adding more, so the set stays as long as
+        // it was: fifteen becomes eight and seven.
+        const last = st.steps[st.steps.length - 1];
+        const n = Math.max(2, Math.round(Number(last.r) || 0));
+        const keep = Math.ceil(n / 2);
+        last.r = keep;
+        // The new step keeps the weight; what it drops to is yours to type,
+        // since the stacks do not all count in the same size.
+        st.steps.push({ w: Number(last.w) || 0, r: n - keep });
+        save(); render();
+        break;
+      }
+      case "delstep": {
+        const it = findMv(t.dataset.id);
+        // The ✕ takes the weight off a set that has several, or the whole set
+        // when that weight is all it is.
+        if (it.sets[i].steps.length > 1) it.sets[i].steps.splice(si, 1);
+        else if (it.sets.length > 1) it.sets.splice(i, 1);
         save(); render();
         break;
       }
@@ -737,7 +1040,12 @@
       }
       case "addblk": {
         const r = routineById(t.dataset.rid);
-        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 10, 30, 10, 90, 3.5) : steady("", 300, 3.5);
+        // A warm up is a steady stretch that already changes speed partway;
+        // a plain steady one holds a single speed until you split it.
+        const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]])
+          : t.dataset.k === "warm" ? steady("Warm up", [[120, 4], [180, 5]])
+          : t.dataset.k === "cool" ? steady("Cool down", [[180, 4], [120, 3]])
+          : steady("", [[300, 3.5]]);
         r.blocks.push(fresh);
         V.editing = fresh.id;
         save(); render();
@@ -751,13 +1059,50 @@
         save(); render();
         break;
       }
+      case "addend": {
+        const b = findBlock(t.dataset.id), e = ENDS[t.dataset.k];
+        if (!b || !e) break;
+        b[t.dataset.k] = { paces: e.start.map(s => ({ secs: s[0], mph: s[1] })) };
+        save(); render();
+        break;
+      }
+      case "addpace": {
+        const b = findBlock(t.dataset.id);
+        const lg = paceHolder(b, t.dataset.leg);
+        if (!lg) break;
+        // Split what the last step covers rather than adding to it, so the
+        // block stays the length it was.
+        const k = ENDS[t.dataset.leg] || b.type === "steady" ? "secs" : "reps";
+        const last = lg.paces[lg.paces.length - 1];
+        const whole = k === "reps" && lg.paces.length === 1 ? blockReps(b) : Math.round(Number(last[k]) || 0);
+        const n = Math.max(2, whole);
+        const keep = Math.ceil(n / 2);
+        last[k] = keep;
+        const fresh = {};
+        fresh[k] = n - keep;
+        fresh.mph = Math.max(0, Number(last.mph) - 0.5);
+        lg.paces.push(fresh);
+        save(); render();
+        break;
+      }
+      case "delpace": {
+        const b = findBlock(t.dataset.id);
+        const lg = paceHolder(b, t.dataset.leg);
+        if (!lg) break;
+        // Taking the last speed off an end removes that end; every other
+        // holder has to keep one.
+        if (lg.paces.length > 1) lg.paces.splice(Number(t.dataset.pi), 1);
+        else if (ENDS[t.dataset.leg]) delete b[t.dataset.leg];
+        save(); render();
+        break;
+      }
       case "bkbump": {
         const b = findBlock(t.dataset.id);
         if (!b) break;
-        const holder = t.dataset.leg ? b[t.dataset.leg] : b;
-        const k = t.dataset.k;
-        holder[k] = Math.max(k === "reps" ? 1 : 0,
-          Math.round(((Number(holder[k]) || 0) + Number(t.dataset.d) * stepOf(t)) * 10) / 10);
+        const holder = holderOf(b, t.dataset.leg, t.dataset.pi);
+        if (!holder) break;
+        const k = t.dataset.k, sc = scaleOf(t);
+        writeField(holder, k, (Number(holder[k]) || 0) / sc + Number(t.dataset.d) * stepOf(t), sc);
         save(); render();
         break;
       }
@@ -767,7 +1112,7 @@
         const kind = t.dataset.k;
         const fresh = { id: uid(), name: kind === "tread" ? "New treadmill" : "New routine",
           tone: nextTone(), icon: kind === "tread" ? "tread" : "upper", kind: kind };
-        if (kind === "tread") fresh.blocks = [repeatBlock("", 10, 30, 10, 90, 3.5)];
+        if (kind === "tread") fresh.blocks = [repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]])];
         else fresh.items = [mv(uid(), "New movement", [set(0, 10), set(0, 10), set(0, 10)])];
         S.routines.push(fresh);
         save(); render();
@@ -804,20 +1149,28 @@
     switch (t.dataset.act) {
       case "mvname": findMv(t.dataset.id).name = val; save(); break;
       case "mvsetup": findMv(t.dataset.id).setup = val; save(); break;
-      case "mvstep": findMv(t.dataset.id).step = Math.max(0.5, Number(val) || 5); save(); break;
-      case "setw": findMv(t.dataset.id).sets[Number(t.dataset.si)].w = Math.max(0, Number(val) || 0); save(); break;
-      case "setr": findMv(t.dataset.id).sets[Number(t.dataset.si)].r = Math.max(0, Number(val) || 0); save(); break;
+      case "setw": case "setr": {
+        const it = findMv(t.dataset.id);
+        const st = it && it.sets[Number(t.dataset.i)];
+        const sp = st && st.steps[Number(t.dataset.si)];
+        if (!sp) break;
+        sp[t.dataset.act === "setw" ? "w" : "r"] = Math.max(0, Number(val) || 0);
+        save();
+        break;
+      }
       case "bklabel": findBlock(t.dataset.id).label = val.slice(0, 24); save(); break;
       case "bknum": {
         const b = findBlock(t.dataset.id);
         if (!b) break;
-        const holder = t.dataset.leg ? b[t.dataset.leg] : b;
-        const k = t.dataset.k;
-        holder[k] = val === "" ? (k === "reps" ? 1 : 0) : Math.max(k === "reps" ? 1 : 0, Number(val) || 0);
+        const holder = holderOf(b, t.dataset.leg, t.dataset.pi);
+        if (!holder) break;
+        writeField(holder, t.dataset.k, val === "" ? 0 : Number(val) || 0, scaleOf(t));
         save();
         break;
       }
+      default: return;
     }
+    refreshRow(t.dataset.id);
   });
 
   document.addEventListener("change", function (e) {
@@ -840,7 +1193,17 @@
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/movement/sw.js").catch(function () { /* offline is a bonus */ });
+      navigator.serviceWorker.register("/movement/sw.js")
+        // Ask on every launch, so a home-screen app that has been sitting for
+        // weeks picks up a new version instead of keeping the one it installed.
+        .then(function (reg) { if (reg) reg.update(); })
+        .catch(function () { /* offline is a bonus */ });
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState !== "visible") return;
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        if (reg) reg.update();
+      }).catch(function () { /* ignore */ });
     });
   }
 })();

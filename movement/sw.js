@@ -2,7 +2,9 @@
    cache first for the icons. Nothing here touches the logged data—that lives
    in localStorage and never leaves the device. */
 
-const CACHE = "movement-v1";
+/* Bump this whenever the shell changes: `activate` deletes every cache that
+   is not the current one, which is what clears a stale copy off a phone. */
+const CACHE = "movement-v2";
 const SHELL = [
   "/movement/",
   "/movement/index.html",
