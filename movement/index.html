@@ -712,23 +712,39 @@
     return (paces || []).reduce((n, p) => n + (Number(p.secs) || 0), 0);
   }
 
-  // A lead-in the block runs once before anything else, if it has one.
-  function warmTotal(b) {
-    return b.warm ? secsOf(b.warm.paces) : 0;
+  // The two ends a log can carry: easy minutes it runs once before the rounds,
+  // and once after. Neither exists unless it has been added.
+  const ENDS = {
+    warm: { title: "Warm up", hint: "before anything else", note: "before the rest",
+      add: "+ Warm-up leg", addHint: "easy minutes first", said: "warm up",
+      start: [[120, 4], [180, 5]] },
+    cool: { title: "Cool down", hint: "after everything else", note: "after the rest",
+      add: "+ Cool-down leg", addHint: "easy minutes after", said: "cool down",
+      start: [[180, 4], [120, 3]] }
+  };
+
+  function endTotal(b, which) {
+    return b[which] ? secsOf(b[which].paces) : 0;
+  }
+
+  function coreTotal(b) {
+    return b.type === "repeat"
+      ? (Number(b.work.secs) + Number(b.rest.secs)) * blockReps(b)
+      : secsOf(b.paces);
   }
 
   function blockTotal(b) {
-    return warmTotal(b) + (b.type === "repeat"
-      ? (Number(b.work.secs) + Number(b.rest.secs)) * blockReps(b)
-      : secsOf(b.paces));
+    return endTotal(b, "warm") + coreTotal(b) + endTotal(b, "cool");
   }
 
+  // Read in the order the log is run, with the total last.
   function blockLine(b) {
     // A steady stretch at one speed already says how long it runs.
-    const total = b.warm || b.type === "repeat" || b.paces.length > 1;
-    return (b.warm ? clockOf(warmTotal(b)) + " warm up · " : "") + blockSummary(b) +
-      (Number(b.incline) ? " · " + num(b.incline) + "%" : "") +
-      (total ? " · " + clockOf(blockTotal(b)) : "");
+    const total = b.warm || b.cool || b.type === "repeat" || b.paces.length > 1;
+    const end = w => (b[w] ? clockOf(endTotal(b, w)) + " " + ENDS[w].said : "");
+    return [end("warm"), blockSummary(b), end("cool"),
+      Number(b.incline) ? num(b.incline) + "%" : "",
+      total ? clockOf(blockTotal(b)) : ""].filter(Boolean).join(" · ");
   }
 
   function blockRow(r, b, i) {
@@ -747,7 +763,7 @@
   // What sits beside a leg's "+ Speed change": the fast leg counts the block
   // out, so the slower leg can only report how much of it its steps cover.
   function legNote(b, which) {
-    if (which === "warm") return clockOf(warmTotal(b)) + " before the rest";
+    if (ENDS[which]) return clockOf(endTotal(b, which)) + " " + ENDS[which].note;
     if (which === "run") return clockOf(blockTotal(b)) + " in all";
     const all = blockReps(b), lg = b[which];
     if (which === "work") return plural(all, "block") + " · " + clockOf(blockTotal(b));
@@ -767,7 +783,7 @@
     line.textContent = it ? mvLine(it) : blockLine(b);
     const name = line.previousElementSibling;
     if (name) name.textContent = it ? it.name : blockName(b);
-    if (b) ["work", "rest", "run", "warm"].forEach(function (which) {
+    if (b) ["work", "rest", "run", "warm", "cool"].forEach(function (which) {
       const note = $('[data-total="' + id + "-" + which + '"]');
       if (note) note.textContent = legNote(b, which);
     });
@@ -811,20 +827,21 @@
         '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
         // On a lead-in the last ✕ takes the whole thing off, so it is never
         // disabled the way a block's own last speed is.
-        '" aria-label="Remove speed"' + (many || which === "warm" ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+        '" aria-label="Remove speed"' + (many || ENDS[which] ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
     });
     return html + addPaceRow(b, which, note);
   }
 
   // The lead-in, when a block has one: some easy minutes before the rounds
   // or the stretch proper. Otherwise, the button that starts one.
-  function warmRows(b) {
-    if (!b.warm) {
+  function endRows(b, which) {
+    const e = ENDS[which];
+    if (!b[which]) {
       return '<div class="leg add"><span class="leg-tag"></span>' +
-        '<button class="btn quiet sm" data-act="addwarm" data-id="' + b.id + '">+ Warm-up leg</button>' +
-        '<span class="leg-note">easy minutes first</span></div>';
+        '<button class="btn quiet sm" data-act="addend" data-id="' + b.id + '" data-k="' + which + '">' + e.add + "</button>" +
+        '<span class="leg-note">' + e.addHint + "</span></div>";
     }
-    return legHead("Warm up", "before anything else") + minuteRows(b, "warm", "warm");
+    return legHead(e.title, e.hint) + minuteRows(b, which, which);
   }
 
   // A section heading inside the form. Full width, because two words do not
@@ -845,10 +862,10 @@
       '<div><label class="lbl">Name</label><input type="text" value="' + esc(b.label || "") + '" placeholder="' +
       (b.type === "repeat" ? "Sprints" : "Warm up") + '" data-act="bklabel" data-id="' + b.id + '"></div>';
 
-    html += warmRows(b) + (b.type === "repeat"
+    html += endRows(b, "warm") + (b.type === "repeat"
       ? legRows(b, "work", "Fast") + legRows(b, "rest", "Slower")
       : legHead(b.warm ? "Then" : "Run", b.warm ? "the stretch itself" : "at one speed, or several") +
-        minuteRows(b, "", "run"));
+        minuteRows(b, "", "run")) + endRows(b, "cool");
 
     html += '<div class="leg"><span class="leg-tag">Incline</span>' + f("", "incline", b.incline, 0.5, "%") + "<span></span></div>" +
       '<div class="row" style="gap:8px"><button class="btn quiet sm" data-act="bkedit" data-id="">Done</button>' +
@@ -913,6 +930,7 @@
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="warm">+ Warm up</button>' +
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="repeat">+ Intervals</button>' +
           '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="steady">+ Steady</button>' +
+          '<button class="btn quiet sm" data-act="addblk" data-rid="' + r.id + '" data-k="cool">+ Cool down</button>' +
           "</div>";
       } else {
         (r.items || []).forEach(function (it, i) { html += mvRow(r, it, i); });
@@ -1025,6 +1043,7 @@
         // a plain steady one holds a single speed until you split it.
         const fresh = t.dataset.k === "repeat" ? repeatBlock("", 30, [[10, 10]], 90, [[10, 3.5]])
           : t.dataset.k === "warm" ? steady("Warm up", [[120, 4], [180, 5]])
+          : t.dataset.k === "cool" ? steady("Cool down", [[180, 4], [120, 3]])
           : steady("", [[300, 3.5]]);
         r.blocks.push(fresh);
         V.editing = fresh.id;
@@ -1039,10 +1058,10 @@
         save(); render();
         break;
       }
-      case "addwarm": {
-        const b = findBlock(t.dataset.id);
-        if (!b) break;
-        b.warm = { paces: [{ secs: 120, mph: 4 }, { secs: 180, mph: 5 }] };
+      case "addend": {
+        const b = findBlock(t.dataset.id), e = ENDS[t.dataset.k];
+        if (!b || !e) break;
+        b[t.dataset.k] = { paces: e.start.map(s => ({ secs: s[0], mph: s[1] })) };
         save(); render();
         break;
       }
@@ -1052,7 +1071,7 @@
         if (!lg) break;
         // Split what the last step covers rather than adding to it, so the
         // block stays the length it was.
-        const k = t.dataset.leg === "warm" || b.type === "steady" ? "secs" : "reps";
+        const k = ENDS[t.dataset.leg] || b.type === "steady" ? "secs" : "reps";
         const last = lg.paces[lg.paces.length - 1];
         const whole = k === "reps" && lg.paces.length === 1 ? blockReps(b) : Math.round(Number(last[k]) || 0);
         const n = Math.max(2, whole);
@@ -1069,10 +1088,10 @@
         const b = findBlock(t.dataset.id);
         const lg = paceHolder(b, t.dataset.leg);
         if (!lg) break;
-        // Taking the last speed off a lead-in removes the lead-in; every other
+        // Taking the last speed off an end removes that end; every other
         // holder has to keep one.
         if (lg.paces.length > 1) lg.paces.splice(Number(t.dataset.pi), 1);
-        else if (t.dataset.leg === "warm") delete b.warm;
+        else if (ENDS[t.dataset.leg]) delete b[t.dataset.leg];
         save(); render();
         break;
       }

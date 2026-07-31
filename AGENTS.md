@@ -88,23 +88,32 @@ slower leg, and how many times round (30s at 12.5 against 90s at 3.5, ten times
 over). Keep one repeat block per combination the owner can do; that list is the
 record of where their speeds are. Times are held in **seconds** everywhere.
 
-A treadmill routine offers three ways to add: **+ Warm up**, **+ Intervals**,
-**+ Steady**. Warm up and Steady both build a *steady* block—the difference is
-only what they start as. A warm up arrives already named and already split (two
-minutes at 4, then three at 5); a steady one arrives blank at a single speed.
-The owner asked for a warm up as its own labelled option after failing to find
-it behind "Steady", so keep it named in their words, not in the data model's.
-There is no separate warm-up *type*: a warm up is a steady stretch that starts
-useful, and the ↑↓ arrows move it above the intervals.
+**Every block under a treadmill routine is a separate log of something the
+owner can do—not a part of one assembled run.** They said so directly. The ↑↓
+arrows order the list; they do not make a programme. So each block has to read
+as complete on its own, which is what the two ends below are for.
 
-Separately, **any block can carry a lead-in**: `b.warm`, absent unless added,
-is `{paces: [{secs, mph}]}`—easy minutes the block runs once before its rounds
-or its stretch proper. It is counted in minutes like a steady block, it feeds
-`blockTotal`, and the summary prefixes `5:00 warm up · `. Taking the last speed
-off a lead-in deletes `b.warm` entirely, which is why its ✕ is never disabled
-where other holders keep their last row. Both ways of warming up exist on
-purpose and the owner asked for each in turn: a separate block when the warm up
-stands on its own, a lead-in when it belongs to the piece that follows.
+Four ways to add: **+ Warm up**, **+ Intervals**, **+ Steady**, **+ Cool down**.
+Warm up, Steady and Cool down all build a *steady* block—the difference is only
+what they start as. A warm up arrives named and already split (two minutes at 4,
+then three at 5), a cool down named and winding down (three at 4, then two at 3),
+a steady one blank at a single speed. The owner asked for the warm up as its own
+labelled option after failing to find it behind "Steady", so keep these named in
+their words, not in the data model's. There is no separate warm-up or cool-down
+*type*.
+
+**Any block can also carry its own two ends**: `b.warm` and `b.cool`, absent
+unless added, each `{paces: [{secs, mph}]}`—easy minutes the log runs once
+before its rounds and once after. `ENDS` holds everything that differs between
+them, so neither is special-cased anywhere else. They are counted in minutes
+like a steady block, they feed `blockTotal`, and `blockLine` reads in the order
+the log is run: `5:00 warm up · 10 blocks · 30s at 12.5 / 90s at 3.5 · 5:00 cool
+down · 30:00`. Taking the last speed off an end deletes it entirely, which is
+why its ✕ is never disabled where other holders keep their last row.
+
+Both ways of warming up exist on purpose and the owner asked for each in turn: a
+separate block when it stands on its own as a thing they do, an end when it
+belongs to the log it is attached to.
 
 Both kinds carry `paces`, a list of speed steps, so a block can change speed
 partway through. A repeat leg counts its steps in rounds (`{reps, mph}`—two at
