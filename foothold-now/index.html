@@ -426,13 +426,6 @@
   }
   .ladder-card:hover { border-color: var(--accent); }
   .ladder-card h2 { margin-bottom: 2px; overflow-wrap: anywhere; white-space: pre-line; }
-  .ladder-card h2[data-action="rename-home-ladder"] {
-    cursor: text;
-    border-radius: 8px;
-    margin: -2px -6px 0;
-    padding: 2px 6px;
-  }
-  .ladder-card h2[data-action="rename-home-ladder"]:hover { background: var(--surface2); }
   .ladder-card.renaming { cursor: default; }
   textarea.rename-home {
     font-family: var(--serif);
@@ -1416,7 +1409,9 @@
       } else {
         h += '<div class="ladder-card-wrap">' +
           '<button class="card ladder-card" data-action="open-ladder" data-id="' + l.id + '">' +
-            '<h2 data-action="rename-home-ladder" data-id="' + l.id + '" title="Click to rename">' + esc(l.name) + '</h2>' +
+            /* the title is not its own click target: tapping anywhere on the card,
+               name included, opens the ladder. Renaming lives in the ⋮ menu. */
+            '<h2>' + esc(l.name) + '</h2>' +
             body +
           '</button>' +
           '<details class="ladder-menu card-menu">' +
