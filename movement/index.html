@@ -190,6 +190,12 @@
   .leg-note { font-size: 12px; color: var(--ink3); padding-left: 2px; }
   .leg .field { grid-template-columns: 28px minmax(0, 1fr) 28px; }
   .leg.pace { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) 32px; }
+  /* A third field, when the incline is set per part rather than per log.
+     Three numbers and their ± buttons will not fit, so the number wins. */
+  .leg.pace.tri { grid-template-columns: 44px repeat(3, minmax(0, 1fr)) 30px; gap: 5px; }
+  .leg.pace.tri .field { grid-template-columns: minmax(0, 1fr); }
+  .leg.pace.tri .field > button { display: none; }
+  .leg .btn.quiet { white-space: nowrap; }
   .leg.add > button { justify-content: flex-start; padding: 0; white-space: nowrap; }
   .leg.apart { margin-top: 15px; }
   .leg-head {
@@ -201,6 +207,7 @@
   @media (max-width: 359px) {
     .leg { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
     .leg.pace { grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr) 28px; }
+    .leg.pace.tri { grid-template-columns: 36px repeat(3, minmax(0, 1fr)) 26px; gap: 4px; }
     /* The row's label cell is empty, so the button takes it and keeps one line. */
     .leg.add { grid-template-columns: 0 auto minmax(0, 1fr); }
     .leg .field { grid-template-columns: minmax(0, 1fr); }
@@ -726,6 +733,41 @@
     return b[which] ? secsOf(b[which].paces) : 0;
   }
 
+  // Everything in a log that owns speed steps, in the order it is run.
+  function allHolders(b) {
+    const hs = b.warm ? [b.warm] : [];
+    if (b.type === "repeat") hs.push(b.work, b.rest);
+    else hs.push(b);
+    if (b.cool) hs.push(b.cool);
+    return hs;
+  }
+
+  function allPaces(b) {
+    return allHolders(b).reduce((a, h) => a.concat(h.paces || []), []);
+  }
+
+  // A log either holds one incline throughout, or carries one on every step.
+  // Which it is, is simply whether the steps have their own.
+  function varies(b) {
+    return allPaces(b).some(p => p.incline != null);
+  }
+
+  function shallowest(b) {
+    const all = allPaces(b).map(p => Number(p.incline) || 0);
+    return all.length ? Math.min.apply(null, all) : 0;
+  }
+
+  function inclineRange(b) {
+    const all = allPaces(b).map(p => Number(p.incline) || 0);
+    const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    return lo === hi ? num(lo) + "%" : num(lo) + "–" + num(hi) + "%";
+  }
+
+  function inclineText(b) {
+    if (varies(b)) return inclineRange(b);
+    return Number(b.incline) ? num(b.incline) + "%" : "";
+  }
+
   function coreTotal(b) {
     return b.type === "repeat"
       ? (Number(b.work.secs) + Number(b.rest.secs)) * blockReps(b)
@@ -742,7 +784,7 @@
     const total = b.warm || b.cool || b.type === "repeat" || b.paces.length > 1;
     const end = w => (b[w] ? clockOf(endTotal(b, w)) + " " + ENDS[w].said : "");
     return [end("warm"), blockSummary(b), end("cool"),
-      Number(b.incline) ? num(b.incline) + "%" : "",
+      inclineText(b),
       total ? clockOf(blockTotal(b)) : ""].filter(Boolean).join(" · ");
   }
 
@@ -762,6 +804,7 @@
   // What sits beside a leg's "+ Speed change": the fast leg counts the block
   // out, so the slower leg can only report how much of it its steps cover.
   function legNote(b, which) {
+    if (which === "steep") return inclineRange(b) + ", by part";
     if (ENDS[which]) return clockOf(endTotal(b, which)) + " " + ENDS[which].note;
     if (which === "run") return clockOf(blockTotal(b)) + " in all";
     const all = blockReps(b), lg = b[which];
@@ -782,7 +825,7 @@
     line.textContent = it ? mvLine(it) : blockLine(b);
     const name = line.previousElementSibling;
     if (name) name.textContent = it ? it.name : blockName(b);
-    if (b) ["work", "rest", "run", "warm", "cool"].forEach(function (which) {
+    if (b) ["work", "rest", "run", "warm", "cool", "steep"].forEach(function (which) {
       const note = $('[data-total="' + id + "-" + which + '"]');
       if (note) note.textContent = legNote(b, which);
     });
@@ -790,6 +833,34 @@
       const note = $('[data-reps="' + id + "-" + i + '"]');
       if (note) note.textContent = setNote(st);
     });
+  }
+
+  // Either one incline for the whole log, or one on every step. The button
+  // moves between the two; turning it off drops back to the block's number.
+  function inclineRow(b) {
+    if (varies(b)) {
+      return '<div class="leg apart"><span class="leg-tag">Incline</span>' +
+        '<span class="leg-note" data-total="' + b.id + '-steep">' + inclineRange(b) + ", by part</span>" +
+        '<button class="btn quiet sm" style="justify-content:flex-end;padding:0" data-act="varyoff" data-id="' +
+        b.id + '">Same throughout</button></div>';
+    }
+    return '<div class="leg apart"><span class="leg-tag">Incline</span>' +
+      field("bk", b.id, "", "incline", b.incline, 0.5, "%") +
+      '<button class="btn quiet sm" style="justify-content:flex-end;padding:0" data-act="varyon" data-id="' +
+      b.id + '">Vary by part</button></div>';
+  }
+
+  // One speed step: how fast, how much of the log it covers, and—only when
+  // the log's incline varies—how steep that part is.
+  function paceRow(b, which, pc, pi, second, deletable) {
+    const steep = varies(b)
+      ? field("bk", b.id, which, "incline", pc.incline, 0.5, "%", pi)
+      : "";
+    return '<div class="leg pace' + (steep ? " tri" : "") + '"><span class="leg-tag">' +
+      (pi === 0 ? "at" : "then") + "</span>" +
+      field("bk", b.id, which, "mph", pc.mph, 0.5, "mph", pi) + second + steep +
+      '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
+      '" aria-label="Remove speed"' + (deletable ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
   }
 
   // A leg: how long it lasts, then one row per speed step, then the button
@@ -805,10 +876,7 @@
       const count = which === "work" || many
         ? field("bk", b.id, which, "reps", pc.reps, 1, "blocks", pi)
         : "<span></span>";
-      html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
-        field("bk", b.id, which, "mph", pc.mph, 0.5, "mph", pi) + count +
-        '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
-        '" aria-label="Remove speed"' + (many ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+      html += paceRow(b, which, pc, pi, count, many);
     });
 
     return html + addPaceRow(b, which, "run");
@@ -820,13 +888,10 @@
     const holder = which ? b[which] : b, many = holder.paces.length > 1;
     let html = "";
     holder.paces.forEach(function (pc, pi) {
-      html += '<div class="leg pace"><span class="leg-tag">' + (pi === 0 ? "at" : "then") + "</span>" +
-        field("bk", b.id, which, "mph", pc.mph, 0.5, "mph", pi) +
-        field("bk", b.id, which, "secs", pc.secs, 0.5, "min", pi, 60) +
-        '<button class="mini" data-act="delpace" data-id="' + b.id + '" data-leg="' + which + '" data-pi="' + pi +
-        // On a lead-in the last ✕ takes the whole thing off, so it is never
-        // disabled the way a block's own last speed is.
-        '" aria-label="Remove speed"' + (many || ENDS[which] ? "" : " disabled") + ">" + ICONS.x + "</button></div>";
+      // On a lead-in the last ✕ takes the whole thing off, so it is never
+      // disabled the way a block's own last speed is.
+      html += paceRow(b, which, pc, pi, field("bk", b.id, which, "secs", pc.secs, 0.5, "min", pi, 60),
+        many || !!ENDS[which]);
     });
     return html + addPaceRow(b, which, note);
   }
@@ -866,7 +931,7 @@
       : legHead(b.warm ? "Then" : "Run", b.warm ? "the stretch itself" : "at one speed, or several") +
         minuteRows(b, "", "run")) + endRows(b, "cool");
 
-    html += '<div class="leg"><span class="leg-tag">Incline</span>' + f("", "incline", b.incline, 0.5, "%") + "<span></span></div>" +
+    html += inclineRow(b) +
       '<div class="row" style="gap:8px"><button class="btn quiet sm" data-act="bkedit" data-id="">Done</button>' +
       '<span style="flex:1"></span>' +
       '<button class="btn quiet sm" style="color:var(--danger)" data-act="bkdel" data-rid="' + r.id + '" data-id="' + b.id + '">' + ICONS.trash + "</button></div>" +
@@ -1059,10 +1124,36 @@
         save(); render();
         break;
       }
+      case "varyon": {
+        const b = findBlock(t.dataset.id);
+        if (!b) break;
+        // Every step starts at what the whole log was set to, so switching
+        // changes nothing until a number is changed.
+        allPaces(b).forEach(function (p) { p.incline = Number(b.incline) || 0; });
+        save(); render();
+        break;
+      }
+      case "varyoff": {
+        const b = findBlock(t.dataset.id);
+        if (!b) break;
+        // The block keeps the shallowest of them, rather than a number that
+        // was never on screen.
+        b.incline = shallowest(b);
+        allPaces(b).forEach(function (p) { delete p.incline; });
+        save(); render();
+        break;
+      }
       case "addend": {
         const b = findBlock(t.dataset.id), e = ENDS[t.dataset.k];
         if (!b || !e) break;
-        b[t.dataset.k] = { paces: e.start.map(s => ({ secs: s[0], mph: s[1] })) };
+        // Match the flattest part already in the log rather than `b.incline`,
+        // which is not on screen while the incline varies.
+        const steep = varies(b) ? shallowest(b) : null;
+        b[t.dataset.k] = { paces: e.start.map(function (s) {
+          const p = { secs: s[0], mph: s[1] };
+          if (steep != null) p.incline = steep;
+          return p;
+        }) };
         save(); render();
         break;
       }
@@ -1081,6 +1172,7 @@
         const fresh = {};
         fresh[k] = n - keep;
         fresh.mph = Math.max(0, Number(last.mph) - 0.5);
+        if (last.incline != null) fresh.incline = last.incline;
         lg.paces.push(fresh);
         save(); render();
         break;
