@@ -131,6 +131,16 @@ argument to `field()`; a repeat leg's 30s and 90s stay in seconds, because that
 is how those are actually counted. Both units on screen at once is deliberate—
 match the unit to the thing rather than to the storage.
 
+**Incline is either one number for the whole log or one per step**, and which
+it is, is derived: `varies(b)` is true when any step in any of the log's holders
+carries an `incline`. There is no mode flag to fall out of sync with the data.
+"Vary by part" writes `b.incline` onto every step; "Same throughout" collapses
+back to the *shallowest* of them and deletes the rest, because `b.incline` has
+not been on screen meanwhile and would be a number the owner never chose—the
+same reason a new end or a split step seeds from `shallowest(b)`. The summary
+shows a range (`0–6%`) while it varies. Three number fields plus their ± will
+not fit a phone row, so `.leg.pace.tri` hides the ± and keeps the numbers.
+
 **The fast leg counts the block out**: `blockReps` is the sum of its steps'
 `reps`, and the slower leg's steps are shares of those same rounds. A slower
 leg that adds up short holds its last speed to the end; one that overshoots
