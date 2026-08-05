@@ -426,10 +426,14 @@
   }
   .ladder-card:hover { border-color: var(--accent); }
   .ladder-card h2 { margin-bottom: 2px; overflow-wrap: anywhere; white-space: pre-line; }
+  /* The rename target hugs the name itself rather than filling the card's width,
+     so the empty space beside a short name still opens the ladder. */
   .ladder-card h2[data-action="rename-home-ladder"] {
     cursor: text;
     border-radius: 8px;
-    margin: -2px -6px 0;
+    width: fit-content;
+    max-width: 100%;
+    margin: -2px 0 0 -6px;
     padding: 2px 6px;
   }
   .ladder-card h2[data-action="rename-home-ladder"]:hover { background: var(--surface2); }
@@ -532,7 +536,8 @@
   .ladder-card-wrap { position: relative; }
   .ladder-card-wrap:has(.ladder-menu[open]) { z-index: 10; }
   .ladder-menu.card-menu { position: absolute; top: 12px; right: 12px; }
-  .ladder-card-wrap .ladder-card h2 { padding-right: 40px; }
+  /* keep a long name clear of the ⋮ button without widening its click target */
+  .ladder-card-wrap .ladder-card h2 { max-width: calc(100% - 34px); }
   .ladder-stats { display: flex; gap: 18px; margin: 16px 0 22px; font-size: 13.5px; color: var(--ink2); flex-wrap: wrap; }
   .ladder-stats b { color: var(--ink); font-weight: 600; }
 
