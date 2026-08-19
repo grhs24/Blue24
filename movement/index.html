@@ -6,6 +6,10 @@
 <title>Movement Now</title>
 <meta name="description" content="A quiet, private log for sets, weights, and treadmill intervals. Everything stays on your own phone.">
 <meta name="robots" content="noindex, nofollow">
+<!-- The one place the build is stamped. Shown in the footer, and what the
+     page compares against the server to notice it is running an old copy.
+     Change it on every deploy, along with BUILD in sw.js. -->
+<meta name="movement-build" content="5 August 2026">
 <meta name="theme-color" content="#F2F4EF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141B17" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -315,7 +319,8 @@
 
   const KEY = "movement.v1";
   const UNIT = "lb";
-  const BUILT = "31 July 2026";
+  const STAMP = /name="movement-build" content="([^"]+)"/;
+  const BUILT = (document.querySelector('meta[name="movement-build"]') || {}).content || "";
 
   const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 
@@ -1283,6 +1288,34 @@
 
   render();
 
+  /* ============================================================
+     Staying current
+
+     A home-screen app can start from a copy the phone kept—after a
+     launch with no signal, or a resume that never re-fetched. So the
+     page checks what the server has and takes it, rather than sitting
+     on an old version until someone notices.
+     ============================================================ */
+
+  // Once per launch at most, so a failure can never turn into a loop.
+  let checking = false;
+  function checkFresh() {
+    if (checking || !navigator.onLine || sessionStorage.getItem("movement.refreshed")) return;
+    checking = true;
+    fetch("/movement/", { cache: "reload" })
+      .then(res => (res && res.ok ? res.text() : null))
+      .then(function (html) {
+        checking = false;
+        const m = html && html.match(STAMP);
+        if (!m || m[1] === BUILT) return;
+        // Never pull the page out from under an open editor.
+        if (V.editing) return;
+        sessionStorage.setItem("movement.refreshed", "1");
+        location.reload();
+      })
+      .catch(function () { checking = false; /* offline is fine */ });
+  }
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("/movement/sw.js")
@@ -1290,12 +1323,14 @@
         // weeks picks up a new version instead of keeping the one it installed.
         .then(function (reg) { if (reg) reg.update(); })
         .catch(function () { /* offline is a bonus */ });
+      checkFresh();
     });
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState !== "visible") return;
       navigator.serviceWorker.getRegistration().then(function (reg) {
         if (reg) reg.update();
       }).catch(function () { /* ignore */ });
+      checkFresh();
     });
   }
 })();

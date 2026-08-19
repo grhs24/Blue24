@@ -51,11 +51,27 @@ start-and-finish flow, then the per-movement weight step.
 The path stays `/movement/` even though the name gained a word—changing it
 would break the home-screen icon already installed on the owner's phone.
 
-The footer carries `BUILT`, a plain date. **Change it with every deploy**—it
-is the only way the owner can tell from the phone whether the home-screen app
-is showing the current copy or one it kept, and answering that question is
-otherwise guesswork. Bump `CACHE` in `sw.js` at the same time when the shell
-changes, since `activate` clears every cache but the current one.
+### The build stamp
+
+`<meta name="movement-build">` in the head is the one place the build is
+stamped. **Change it on every deploy of `movement/`, and change `BUILD` in
+`sw.js` to match**—not only when `sw.js` itself changes. A browser re-installs
+a service worker only when the worker's own bytes differ, so a deploy that
+leaves `BUILD` alone leaves the phone's offline copy frozen at whatever the
+page was the last time it did change. That is how the owner ended up looking
+at a weeks-old version, and it will happen again if the two drift apart.
+
+Three things depend on the stamp, which is why it earns the discipline: the
+footer shows it, so staleness is visible rather than guesswork; `sw.js` names
+its cache after it, so `activate` clears every older one; and on launch (and
+on returning to the app) the page fetches `/movement/` and compares stamps,
+reloading itself once if the server has a newer one. That last one is guarded
+by `sessionStorage` so a failure can never become a reload loop, and it never
+fires while an editor is open.
+
+The worker refreshes **both** `/movement/` and `/movement/index.html` on every
+successful page fetch. Updating only one leaves the other as a permanent stale
+fallback for any launch that catches a bad moment on the network.
 
 It shares the origin with Foothold Now and nothing else. Keep it that way: no
 link from any Foothold page in, no link back out, no entry in `sitemap.xml`,
