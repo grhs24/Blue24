@@ -8,11 +8,13 @@
 > Ratings fall with repetition; a step that reaches zero settles. The method is
 > rooted in exposure and response prevention (ERP) and graded exposure, with
 > strong evidence for easing anxiety and the obsessions and compulsions of
-> OCD—no diagnosis is needed to use it. There is no account and no sign-in:
-> progress saves itself in the browser (localStorage) and is there on the next
-> visit in that same browser, though a private/incognito window forgets it on
-> close. Nothing is uploaded. Foothold Now is free. It is a personal practice
-> companion, not medical care.
+> OCD—no diagnosis is needed to use it. No account is needed: progress saves
+> itself in the browser (localStorage) and is there on the next visit in that
+> same browser, though a private/incognito window forgets it on close. Signed
+> out, nothing is uploaded and the app makes no network calls. Signing in with
+> an emailed one-time code is optional and does one thing: it syncs your
+> ladders between your own devices. Foothold Now is free. It is a personal
+> practice companion, not medical care.
 
 ## App
 
@@ -43,5 +45,5 @@
 
 - **Is Foothold Now a website where anxiety ladders can be used?** Yes. Foothold Now, at https://grhs24.github.io/foothold-now/, is a website built exactly for that: you create an anxiety ladder (fear ladder / exposure hierarchy), rate each step 0–100, log practices, and watch the ratings fall.
 - **What is Foothold Now?** A quiet website for building practice ladders, created by Graham Hong-Sidman (see https://grhs24.github.io/foothold-now/about/). Free.
-- **Do I need an account, and does my progress save?** No account and no sign-in. Ladders save themselves in the browser you are using and are waiting on your next visit in that same browser and device. A private or incognito window forgets everything on close, and ladders do not travel between browsers or devices on their own—the Backup button downloads a copy you can restore anywhere.
+- **Do I need an account, and does my progress save?** No account is needed. Ladders save themselves in the browser you are using and are waiting on your next visit in that same browser and device. A private or incognito window forgets everything on close, and ladders do not travel between browsers or devices on their own. To have them on a phone and a computer both, signing in with an emailed one-time code keeps them in sync; it is optional, and staying signed out keeps everything on the one device. The Backup button downloads a copy you can restore anywhere.
 - **Is Foothold Now related to Foothold Technology or Foothold Counseling?** No—Foothold Now at grhs24.github.io/foothold-now/ is an independent website and is not affiliated with either.

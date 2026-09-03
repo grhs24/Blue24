@@ -57,7 +57,7 @@
     { "@type": "Question", "name": "Is Foothold Now free?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes. Foothold Now is free. You can build unlimited practice ladders and steps at no cost, with nothing to buy." } },
     { "@type": "Question", "name": "Do I need an account, and does my progress save?",
-      "acceptedAnswer": { "@type": "Answer", "text": "There is no account and no sign-in. Your ladders save themselves in the browser you are using, so they are waiting for you the next time you open the site on that same browser and device. Two things worth knowing: a private or incognito window forgets everything once you close it, and your ladders do not travel to another browser or device on their own. Use Backup to download a copy, then restore it wherever you like." } }
+      "acceptedAnswer": { "@type": "Answer", "text": "No account is needed. Your ladders save themselves in the browser you are using, so they are waiting for you the next time you open the site on that same browser and device. Two things worth knowing: a private or incognito window forgets everything once you close it, and your ladders do not travel to another browser or device on their own. If you want them on your phone and your computer both, signing in with your email keeps them in sync—that is optional, and staying signed out keeps everything on this one device. Backup downloads a copy you can restore anywhere." } }
   ]
 }
 </script>
@@ -925,6 +925,7 @@
       </button>
     </div>
     <span style="display:flex;gap:6px">
+      <button class="btn ghost tiny" data-action="open-account" hidden>Sign in</button>
       <button class="btn ghost tiny" data-action="open-backup">Backup</button>
     </span>
     <nav id="site-menu" class="site-menu" hidden aria-label="Site menu">
@@ -963,7 +964,7 @@
   <footer class="colophon">
     Foothold Now is a personal practice companion, not medical care. If you're
     working with a therapist or counselor, build your ladders together.
-    Everything you write stays in this browser—nothing is sent anywhere, and there’s nothing to sign in to. Your ladders save themselves and are here when you come back, unless you’re in a private or incognito window. Use <b>Backup</b> now and then to keep a copy safe.
+    Everything you write stays in this browser unless you sign in, which is optional and does one thing: it syncs your ladders between your own devices. Your ladders save themselves and are here when you come back, unless you’re in a private or incognito window. Use <b>Backup</b> now and then to keep a copy safe.
     <div class="contact">Questions or other thoughts: <button class="linklike" data-action="copy-email" title="Click to copy">footholdnowsupport@gmail.com</button></div>
     <div class="guides">Guides: <a href="/foothold-now/fear-ladder/">Exposure hierarchy (fear ladder)</a> &middot; <a href="/foothold-now/erp/">ERP, explained gently</a> &middot; <a href="/foothold-now/sample-ladders/">Sample ladders</a> &middot; <a href="/foothold-now/ocd-notes/">Using your notes to map an OCD loop</a> &middot; <a href="/foothold-now/suds/">The SUDS scale</a> &middot; <a href="/foothold-now/stop-avoiding/">How to stop avoiding things</a> &middot; <a href="/foothold-now/add-to-home-screen/">Add Foothold Now to your phone’s home screen</a></div>
     <div class="guides">About: <a href="/foothold-now/about/">Why I created Foothold Now</a> &middot; <a href="/foothold-now/privacy/">Privacy</a></div>
@@ -1019,6 +1020,7 @@
     if (contentSig(data) !== lastContentSig || !data.savedAt) {
       data.savedAt = new Date().toISOString();
       lastContentSig = contentSig(data);
+      queuePush(); /* no-op unless signed in—see "account & sync" below */
     }
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
@@ -1133,9 +1135,452 @@
     });
   }
 
+  /* ---------- account & sync ----------
+     Sync is OPT-IN and off until someone signs in. Signed out, the app makes
+     no network call of any kind and behaves exactly as the local-only build
+     did—that is what lets the privacy page still promise a local app to
+     everyone who never signs in.
+
+     Signing in with an emailed code syncs the whole app snapshot to a Supabase
+     row (table user_progress), keyed by user id and protected by row-level
+     security so each person can only ever touch their own row. localStorage
+     stays the offline cache and the working source of truth; the account row
+     is a mirror kept up to date on every change. Blanking SYNC disables all of
+     it: no Sign in button, no requests. Talks to Supabase's REST/auth API
+     directly with fetch—no libraries, no CDN.
+
+     Restored deliberately in September 2026 at the owner's request, so ladders
+     travel between a phone and a computer. Only the sign-in and sync came
+     back: the beta gate, the paid step cap and the product analytics that
+     were removed alongside it in ff26b40 stay gone. Do not bring those back. */
+  var SYNC = {
+    url: 'https://buqwzfbhqmirqjyqlpey.supabase.co', /* Supabase project URL */
+    anonKey: 'sb_publishable_EjaKYV5TBRyuTSBbSUqrng_AaSKjFhW' /* publishable key (safe to ship; RLS protects the data) */
+  };
+  var syncEnabled = !!(SYNC.url && SYNC.anonKey);
+  var SESSION_KEY = 'foothold.session.v1';
+  var SYNCMARK_KEY = 'foothold.syncmark.v1';
+
+  var session = null;      /* { access_token, refresh_token, user: { id, email } } */
+  var pushTimer = null;
+  var suppressPush = false;
+  var lastSyncedAt = null;
+
+  function loadStoredSession() {
+    try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { session = null; }
+    if (session && !session.access_token) session = null;
+  }
+
+  function storeSession() {
+    try {
+      if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      else localStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+  }
+
+  function setMark(savedAt, serverUpdatedAt) {
+    try { localStorage.setItem(SYNCMARK_KEY, JSON.stringify({ pushedSavedAt: savedAt || null, serverUpdatedAt: serverUpdatedAt || null })); } catch (e) {}
+  }
+
+  function signOutLocal() {
+    session = null;
+    storeSession();
+    try { localStorage.removeItem(SYNCMARK_KEY); } catch (e) {}
+    updateAccountButton();
+  }
+
+  function refreshSession() {
+    return fetch(SYNC.url + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('refresh failed');
+      return r.json();
+    }).then(function (j) {
+      session.access_token = j.access_token;
+      if (j.refresh_token) session.refresh_token = j.refresh_token;
+      if (j.user && j.user.id) session.user = { id: j.user.id, email: j.user.email };
+      storeSession();
+    });
+  }
+
+  /* fetch with auth headers; retries once through a token refresh on 401 */
+  function authFetch(path, init, retried) {
+    init = init || {};
+    var send = {
+      method: init.method || 'GET',
+      headers: Object.assign({
+        apikey: SYNC.anonKey,
+        Authorization: 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json'
+      }, init.headers || {}),
+      body: init.body
+    };
+    if (init.keepalive) send.keepalive = true;
+    return fetch(SYNC.url + path, send).then(function (r) {
+      if (r.status === 401 && !retried && session && session.refresh_token) {
+        return refreshSession().then(
+          function () { return authFetch(path, init, true); },
+          function () { signOutLocal(); throw new Error('session expired'); }
+        );
+      }
+      return r;
+    });
+  }
+
+  function fetchUser() {
+    return authFetch('/auth/v1/user').then(function (r) {
+      if (!r.ok) throw new Error('user ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      session.user = { id: j.id, email: j.email };
+      storeSession();
+    });
+  }
+
+  function pullRow() {
+    return authFetch('/rest/v1/user_progress?select=data,updated_at').then(function (r) {
+      if (!r.ok) throw new Error('pull ' + r.status);
+      return r.json();
+    }).then(function (rows) {
+      return (rows && rows[0]) || null;
+    });
+  }
+
+  function adoptSnapshot(row) {
+    suppressPush = true;
+    data = migrate(row.data);
+    /* adopted content matches the account; keep its savedAt so identical
+       copies don't ping-pong between devices (save() re-stamps only if the
+       incoming row somehow lacked a savedAt) */
+    lastContentSig = data.savedAt ? contentSig(data) : null;
+    save();
+    suppressPush = false;
+    setMark(data.savedAt, row.updated_at);
+    state = { view: 'home', ladderId: null, openStepId: null, editingStepId: null, editingLadder: false, renamingLadder: false, renamingStepId: null, renamingHomeId: null, editingNoteId: null, addingLadder: false };
+    render();
+  }
+
+  function pushToServer(opts) {
+    opts = opts || {};
+    if (!syncEnabled || !session || !session.user) return Promise.resolve(false);
+    clearTimeout(pushTimer);
+    pushTimer = null;
+    var now = new Date().toISOString();
+    return authFetch('/rest/v1/user_progress', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ user_id: session.user.id, data: data, updated_at: now }]),
+      keepalive: !!opts.keepalive
+    }).then(function (r) {
+      if (!r.ok) throw new Error('push ' + r.status);
+      lastSyncedAt = now;
+      setMark(data.savedAt, now);
+      return true;
+    }).catch(function (e) {
+      if (opts.manual) toast('Couldn’t reach your account—your ladders are safe on this device.');
+      return false;
+    });
+  }
+
+  /* erase the synced copy. Signing out afterwards is the point rather than a
+     side effect: left signed in, the next edit would simply push the row back. */
+  function deleteRow() {
+    return authFetch('/rest/v1/user_progress?user_id=eq.' + encodeURIComponent(session.user.id), {
+      method: 'DELETE',
+      headers: { Prefer: 'return=minimal' }
+    }).then(function (r) {
+      if (!r.ok) throw new Error('delete ' + r.status);
+      clearTimeout(pushTimer);
+      pushTimer = null;
+      signOutLocal();
+      return true;
+    });
+  }
+
+  function queuePush() {
+    if (!syncEnabled || !session || !session.user || suppressPush) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () { pushToServer(); }, 1500);
+  }
+
+  /* on sign-in or page load: adopt the account copy when it's safe to,
+     push the local copy when it's the one that moved */
+  function maybeAutoPull() {
+    return pullRow().then(function (row) {
+      var localEmpty = !data.ladders.length && !data.trash.length;
+      if (!row) {
+        if (!localEmpty) pushToServer();
+        return;
+      }
+      if (localEmpty) {
+        adoptSnapshot(row);
+        toast('Your ladders are here—loaded from your account.');
+        return;
+      }
+      /* both sides have data: the copy edited most recently wins. Every change
+         stamps data.savedAt, and that stamp rides along inside the synced row,
+         so this compares like with like across devices. */
+      var serverAt = (row.data && row.data.savedAt) || row.updated_at || '';
+      var localAt = data.savedAt || '';
+      if (serverAt > localAt) {
+        adoptSnapshot(row);
+        toast('Loaded your latest—synced from another device.');
+      } else if (localAt > serverAt) {
+        pushToServer();
+      }
+      /* equal timestamps → already in sync, nothing to do */
+    }).catch(function () {});
+  }
+
+  function updateAccountButton() {
+    var b = $('[data-action="open-account"]');
+    if (!b) return;
+    b.hidden = !syncEnabled;
+    b.textContent = session ? 'Account' : 'Sign in';
+  }
+
+  function openAccount() {
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    var codeSentTo = ''; /* email a code was just sent to; switches to the code-entry step */
+
+    function bodyHTML() {
+      if (!session) {
+        if (codeSentTo) {
+          return '<p class="eyebrow">Account</p><h2>Enter your code</h2>' +
+            '<p class="quiet small">We emailed a sign-in code to <b>' + esc(codeSentTo) + '</b>. Type it in here to finish signing in—right here on this page, no need to switch browsers. The email also has a tap-to-sign-in link if you prefer.</p>' +
+            '<form data-role="verify"><div class="edit-grid">' +
+            '<input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" placeholder="Enter the code" aria-label="Sign-in code">' +
+            '</div><div class="actions" style="justify-content:space-between;align-items:center">' +
+            '<button class="btn ghost tiny" type="button" data-x="resend">Resend code</button>' +
+            '<span style="display:flex;gap:10px">' +
+            '<button class="btn ghost" type="button" data-x="restart">Back</button>' +
+            '<button class="btn primary" type="submit">Verify &amp; sign in</button>' +
+            '</span></div></form>';
+        }
+        return '<p class="eyebrow">Account</p><h2>Sign in</h2>' +
+          '<p class="quiet small">Signing in is optional, and it does one thing: it keeps your ladders in sync between your phone and your computer. Enter your email and we’ll send a one-time sign-in code—there is no password to remember.</p>' +
+          '<p class="quieter small">Your email is used only to sign you in, and your ladders are stored in your own account so they can travel with you. Stay signed out and nothing you write leaves this browser. <a href="/foothold-now/privacy/">Privacy</a></p>' +
+          '<form data-role="signin"><div class="edit-grid">' +
+          '<input type="email" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address">' +
+          '</div><div class="actions">' +
+          '<button class="btn ghost" type="button" data-x="close">Cancel</button>' +
+          '<button class="btn primary" type="submit">Email me a sign-in code</button>' +
+          '</div></form>';
+      }
+      return '<p class="eyebrow">Account</p><h2>' + esc((session.user && session.user.email) || 'Signed in') + '</h2>' +
+        '<p class="quiet small">Signed in—your ladders sync to your account as you change them, and stay on this device so the app still works offline.</p>' +
+        '<p class="quieter small">' + (lastSyncedAt ? 'Last synced at ' + new Date(lastSyncedAt).toLocaleTimeString() + '.' : 'Not synced yet this visit.') + '</p>' +
+        '<div class="actions" style="justify-content:flex-start">' +
+        '<button class="btn" data-x="sync-now">Sync now</button>' +
+        '<button class="btn" data-x="load-server">Load from account…</button>' +
+        '</div>' +
+        '<div class="actions" style="justify-content:space-between">' +
+        '<span style="display:flex;gap:10px;flex-wrap:wrap">' +
+        '<button class="btn ghost tiny" data-x="signout">Sign out</button>' +
+        '<button class="btn ghost tiny" data-x="delete-row">Delete my synced copy</button>' +
+        '</span>' +
+        '<button class="btn ghost" data-x="close">Close</button></div>';
+    }
+
+    var modal = document.createElement('div');
+    modal.className = 'modal fade-in';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Account');
+    overlay.appendChild(modal);
+
+    function renderBody() {
+      modal.innerHTML = bodyHTML();
+      var focusEl = $('input[name="code"]', modal) || $('input[name="email"]', modal);
+      if (focusEl) focusEl.focus();
+    }
+    renderBody();
+
+    function close() {
+      document.removeEventListener('keydown', onKey);
+      overlay.remove();
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+
+    /* Send a one-time code (supabase.auth.signInWithOtp equivalent). The same
+       email also carries a magic link. redirect_to keeps that link pointed at
+       THIS page rather than the project's default Site URL; its origin must be
+       in the Supabase Redirect URLs allowlist. */
+    function sendCode(email) {
+      var redirectTo = window.location.origin + window.location.pathname;
+      return fetch(SYNC.url + '/auth/v1/otp?redirect_to=' + encodeURIComponent(redirectTo), {
+        method: 'POST',
+        headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, create_user: true })
+      }).then(function (r) {
+        if (r.ok) { codeSentTo = email; renderBody(); return; }
+        return r.json().catch(function () { return {}; }).then(function (body) {
+          var msg = (body && (body.msg || body.error_description || body.error || body.message)) || '';
+          if (r.status === 429 || /rate limit/i.test(msg)) {
+            toast('Too many sign-in emails just now—wait a few minutes, then try once more.');
+          } else if (r.status === 422 || /redirect|url/i.test(msg)) {
+            toast('This address isn’t allowed for sign-in yet—add it to Supabase’s Redirect URLs.');
+          } else {
+            toast('Couldn’t send the code' + (msg ? '—' + msg : '—please try again in a moment.'));
+          }
+        });
+      }).catch(function () {
+        toast('Couldn’t reach the sign-in service—check your connection and try again.');
+      });
+    }
+
+    /* Verify the typed code (supabase.auth.verifyOtp equivalent) and persist
+       the returned session exactly like the magic-link path does. */
+    function verifyCode(email, code) {
+      if (!email) { codeSentTo = ''; renderBody(); toast('Enter your email again to get a fresh code.'); return; }
+      fetch(SYNC.url + '/auth/v1/verify', {
+        method: 'POST',
+        headers: { apikey: SYNC.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'email', email: email, token: code })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok || !j.access_token) {
+            var msg = (j && (j.msg || j.error_description || j.error || j.message)) || '';
+            if (r.status === 403 || /expired|invalid|token|otp/i.test(msg)) {
+              toast('That code didn’t match or has expired—check it, or resend a fresh one.');
+            } else {
+              toast('Couldn’t verify the code' + (msg ? '—' + msg : '.'));
+            }
+            return;
+          }
+          session = {
+            access_token: j.access_token,
+            refresh_token: j.refresh_token || '',
+            user: j.user ? { id: j.user.id, email: j.user.email } : null
+          };
+          storeSession();
+          codeSentTo = '';
+          updateAccountButton();
+          var ensureUser = session.user ? Promise.resolve() : fetchUser();
+          ensureUser.catch(function () {}).then(function () {
+            updateAccountButton();
+            renderBody();
+            toast('Signed in.');
+            maybeAutoPull();
+          });
+        });
+      }).catch(function () {
+        toast('Couldn’t reach the sign-in service—check your connection and try again.');
+      });
+    }
+
+    overlay.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      var role = form.getAttribute('data-role');
+      if (role === 'signin') {
+        var email = form.email.value.trim();
+        if (email) sendCode(email);
+      } else if (role === 'verify') {
+        var code = form.code.value.trim();
+        if (code) verifyCode(codeSentTo, code);
+      }
+    });
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) { close(); return; }
+      var b = e.target.closest('[data-x]');
+      if (!b) return;
+      var x = b.getAttribute('data-x');
+      if (x === 'close') close();
+      if (x === 'resend' && codeSentTo) { sendCode(codeSentTo); toast('Sent a fresh code.'); }
+      if (x === 'restart') { codeSentTo = ''; renderBody(); }
+      if (x === 'signout') {
+        signOutLocal();
+        renderBody();
+        toast('Signed out—your ladders stay on this device.');
+      }
+      if (x === 'sync-now') {
+        pushToServer({ manual: true }).then(function (okPush) {
+          if (okPush) { renderBody(); toast('Synced.'); }
+        });
+      }
+      if (x === 'delete-row') {
+        confirmModal('Delete your synced copy?', 'The copy of your ladders saved to your account will be erased from the server, and this device will be signed out. The ladders on this device stay exactly where they are.', 'Delete', true)
+          .then(function (okDelete) {
+            if (!okDelete) return;
+            deleteRow().then(function () {
+              renderBody();
+              toast('Synced copy deleted—your ladders are still on this device.');
+            }, function () {
+              toast('Couldn’t reach your account—try again in a moment.');
+            });
+          });
+      }
+      if (x === 'load-server') {
+        confirmModal('Load your account copy?', 'The ladders saved to your account will replace what’s on this device.', 'Load', false)
+          .then(function (okLoad) {
+            if (!okLoad) return;
+            pullRow().then(function (row) {
+              if (!row) { toast('Nothing saved to your account yet.'); return; }
+              adoptSnapshot(row);
+              close();
+              toast('Loaded from your account.');
+            }, function () { toast('Couldn’t reach your account—try again in a moment.'); });
+          });
+      }
+    });
+
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
+  }
+
+  /* a magic-link return lands back here with the session in the URL fragment */
+  function parseHashSession() {
+    var h = location.hash || '';
+    if (h.indexOf('access_token=') === -1) {
+      if (h.indexOf('error=') !== -1) {
+        toast('That sign-in link didn’t work—it may have expired. Send yourself a fresh one.');
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+      return false;
+    }
+    var p = {};
+    h.slice(1).split('&').forEach(function (kv) {
+      var i = kv.indexOf('=');
+      if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+    });
+    if (!p.access_token) return false;
+    session = { access_token: p.access_token, refresh_token: p.refresh_token || '', user: null };
+    storeSession();
+    history.replaceState(null, '', location.pathname + location.search);
+    return true;
+  }
+
+  function initSync() {
+    if (!syncEnabled) return;
+    updateAccountButton();
+    var fromLink = parseHashSession();
+    if (!session) loadStoredSession();
+    if (!session) { updateAccountButton(); return; }
+    var ensureUser = session.user ? Promise.resolve() : fetchUser();
+    ensureUser.catch(function () {
+      return refreshSession().then(fetchUser);
+    }).then(function () {
+      updateAccountButton();
+      if (fromLink) toast('Signed in.');
+      return maybeAutoPull();
+    }).catch(function () {
+      signOutLocal();
+    });
+  }
+
+  /* flush a pending sync push when the page is backgrounded */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && pushTimer) pushToServer({ keepalive: true });
+  });
 
   /* ---------- access gate ----------
-     Local-only build: the app is always open, with no accounts. */
+     The app is always open to everyone. An account is only ever for sync—it
+     gates nothing, and signing out costs a user no features. */
   var GATE = { mode: 'off' };
   /* Step-note template. Labels are real (pre-filled) text; the question after
      each label shows as a per-line ghost that clears once that line is answered.
@@ -1357,7 +1802,7 @@
         '<p class="quiet"><b>What is Foothold Now?</b><br>Foothold Now is a website for building practice ladders—also called fear ladders, anxiety ladders, or exposure hierarchies. You break something you avoid into small steps, rate each one 0–100, and practice until the hard things lose their grip.</p>' +
         '<p class="quiet"><b>Can I build an exposure hierarchy ladder on Foothold Now?</b><br>Yes—that is exactly what it is for. Write your steps in your own words, rate them 0–100, log each practice, and watch the ratings fall. It works for anxiety, OCD, phobias, procrastination, and everyday avoidance alike.</p>' +
         '<p class="quiet"><b>Is Foothold Now free?</b><br>Yes. Foothold Now is free. You can build unlimited practice ladders and steps at no cost, with nothing to buy.</p>' +
-        '<p class="quiet"><b>Do I need an account, and does my progress save?</b><br>There is no account and no sign-in. Your ladders save themselves in the browser you are using, so they are waiting for you the next time you open the site on that same browser and device. Two things worth knowing: a private or incognito window forgets everything once you close it, and your ladders do not travel to another browser or device on their own. Use <b>Backup</b> to download a copy, then restore it wherever you like.</p>' +
+        '<p class="quiet"><b>Do I need an account, and does my progress save?</b><br>No account is needed. Your ladders save themselves in the browser you are using, so they are waiting for you the next time you open the site on that same browser and device. Two things worth knowing: a private or incognito window forgets everything once you close it, and your ladders do not travel to another browser or device on their own. If you want them on your phone and your computer both, <b>Sign in</b> with your email keeps them in sync—that is optional, and staying signed out keeps everything on this one device. Use <b>Backup</b> to download a copy you can restore anywhere.</p>' +
       '</div></details>';
   }
 
@@ -1968,6 +2413,7 @@
         render(); break;
 
       case 'open-backup': openBackup(); break;
+      case 'open-account': if (syncEnabled) openAccount(); break;
 
       case 'copy-email': (function () {
         var EMAIL = 'footholdnowsupport@gmail.com';
@@ -2343,6 +2789,7 @@
   });
 
   render();
+  initSync();          /* picks up a stored session or a magic-link return; inert when signed out */
   handleSampleParam(); /* /?sample=<key> from the /sample-ladders/ guide adds a starter ladder */
 
   /* Migration notice: only on the old custom domain, so it disappears once the
