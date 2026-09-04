@@ -4,15 +4,23 @@ A single-file web app (`index.html`) for building practice ladders. All markup,
 styles, and script live in that one file; the app stores its data in
 `localStorage` under `foothold.v1`.
 
-The app is **fully local**: there are no accounts, no sign-in, and no network
-calls—nothing a user writes ever leaves their browser. The **Backup** button
-exports the data as a JSON file and restores from one, which is also how a user
-moves their ladders to another device or browser (localStorage is per-origin,
-so data does not follow the user across domains on its own). There are no
-third-party scripts beyond a cookie-free page-count beacon, which records a
-visit and nothing else. The only other request any page makes is for the demo
-video described below, from this same origin, and only once a visitor presses
-play. Nothing a user writes is ever uploaded.
+The app is **local-first, with opt-in sync**. Signed out—which is how it
+opens—there are no network calls at all and nothing a user writes leaves their
+browser. Signing in with an emailed one-time code is optional and buys exactly
+one thing: the user's ladders sync between their own devices. See "Accounts and
+sync" below. The **Backup** button exports the data as a JSON file and restores
+from one, which is the other way a user moves ladders between devices
+(localStorage is per-origin, so data does not follow the user across domains on
+its own). There are no third-party scripts beyond a cookie-free page-count
+beacon, which records a visit and nothing else. The only other request any page
+makes is for the demo video described below, from this same origin, and only
+once a visitor presses play.
+
+**Whenever the sync or privacy behaviour changes, `privacy/` changes with it in
+the same commit.** That page is a promise, not marketing copy, and several
+other places repeat it: the footer colophon, the FAQ answer (which exists twice
+in `foothold-now/index.html`—once as prose, once inside the JSON-LD block, and
+they must agree), `llms.txt`, and `add-to-home-screen/`.
 
 ## The demonstration video
 
@@ -36,6 +44,57 @@ hamburger site menu next to the logo. `og.png` is the 1200×630 social share
 card; `robots.txt` and `sitemap.xml` cover the app plus the guides. The site
 deliberately names ERP, OCD, and anxiety for search while emphasizing that no
 diagnosis is needed.
+
+## Accounts and sync
+
+An email sign-in and a Supabase sync layer shipped originally, were stripped in
+`ff26b40` for the move to free GitHub hosting, and were **restored in September
+2026** at the owner's request so ladders travel between a phone and a computer.
+The restored code is close to the original; the differences below are the
+point, so read them before touching it.
+
+**Sync is opt-in, and the signed-out path must stay silent.** Signed out, the
+app issues no request of any kind—that is what lets `privacy/` still promise a
+wholly local app to everyone who never signs in. Anything that would make a
+signed-out visit talk to a server breaks the promise on the page. Check it the
+way it is worded: load the app with the network panel open, use it, and confirm
+nothing but the page-count beacon goes out.
+
+Sign-in is a one-time code emailed by Supabase GoTrue (`/auth/v1/otp`, then
+`/auth/v1/verify`); the same email also carries a magic link, which returns to
+the app with the session in the URL fragment and is picked up by
+`parseHashSession`. There is no password anywhere. `redirect_to` is built from
+the current origin and path, so **the live origin must be in the Supabase
+Redirect URLs allowlist** or the link half of sign-in fails while the typed
+code still works.
+
+The synced object is the whole app snapshot, written to one row per user in
+`user_progress` and protected by row-level security. localStorage stays the
+working source of truth and the offline cache; the row is a mirror. `save()`
+calls `queuePush()` on any real content change, debounced 1.5s, and a pending
+push is flushed with `keepalive` when the page is backgrounded.
+
+**Conflicts are last-write-wins on the whole snapshot**, decided by comparing
+`data.savedAt`—which is why `savedAt` marks when content actually changed
+rather than when it was rewritten. Two devices editing the same ladders while
+both offline will lose the older set of edits. This is a known, accepted
+limitation and the reason the Backup button stays exactly where it is; a real
+per-ladder merge is the fix if it ever bites.
+
+**Only the sign-in and the sync came back.** The beta welcome gate, the paid
+entitlement and free step cap, the `profiles` table, `beta_signups`, and the
+anonymous `product_events` analytics were removed in the same commit and stay
+removed. Do not restore them while restoring anything else from that history.
+The access gate is a no-op stub and an account gates no features at all.
+
+**Delete my synced copy** in the Account panel erases the row and signs the
+device out—signing out is deliberate, since a still-signed-in device would push
+the row straight back on the next edit. `privacy/` names this control, so if it
+moves or is renamed, that page changes with it.
+
+None of this touches Movement Now, which has no account and no sync, and whose
+only request is the same-origin build-stamp check described below. Keep it that
+way: nothing on that page should ever reach off the origin.
 
 ## Movement Now
 
@@ -184,12 +243,13 @@ declared, no API keys, no model requests of any kind, on any page. This holds
 even when "Claude can run in artifacts" is switched on for the account. That
 setting is global; this exemption is deliberate and stays put.
 
-The reason is the promise the site makes, not preference. Every page tells the
-user that nothing they write leaves their browser, and `privacy/` says it in as
-many words. One model call would send ladder text—the most personal thing
-here, often OCD and anxiety content—to a server, quietly breaking that promise.
-If an AI feature is ever genuinely wanted, the privacy page has to be rewritten
-first, with the owner's explicit go-ahead.
+The reason is the promise the site makes, not preference. Sync did not soften
+this rule and must not be read as a precedent for it. Sync moves a user's
+ladders to a row only they can read, because they asked for it, on a page that
+says so plainly. A model call is a different act: it hands ladder text—the most
+personal thing here, often OCD and anxiety content—to a third party to be read
+and processed. If an AI feature is ever genuinely wanted, the privacy page has
+to be rewritten first, with the owner's explicit go-ahead.
 
 This restriction covers everything served from this origin, `movement/`
 included. Other artifacts and projects are free to use the feature.

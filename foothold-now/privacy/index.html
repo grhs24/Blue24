@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy—Foothold Now</title>
-<meta name="description" content="Foothold Now keeps your ladders in your browser. Nothing you write is uploaded—there are no accounts and no sign-in. Anonymous, cookie-free page counts only.">
+<meta name="description" content="Foothold Now keeps your ladders in your browser. Signing in is optional and exists only so your ladders can sync between your devices. Stay signed out and nothing you write leaves your device.">
 <link rel="canonical" href="https://grhs24.github.io/foothold-now/privacy/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Foothold Now">
 <meta property="og:title" content="Privacy at Foothold Now">
-<meta property="og:description" content="Your ladders stay in your browser. Nothing is uploaded, and there are no accounts.">
+<meta property="og:description" content="Your ladders stay in your browser. Signing in is optional, and only so they can sync between your devices.">
 <meta property="og:url" content="https://grhs24.github.io/foothold-now/privacy/">
 <meta property="og:image" content="https://grhs24.github.io/foothold-now/og.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -75,20 +75,33 @@
 
   <article>
     <h1>Privacy</h1>
-    <p class="lede">What you practice is personal. Foothold Now is built so that none of it ever leaves your device.</p>
+    <p class="lede">What you practice is personal. Foothold Now is built so that none of it leaves your device unless you ask it to.</p>
 
     <div class="summary-card">
-      <p><b>The short version:</b> your ladders live in your browser and never leave your device. There are no accounts, no sign-in, and nothing to buy. We don’t collect your data, sell it, share it, or build profiles.</p>
+      <p><b>The short version:</b> your ladders live in your browser. Signing in is optional and exists for one reason—so your ladders can follow you between your phone and your computer. Stay signed out and nothing you write leaves this device. Either way, we don’t sell your data, share it, or build profiles.</p>
     </div>
 
     <h2>What stays on your device</h2>
-    <p>Everything. Your ladders, steps, ratings, notes, and practice logs are stored in your browser’s local storage on your own device. Nothing you write is sent anywhere at all. The <b>Backup</b> button gives you your data as a file whenever you want it, so you can keep a copy or move it to another device or browser.</p>
+    <p>Everything, always. Your ladders, steps, ratings, notes, and practice logs are stored in your browser’s local storage on your own device, and that copy is the one the app reads and writes as you work. It keeps working with no connection at all. The <b>Backup</b> button gives you your data as a file whenever you want it, so you can keep a copy or move it yourself.</p>
+
+    <h2>If you never sign in</h2>
+    <p>Then nothing you write is sent anywhere, at all. Signed out, the app makes no request of any kind to any server—not your ladder text, not your ratings, not your notes. That is how the app opens by default, and you never have to leave it.</p>
+
+    <h2>If you choose to sign in</h2>
+    <p>Signing in exists so your ladders can travel between your devices. You give an email address, we email you a one-time code, and typing that code in signs you in. There is no password to choose or remember.</p>
+    <p>Once you are signed in, two things are kept away from your device:</p>
+    <ul>
+      <li><b>Your email address</b>, used only to sign you in.</li>
+      <li><b>A copy of your ladders</b>, so that another device you sign in on can pick them up.</li>
+    </ul>
+    <p>That copy sits in a database row tied to your account and protected by row-level security, which means no other account can read it. The database is hosted for us by <a href="https://supabase.com/privacy">Supabase</a>. Your ladders are not read for any other purpose, not analyzed, and never sold or shared. Signing out on a device unlinks that device from the account, and the ladders already on it stay exactly where they are.</p>
 
     <h2>What we don’t collect</h2>
     <p>No names, no profiles, no advertising trackers, and no cookies. Your ladders are never read for any purpose beyond showing them back to you. The one thing counted is how many times the website is opened—an anonymous tally that sets no cookies, records nothing that identifies you, and cannot see a single word you write.</p>
 
     <h2>Deleting your data</h2>
-    <p>It’s all in your browser, so it’s yours to clear anytime—remove the site’s data in your browser settings, or clear your browser storage, and it’s gone.</p>
+    <p>The copy on your device is yours to clear anytime—remove the site’s data in your browser settings, or clear your browser storage, and it’s gone.</p>
+    <p>If you have signed in, the <b>Account</b> panel has <b>Delete my synced copy</b>, which erases the synced copy of your ladders from the server and signs the device out, leaving the ladders on your device untouched. To have the email address behind the account removed as well, write to <a href="mailto:footholdnowsupport@gmail.com">footholdnowsupport@gmail.com</a> and it will be deleted.</p>
 
     <p class="lede" style="font-size:15px">Foothold Now is a personal practice companion, not medical care. This page describes the site as it works today; if anything here ever changes, this page changes with it.</p>
   </article>
